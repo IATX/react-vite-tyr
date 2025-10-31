@@ -24,5 +24,4 @@ dist-ssr
 *.sw?
 package-lock.json
 src/app/fjfimc/*
-src/app/ComponentMap.tsx
 
