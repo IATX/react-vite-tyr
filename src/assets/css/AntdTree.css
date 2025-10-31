@@ -1,0 +1,19 @@
+.custom-tree-dropdown {
+   padding: 5px;
+   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.custom-tree-dropdown .ant-dropdown-menu-item {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+/* 如果要修改 hover 时的颜色 */
+.custom-tree-dropdown .ant-dropdown-menu-item:hover {
+  background-color: #bae7ff;
+}
+
+/* 要修改 Tree 的样式，需要更精确的选择器 */
+.custom-tree-dropdown .ant-tree-node-content-wrapper {
+ 
+}

@@ -1,0 +1,13 @@
+.tyr-group-tree .ant-tree-node-content-wrapper {
+  font-size: 0.875rem;
+}
+
+.tyr-group-tree .ant-tree-switcher .ant-tree-switcher-icon {
+    font-size: 0.875rem;
+}
+
+.ant-popover-inner {
+  border-radius: 6px!important; /* 增加圆角 */
+  padding: 5px!important; /* 调整内边距 */
+  border-color: #ccc!important;
+}
