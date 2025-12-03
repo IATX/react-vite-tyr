@@ -16,12 +16,15 @@ import ProfilePage from '../components/FormDialogSoloPage';
 import { WrapSoloFormNode } from './WrapNode';
 import theme from '../theme/tyr';
 
+import { useTranslation } from 'react-i18next';
 
 export type TyrBreadcrumb = {
     arr: { name: string; url?: string; }[];
 };
 
 const Header: React.FC<TyrBreadcrumb> = ({ arr }) => {
+    const { t } = useTranslation();
+
     const applicationName = import.meta.env.VITE_APP_NAME;
 
     const { user, clearSession } = useSession();
@@ -79,7 +82,7 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr }) => {
                             </Tooltip>
                             <Tooltip title={'Sign out'} arrow>
                                 <CustomStyledButton variant="text" onClick={handleSignOut} endIcon={<LogoutIcon className='text-xs' />}>
-                                    Sign out
+                                    {t('system.signout')}
                                 </CustomStyledButton>
                             </Tooltip>
                         </div>

@@ -10,6 +10,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { AlertProvider } from './components/AlertContext';
 import { ConfirmDialogProvider } from './components/useConfirmDialog';
 import App from './App.tsx';
+import './i18n';
 
 document.documentElement.style.setProperty('--scrollbar-width', `15px`);
 

@@ -1,7 +1,4 @@
 import { alpha, createTheme, getContrastRatio } from '@mui/material/styles';
-import { blue } from '@mui/material/colors';
-import type getFontSizes from 'antd/es/theme/themes/shared/genFontSizes';
-import { Padding } from '@mui/icons-material';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -20,7 +17,7 @@ declare module '@mui/material/Button' {
   }
 }
 
-const violetBase = '#7F00FF';
+const violetBase = '#2563EB';
 const violetMain = alpha(violetBase, 0.7);
 
 const theme = createTheme({
@@ -29,7 +26,7 @@ const theme = createTheme({
       main: violetMain,
       light: alpha(violetBase, 0.5),
       dark: alpha(violetBase, 0.9),
-      contrastText: getContrastRatio(violetMain, '#fff') > 4.5 ? '#fff' : '#111',
+      contrastText: getContrastRatio(violetMain, '#fff') > 4.5 ? '#fff' : '#111287',
     },
   },
   typography: {
@@ -39,6 +36,12 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiLink: {
+      defaultProps: {
+        // 设置所有 Link 默认使用 secondary 颜色
+        color: '#2563EB', 
+      }
+    },
     MuiInputAdornment: {
       styleOverrides: {
         // 修改根元素样式
@@ -163,7 +166,14 @@ const theme = createTheme({
         }
       },
     },
-
+    MuiFormLabel: {
+      styleOverrides: {
+        root: {
+          fontSize: '0.875rem',
+          marginBottom: '0.25rem',
+        },
+      },
+    },
   },
 });
 

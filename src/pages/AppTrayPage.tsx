@@ -36,7 +36,7 @@ export default function AppTrayPage() {
   const { currentBayContent } = useContext(AppContext);
 
   useEffect(() => {
-    setBreadcrumbs([]);
+    // setBreadcrumbs([]);
     setDefaultActiveItemId('');
   }, []);
 

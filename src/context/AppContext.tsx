@@ -45,26 +45,42 @@ export const AppContext = createContext<IAppContext>({
   loading: true,
   fetchDynamicRoutes: async (t: string) => { console.log(t); },
   currentBayContent: null,
-  setCurrentBayContent: (() => {}) as Dispatch<SetStateAction<BayContentProp>>
+  setCurrentBayContent: (() => { }) as Dispatch<SetStateAction<BayContentProp>>
 });
+
+export const getTranslatedDashboardModule = () => {
+  return {
+    id: 'react_vite_tyr_dashboard',
+    label: 'system.dashboard',
+    url: '/main/dashboard',
+    icon: DashboardRoundedIcon,
+    children: []
+  };
+};
+
+export const getTranslatedSettingsModule = () => {
+  return {
+    id: 'react_vite_tyr_settings',
+    label: 'system.settings',
+    url: '/main/settings',
+    icon: SettingsOutlinedIcon,
+    children: []
+  };
+};
 
 // The provider component
 export default function AppProvider({ children }: { children: ReactNode }) {
-  const { token, setToken, user, isAuthenticated, setUser, clearSession } = useSession();
+ const { token, setToken, user, isAuthenticated, setUser, clearSession } = useSession();
   const { showAlert } = useAlert();
   const accApiUrl = import.meta.env.VITE_JET_ASP_ACC_API;
   const navigate = useNavigate();
 
   const [currentBayContent, setCurrentBayContent] = React.useState<BayContentProp>({
-    title: '初始标题',
-    subheader: '初始副标题',
-    elem: <>初始内容</>, 
+    title: 'Initial title',
+    subheader: 'Initial header',
+    elem: <>Initial content</>,
     type: 'blank'
   });
-
-  const setBayContent = (c: BayContentProp) => {
-    setCurrentBayContent(c);
-  }
 
   let appRouteArr: IRouteData[] = [];
 
@@ -95,19 +111,14 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const defaultModules: IMenu[] = [{
-    id: 'react_vite_tyr_dashboard',
-    label: 'Dashboard',
-    url: '/main/dashboard',
-    icon: DashboardRoundedIcon,
-    children: []
-  }]
+  const defaultModules: IMenu[] = [];
 
   const [appRoutes, setAppRoutes] = useState<IRouteConfig[]>(defaultRoutes);
   const [appMenus, setAppMenus] = useState<IMenu[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    
     // Ensure session mechanism when refreshing the page
     if (!isAuthenticated && SessionManager.isPermanent()) {
       setToken(SessionManager.getPermanentToken());
@@ -171,14 +182,14 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     return resultArr;
   };
 
-  const fetchDynamicRoutes = async (t: string) => {
+  const fetchDynamicRoutes = async (str: string) => {
     let menuArr: IMenu[] = [];
 
-    menuArr.push(defaultModules.filter(m => m.id === 'react_vite_tyr_dashboard')[0]);
+    menuArr.push(getTranslatedDashboardModule());
 
     try {
       setLoading(true);
-      const cfg = requesterConfig(t);
+      const cfg = requesterConfig(str);
       cfg.useJson();
       const client = axiosRequester(cfg);
 
@@ -226,13 +237,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         });
 
         if (SessionManager.isAdmin(accUser)) {
-          menuArr.push({
-            id: 'react_vite_tyr_settings',
-            label: 'Settings',
-            url: '/main/settings',
-            icon: SettingsOutlinedIcon,
-            children: []
-          });
+          menuArr.push(getTranslatedSettingsModule());
         }
 
         const dynamicRoutes = generateRoutes(appRouteArr);

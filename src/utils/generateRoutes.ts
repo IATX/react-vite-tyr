@@ -24,7 +24,7 @@ export type IMenu = {
   id: string;
   label: string;
   url: string;
-  icon: React.ElementType<SvgIconProps>;
+  icon?: React.ElementType<SvgIconProps>;
   children?: IMenu[];
 }
 

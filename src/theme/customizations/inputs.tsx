@@ -439,6 +439,7 @@ export const inputsCustomizations: Components<Theme> = {
       root: ({ theme }) => ({
         typography: theme.typography.caption,
         marginBottom: 8,
+        fontSize: '0.875rem',
       }),
     },
   },

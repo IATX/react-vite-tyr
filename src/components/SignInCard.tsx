@@ -25,6 +25,11 @@ import { SessionManager } from '../authority/SessionManager';
 import PasswordInput from './PasswordInput';
 import AccountInput from './AccountInput';
 
+import { useTranslation } from 'react-i18next';
+
+import theme from '../theme/tyr';
+import { ThemeProvider } from '@mui/material/styles';
+
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
@@ -59,8 +64,14 @@ const StyledTextField = styled(TextField)({
     },
 });
 
+
+
 const SignInCard: React.FC = () => {
+    const { t } = useTranslation();
+
     const accApiUrl = import.meta.env.VITE_JET_ASP_ACC_API;
+
+    const BASE_PATH = import.meta.env.VITE_JET_ASP_CONTEXT || '/';
 
     const { showAlert } = useAlert();
 
@@ -230,7 +241,7 @@ const SignInCard: React.FC = () => {
                         id="checkcode_image"
                         sx={{
                             borderRadius: 1, // Rounded corners
-                            height: '40px'
+                            height: '35px'
                         }}
                     />
                 </Tooltip>
@@ -246,109 +257,108 @@ const SignInCard: React.FC = () => {
                 backgroundColor: 'inherit',
                 boxShadow: 'none'
             }}>
-                <img src={RivetIcon} width={124} height={48} />
-                <p className="font-semibold text-xl">Sign-in to your account</p>
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit}
-                    noValidate
-                >
-                    <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, md: 12 }}>
-                            <FormControl sx={{ width: '100%', height: '80px' }}>
-                                <FormLabel htmlFor="logid">Account</FormLabel>
-                                <AccountInput
-                                    error={errors.logid}
-                                    helperText={errors.logid ? 'Account is required.' : ''}
-                                    id="logid"
-                                    name="logid"
-                                    value={formData.logid}
-                                    onChange={changeInputs}
-                                    placeholder="Your account"
-                                    autoComplete="logid"
-                                    disabled={isLoading}
-                                    required
-                                    autoFocus
-                                    fullWidth
-                                    variant="outlined"
-                                    color={errors.logid ? 'error' : 'primary'}
-                                ></AccountInput>
-                            </FormControl>
-                        </Grid>
-                        <Grid size={{ md: 12 }}>
-                            <FormControl sx={{ width: '100%', height: '80px' }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <FormLabel htmlFor="logid">Password
-                                    </FormLabel>
-                                </Box>
-                                
-                                <PasswordInput
-                                    error={errors.pwd}
-                                    helperText={errors.pwd ? 'Password is required.' : ''}
-                                    id="pwd"
-                                    name="pwd"
-                                    value={formData.pwd}
-                                    onChange={changeInputs}
-                                    placeholder="Your password"
-                                    autoComplete="pwd"
-                                    disabled={isLoading}
-                                    required
-                                    fullWidth
-                                    variant="outlined"
-                                    color={errors.pwd ? 'error' : 'primary'}
-                                ></PasswordInput>
-                            </FormControl>
-                        </Grid>
-                        <Grid size={{ xs: 8, md: 8 }}>
-                            <FormControl sx={{ width: '100%', height: '80px' }}>
-                                <Box sx={{ display: { xs: 'flex', flexDirection: 'column' }, width: '100%' }}>
-                                    <FormLabel htmlFor="checkCode">Verification Code</FormLabel>
-                                </Box>
-                                <StyledTextField
-                                    error={errors.checkCode}
-                                    helperText={errors.checkCode ? 'Verification code is required.' : ''}
-                                    placeholder="••••••"
-                                    type="text"
-                                    id="checkCode"
-                                    name="checkCode"
-                                    value={formData.checkCode}
-                                    onChange={changeInputs}
-                                    autoComplete=""
-                                    disabled={isLoading}
-                                    required
-                                    fullWidth
-                                    variant="outlined"
-                                    color={errors.checkCode ? 'error' : 'primary'}
-                                />
-                            </FormControl>
-                        </Grid>
-                        <Grid size={{ md: 4 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <FormLabel htmlFor="checkCode">&nbsp;</FormLabel>
-                            </Box>
-                            <CheckCodeImage></CheckCodeImage>
-                        </Grid>
-                        <Grid size={{ xs: 12 }}><Button type="submit" fullWidth onClick={validateInputs} disabled={isLoading} className='text-white bg-blue-500 hover:bg-blue-400'>
-                            Sign in
-                        </Button>
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <Typography sx={{ textAlign: 'center' }}>
-                                Don&apos;t have an account?{' '}
-                                <span>
-                                    <Link
-                                        href="/material-ui/getting-started/templates/sign-in/"
-                                        variant="body2"
-                                        sx={{ alignSelf: 'center' }}
-                                    >
-                                        Sign up
-                                    </Link>
-                                </span>
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                </Box>
+                <a href={BASE_PATH}><img src={RivetIcon} width={110} height={40} className='mb-4' /></a>
+                <p className="font-semibold text-xl">{t('system.signinhint')}</p>
+                <ThemeProvider theme={theme}>
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit}
+                        noValidate
+                    >
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 12, md: 12 }}>
+                                <FormControl sx={{ width: '100%', height: '80px' }}>
+                                    <FormLabel htmlFor="logid">{t('system.account')}</FormLabel>
+                                    <AccountInput
+                                        error={errors.logid}
+                                        helperText={errors.logid ? 'Account is required.' : ''}
+                                        id="logid"
+                                        name="logid"
+                                        value={formData.logid}
+                                        onChange={changeInputs}
+                                        placeholder="Your account"
+                                        autoComplete="logid"
+                                        disabled={isLoading}
+                                        required
+                                        autoFocus
+                                        fullWidth
+                                        variant="outlined"
+                                        color={errors.logid ? 'error' : 'primary'}
+                                    ></AccountInput>
+                                </FormControl>
+                            </Grid>
+                            <Grid size={{ md: 12 }}>
+                                <FormControl sx={{ width: '100%', height: '80px' }}>
+                                    <FormLabel htmlFor="logid">{t('system.password')}
+                                        </FormLabel>
 
+                                    <PasswordInput
+                                        error={errors.pwd}
+                                        helperText={errors.pwd ? 'Password is required.' : ''}
+                                        id="pwd"
+                                        name="pwd"
+                                        value={formData.pwd}
+                                        onChange={changeInputs}
+                                        placeholder="Your password"
+                                        autoComplete="pwd"
+                                        disabled={isLoading}
+                                        required
+                                        fullWidth
+                                        variant="outlined"
+                                        color={errors.pwd ? 'error' : 'primary'}
+                                    ></PasswordInput>
+                                </FormControl>
+                            </Grid>
+                            <Grid size={{ xs: 8, md: 8 }}>
+                                <FormControl sx={{ width: '100%', height: '80px' }}>
+                                    <Box sx={{ display: { xs: 'flex', flexDirection: 'column' }, width: '100%' }}>
+                                        <FormLabel htmlFor="checkCode">{t('system.verificationcode')}</FormLabel>
+                                    </Box>
+                                    <StyledTextField
+                                        error={errors.checkCode}
+                                        helperText={errors.checkCode ? 'Verification code is required.' : ''}
+                                        placeholder="••••••"
+                                        type="text"
+                                        id="checkCode"
+                                        name="checkCode"
+                                        value={formData.checkCode}
+                                        onChange={changeInputs}
+                                        autoComplete=""
+                                        disabled={isLoading}
+                                        required
+                                        fullWidth
+                                        variant="outlined"
+                                        color={errors.checkCode ? 'error' : 'primary'}
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid size={{ md: 4 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <FormLabel htmlFor="checkCode">&nbsp;</FormLabel>
+                                </Box>
+                                <CheckCodeImage></CheckCodeImage>
+                            </Grid>
+                            <Grid size={{ xs: 12 }}><Button type="submit" fullWidth onClick={validateInputs} disabled={isLoading} className='text-white bg-blue-500 hover:bg-blue-400'>
+                                {t('system.signin')}
+                            </Button>
+                            </Grid>
+                            <Grid size={{ xs: 12 }}>
+                                <Typography sx={{ textAlign: 'center' }}>
+                                    Don&apos;t have an account?{' '}
+                                    <span>
+                                        <Link
+                                            href={BASE_PATH}
+                                            variant="body2"
+                                            sx={{ alignSelf: 'center' }}
+                                        >
+                                            Return to homepage
+                                        </Link>
+                                    </span>
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </ThemeProvider>
             </Card>
             {isLoading && (
                 <Box

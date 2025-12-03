@@ -23,10 +23,10 @@ const LayoutContent = () => {
           onItemClick={handleSidebarItemClick} />
 
         {/* Main Content Area */}
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col bg-white">
           {/* Header */}
           <Header arr={breadcrumbs} />
-          <Box component="main" className="flex-1 bg-white" sx={{
+          <Box component="main" className="bg-white" sx={{
             overflowY: 'auto',
           }}>
             <Outlet />

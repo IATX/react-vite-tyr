@@ -1,0 +1,48 @@
+{
+    "portal": {
+        "feature" : "功能介绍",
+        "update" : "最新动态",
+        "pricing" : "价格计费",
+        "signin": "登录系统",
+        "workspace": "工作空间"
+    },
+    "system": {
+        "signinhint": "登录您的帐户",
+        "signin": "登录系统",
+        "signout": "退出系统",
+        "account": "账号",
+        "password": "密码",
+        "verificationcode": "验证码",
+        "navigation": "导航栏",
+        "home": "主页",
+        "dashboard": "仪表盘",
+        "settings": "系统设置",
+        "LLM": "Ali Tongyi"
+    },
+    "page" : {
+        "cancel": "取消",
+        "submit": "提交",
+        "save": "保存",
+        "delete": "删除",
+        "edit": "编辑",
+        "query": "查询",
+        "search": "查询",
+        "noqueryset": "No query conditions set",
+        "rowsperpage": "Rows per page",
+        "add": "新建",
+        "import": "导入",
+        "export": "导出",
+        "confirmsubmit": "Comfirm submission?",
+        "confirmsave": "Comfirm save?",
+        "confirmdelete": "Comfirm deletion?"
+    },
+    "prefab": {
+        "user": {
+            "name": "User"
+        },
+        "group": {},
+        "role": {},
+        "module": {},
+        "log": {}
+    }
+}

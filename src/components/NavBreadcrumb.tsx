@@ -5,6 +5,8 @@ import { Chip, Typography } from '@mui/material';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import { useNavigate } from 'react-router-dom';
 
+import { useTranslation } from 'react-i18next';
+
 interface NavBreadcrumbProps {
     navItems: {
         name: string,
@@ -13,6 +15,8 @@ interface NavBreadcrumbProps {
 }
 
 const NavBreadcrumb: React.FC<NavBreadcrumbProps> = ({ navItems }) => {
+    const { t } = useTranslation();
+
     const navigate = useNavigate();
 
     function handleClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -22,7 +26,7 @@ const NavBreadcrumb: React.FC<NavBreadcrumbProps> = ({ navItems }) => {
     return (
         <div role="presentation" onClick={handleClick}>
             <Breadcrumbs separator="›" aria-label="breadcrumb">
-                <Chip icon={<HomeOutlinedIcon sx={{color:'hsl(210, 98%, 48%)'}}/>} label="Home" size="small" variant="outlined"
+                <Chip icon={<HomeOutlinedIcon sx={{color:'hsl(210, 98%, 48%)'}}/>} label={t('system.home')} size="small" variant="outlined"
       onClick={() => navigate('/main')} clickable/>
 
                 {navItems && navItems.map((item, index) => {

@@ -81,6 +81,7 @@ interface FileUploaderProps {
     label?: string;
     maxFiles?: number;
     maxFileSizeMB?: number;
+    readOnly?: false;
     onChange?: (files: UploadFile[]) => void;
     annexFiles?: AnnexFile[];
     rtn: string;
@@ -110,6 +111,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
     label = 'File upload',
     maxFiles = 5,
     maxFileSizeMB = 10,
+    readOnly = false,
     rtn,
     rfn,
     rfpk,
@@ -122,7 +124,9 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
 
     const { showAlert } = useAlert();
 
+    // Currently uploaded files list
     const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
+    // List of uploaded files
     const [uploadedFiles, setUploadedFiles] = useState<AnnexFile[]>([]);
     const [isDragOver, setIsDragOver] = useState(false);
     const [previewOpen, setPreviewOpen] = useState(false);
@@ -141,7 +145,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
 
     useEffect(() => {
         setUploadedFiles(annexFiles ?? []);
-    }, [annexFiles]); 
+    }, [annexFiles]);
 
     const validate = () => {
         // 非空校验：检查 files 数组是否为空
@@ -419,44 +423,48 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
         <>
 
             <Box className="flex flex-col w-full">
-                <input type="hidden" id={id} name={name} value={JSON.stringify(selectedFiles.map(f => f.id))} />
-                <Paper
-                    variant="outlined"
-                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-                    onDragLeave={() => setIsDragOver(false)}
-                    onDrop={handleDrop}
-                    className={`w-full p-12 text-center transition-colors ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+                {!readOnly && (
+                    <>
+                        <input type="hidden" id={id} name={name} value={JSON.stringify(selectedFiles.map(f => f.id))} />
+                        <Paper
+                            variant="outlined"
+                            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                            onDragLeave={() => setIsDragOver(false)}
+                            onDrop={handleDrop}
+                            className={`w-full p-12 text-center transition-colors ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
                     ${hasError ? 'border-red-500' : ''}
                     `}
-                >
-                    <input
-                        type="file"
-                        hidden
-                        multiple
-                        ref={fileInputRef}
-                        onChange={(e) => {
-                            handleFileChange(e.target.files);
-                            e.target.value = '';
-                        }}
-                        accept="*"
-                    />
-                    <CloudUploadIcon className="text-gray-400 text-6xl mb-4" />
-                    <Typography variant="body1" className="text-gray-500">
-                        Drag and drop  or
-                        <Tooltip title={label} arrow>
-                            <Button
-                                size="small"
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                upload files
-                            </Button>
-                        </Tooltip>
-                    </Typography>
-                    <Typography variant="body1" className="text-gray-500">
-                        DOC, IMAGE, ZIP up to {maxFileSizeMB}MB, up to {maxFiles} files
-                    </Typography>
-                </Paper>
-                {hasError && <FormHelperText error>{helperText}</FormHelperText>}
+                        >
+                            <input
+                                type="file"
+                                hidden
+                                multiple
+                                ref={fileInputRef}
+                                onChange={(e) => {
+                                    handleFileChange(e.target.files);
+                                    e.target.value = '';
+                                }}
+                                accept="*"
+                            />
+                            <CloudUploadIcon className="text-gray-400 text-6xl mb-4" />
+                            <Typography variant="body1" className="text-gray-500">
+                                Drag and drop  or
+                                <Tooltip title={label} arrow>
+                                    <Button
+                                        size="small"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        upload files
+                                    </Button>
+                                </Tooltip>
+                            </Typography>
+                            <Typography variant="body1" className="text-gray-500">
+                                DOC, IMAGE, ZIP up to {maxFileSizeMB}MB, up to {maxFiles} files
+                            </Typography>
+                        </Paper>
+                        {hasError && <FormHelperText error>{helperText}</FormHelperText>}
+                    </>
+                )}
                 {uploadedFiles && uploadedFiles.length > 0 && (
                     <Box className="w-full">
                         <List>
@@ -548,7 +556,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                                             {file.status === 'stopped' && <Tooltip title="Upload stopped" placement="bottom"><ErrorIcon className="text-lg text-orange-500" /></Tooltip>}
                                             {file.status !== 'uploading' && (
                                                 <IconButton edge="end" aria-label="delete" className='ml-1 mr-1' onClick={() => {
-                                                    setDeleteAnnexConfirmOpen(true);
+                                                    setDeleteFileConfirmOpen(true);
                                                     setCurrentFile(file);
                                                 }}>
                                                     <DeleteIcon className="text-lg text-gray-500 hover:text-red-700" />

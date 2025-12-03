@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
     base: basePath,
     plugins: [react()],
     server: {
-      port: 3000, // Custom port
+      port: 5173, // Custom port
     },
   }
 

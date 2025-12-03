@@ -2,6 +2,7 @@ import React, { useContext, useState, type ReactEventHandler } from 'react';
 import { List, ListItem, ListItemIcon, ListItemText, Typography, Avatar, Link, Collapse, ListItemButton, Popover, Box, Divider, Grid, styled, Paper, ListSubheader, MenuList } from '@mui/material';
 import {
     ChevronRight as ChevronRightIcon,
+    MenuOpenOutlined as defaultMenuIcon,
 } from '@mui/icons-material';
 
 import RivetSvg from "./RivetSvg";
@@ -14,12 +15,16 @@ import { RichTreeView, type TreeViewBaseItem } from '@mui/x-tree-view';
 import { useBreadcrumbs } from '../context/BreadcrumbContext';
 import componentMap, { type IComponentItem, type IComponentMap } from '../app/ComponentMap';
 
+import { useTranslation } from 'react-i18next';
+
 interface SidebarProps {
     activeItemId: string;
     onItemClick: (itemId: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
+    const { t } = useTranslation();
+
     const navigate = useNavigate();
 
     const handleItemClick = (itemId: string) => {
@@ -30,9 +35,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [menuTreeNodes, setMenuTreeNodes] = useState<TreeViewBaseItem[]>([]);
     const [menuTreeOrigan, setMenuTreeOrigan] = useState<IMenu[]>([]);
-    const { appMenus, setCurrentBayContent } = useContext(AppContext);
+    const {appMenus, setCurrentBayContent } = useContext(AppContext);
     const [collapseSubmenus, setCollapseSubmenus] = useState<{ [key: string]: boolean }>({});
-    const { setBreadcrumbs } = useBreadcrumbs();
+    const {breadcrumbs, setBreadcrumbs } = useBreadcrumbs();
+
+    const [parentBreadcrumbs, setParentBreadcrumbs] = useState<{ name: string, url: string }[]>([]);
 
     // Defining a lookup function
     function findComponentItemByPath(map: IComponentMap, targetPath: string): IComponentItem | undefined {
@@ -54,6 +61,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
 
             setMenuTreeNodes(childrenMenus);
             setMenuTreeOrigan(childrenMenus);
+
+            setParentBreadcrumbs(breadcrumbArr);
         }
 
         if (menu.url !== '') {
@@ -113,7 +122,31 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
 
         // If the node is found and it has a `path` attribute, jump to it
         if (selectedNode && selectedNode.url) {
-            navigate(selectedNode.url);
+            const combinedArray = [...parentBreadcrumbs, ...[{ 'name': selectedNode.label, 'url': selectedNode.url }]];
+
+            setBreadcrumbs(combinedArray);
+
+            const componentItem = findComponentItemByPath(componentMap, selectedNode.url);
+
+            if (componentItem && componentItem.elem) {
+                setCurrentBayContent({
+                    title: selectedNode.label,
+                    subheader: selectedNode.label,
+                    elem: componentItem.elem,
+                    type: componentItem.type
+                });
+            } else {
+                setCurrentBayContent({
+                    title: selectedNode.label,
+                    subheader: selectedNode.label,
+                    elem: <>Not found element for {selectedNode.id}.</>,
+                    type: 'blank'
+                });
+            }
+
+           handleClose(); 
+
+           navigate('/main/trays');
         }
     };
 
@@ -128,14 +161,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
                 </div>
                 <div className='p-1'>
                     {/* Navigation */}
-                    <h2 className="text-base/7 font-semibold text-gray-900">Navigation</h2>
+                    <h2 className="text-base/7 font-semibold text-gray-900 mb-2">{t('system.navigation')}</h2>
                     {appMenus && appMenus.map((item) => (
                         <Box key={'box_' + item.id}>
                             <ListItem
                                 component={Link}
                                 onClick={(event) => {
                                     handleClick(event, item, [{
-                                        name: item.label,
+                                        name: t(item.label),
                                         url: item.url
                                     }]);
                                     setCollapseSubmenus(prevData => ({ ...prevData, [item.id]: !collapseSubmenus[item.id] }));
@@ -144,9 +177,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
                                 className={`p-[5px] rounded-md ${item.id === activeItemId ? 'text-blue-500 cursor-pointer' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100 cursor-pointer'}`}
                             >
                                 <ListItemIcon className={`${item.id === activeItemId ? 'min-w-8 text-blue-500' : 'min-w-8'}`}>
-                                    <item.icon />
+                                    {item.icon && <item.icon />}
                                 </ListItemIcon>
-                                <ListItemText primary={item.label} slotProps={{
+                                <ListItemText primary={t(item.label)} slotProps={{
                                     primary: {
                                         className: `${item.id === activeItemId ? 'font-semibold text-base/8 sm:text-sm/8' : 'text-base/8 sm:text-sm/8'}`,
                                     },
@@ -161,19 +194,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
                                             key={subItem.id}
                                             component={Link}
                                             onClick={(event) => handleClick(event, subItem, [{
-                                                name: item.label,
+                                                name: t(item.label),
                                                 url: item.url
                                             }, {
-                                                name: subItem.label,
+                                                name: t(subItem.label),
                                                 url: subItem.url
                                             }], subItem.children)}
                                             className={`p-[5px] ml-[10px] rounded-md ${subItem.id === activeItemId ? 'text-blue-500 cursor-pointer' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100 cursor-pointer'}`}
                                         >
                                             <ListItemIcon className={`${subItem.id === activeItemId ? 'min-w-8 text-blue-500' : 'min-w-8'}`}>
-                                                <subItem.icon />
+                                                {subItem.icon && <subItem.icon />}
                                             </ListItemIcon>
                                             <ListItemText
-                                                primary={subItem.label}
+                                                primary={t(subItem.label)}
                                                 slotProps={{
                                                     primary: {
                                                         className: `${subItem.id === activeItemId ? 'font-semibold text-base/8 sm:text-sm/8' : 'text-base/8 sm:text-sm/8'}`,
@@ -204,7 +237,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
                             paper: 'shadow-none border border-gray-200 w-[300px] rounded-md p-2',
                         }}
                     >
-                        <Box sx={{ minHeight: 352, minWidth: 250 }}>
+                        <Box sx={{}}>
                             <RichTreeView items={menuTreeNodes} onItemSelectionToggle={handleNodeClick}
                                 slotProps={{
                                     item: {
@@ -226,7 +259,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
             <div className="flex items-center space-x-2 mt-4">
                 <div>
                     {/*<Typography className="font-semibold text-sm">Created by IATX</Typography>*/}
-                    <Typography className="text-sm text-gray-500">Powered by <span className="font-semibold">Gemini</span></Typography>
+                    <Typography className="text-sm text-gray-500">Powered by <span className="font-semibold">{t('system.LLM')}</span></Typography>
                 </div>
             </div>
         </aside>
