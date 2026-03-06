@@ -1,28 +1,38 @@
-import React, { useContext, useState, type ReactEventHandler } from 'react';
-import { List, ListItem, ListItemIcon, ListItemText, Typography, Avatar, Link, Collapse, ListItemButton, Popover, Box, Divider, Grid, styled, Paper, ListSubheader, MenuList } from '@mui/material';
+import React, { useContext, useRef, useState } from 'react';
+import { List, ListItem, ListItemIcon, ListItemAvatar, ListItemText, Typography, Avatar, Link, Collapse, ListItemButton, Popover, Box, Divider, Grid, styled, Paper, ListSubheader, MenuList, Tooltip, IconButton } from '@mui/material';
 import {
-    ChevronRight as ChevronRightIcon,
-    MenuOpenOutlined as defaultMenuIcon,
+    ExpandMore as ExpandMoreIcon,
+    KeyboardArrowRight as KeyboardArrowRightIcon,
+    MoreVert as MoreVertIcon,
+    SmartToy as SmartToyIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
+    KeyboardArrowDown as KeyboardArrowDownIcon,
 } from '@mui/icons-material';
 
 import RivetSvg from "./RivetSvg";
+import RivetMiniSvg from "./RivetMiniSvg";
 
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import type { IMenu } from '../utils/generateRoutes';
-import { RichTreeView, type TreeViewBaseItem } from '@mui/x-tree-view';
+
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
 
 import { useBreadcrumbs } from '../context/BreadcrumbContext';
 import componentMap, { type IComponentItem, type IComponentMap } from '../app/ComponentMap';
 
 import { useTranslation } from 'react-i18next';
+import { RichTreeView } from '@mui/x-tree-view';
 
 interface SidebarProps {
     activeItemId: string;
     onItemClick: (itemId: string) => void;
+    open: boolean;
+    onExpandSidebar: () => void;
+    width: number;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onExpandSidebar, width }) => {
     const { t } = useTranslation();
 
     const navigate = useNavigate();
@@ -33,11 +43,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
     };
     // const [activeItemId, setActiveItemId] = useState(defaultActiveItemId);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [menuTreeNodes, setMenuTreeNodes] = useState<TreeViewBaseItem[]>([]);
+    const [menuTreeNodes, setMenuTreeNodes] = useState<IMenu[]>([]);
     const [menuTreeOrigan, setMenuTreeOrigan] = useState<IMenu[]>([]);
-    const {appMenus, setCurrentBayContent } = useContext(AppContext);
+    const { appMenus, appHubs, setCurrentBayContent } = useContext(AppContext);
     const [collapseSubmenus, setCollapseSubmenus] = useState<{ [key: string]: boolean }>({});
-    const {breadcrumbs, setBreadcrumbs } = useBreadcrumbs();
+    const { setBreadcrumbs } = useBreadcrumbs();
 
     const [parentBreadcrumbs, setParentBreadcrumbs] = useState<{ name: string, url: string }[]>([]);
 
@@ -144,125 +154,406 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick }) => {
                 });
             }
 
-           handleClose(); 
+            handleClose();
 
-           navigate('/main/trays');
+            navigate('/main/trays');
         }
     };
 
-    const open = Boolean(anchorEl);
+    const openPopover = Boolean(anchorEl);
 
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    const scroll = (direction: 'up' | 'down') => {
+        if (scrollRef.current) {
+            const scrollAmount = 100; // 每次点击滚动的像素
+            scrollRef.current.scrollBy({
+                top: direction === 'up' ? scrollAmount : -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // @ts-ignore
     return (
-        <aside className="w-64 p-4 flex flex-col justify-between">
-            <div>
-                {/* Logo */}
-                <div className="flex items-center mb-8">
-                    <RivetSvg></RivetSvg>
+        <Box className={`w-64 p-4 flex flex-col justify-between border-r border-gray-100
+                transition-all duration-300 ease-in-out overflow-hidden`} style={{ width: `${width}px` }}>
+            {/* Logo */}
+            <div className={`flex items-center mb-8 transition-all duration-300 ${!open ? 'justify-center' : ''}`}>
+                <div className="transition-opacity duration-300 ease-in-out">
+                    {open ? <RivetSvg /> : <RivetMiniSvg />}
                 </div>
+            </div>
+            {/* Menu Items */}
+            <div className='min-h-0 flex-1 overflow-y-auto custom-scrollbar' ref={scrollRef}>
                 <div className='p-1'>
-                    {/* Navigation */}
-                    <h2 className="text-base/7 font-semibold text-gray-900 mb-2">{t('system.navigation')}</h2>
-                    {appMenus && appMenus.map((item) => (
-                        <Box key={'box_' + item.id}>
+                    {/** Mainspace */}
+                    {open && (
+                        <p className="text-sm font-semibold mb-2">{t('system.mainspace')}</p>
+                    )}
+                    <List sx={{ width: '100%', maxWidth: 320, py: 0 }}>
+                        {appHubs && appHubs.map((item) => (
+                            <ListItem
+                                key={item.id}
+                                disablePadding
+                                className={open ? 'bg-slate-100' : 'bg-blue-50/80'}
+                                sx={{
+                                    borderRadius: '8px',
+                                    mb: 1,
+                                    border: '1px solid',
+                                    borderColor: open ? '#e2e8f0' : 'transparent',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                                        '& .MuiAvatar-root': {
+                                            transform: !open ? 'scale(1.1)' : 'scale(1.05)',
+                                            color: 'primary.main',
+                                            borderColor: 'primary.main',
+                                        }
+                                    },
+                                }}
+                            >
+                                <Tooltip
+                                    title={!open ? (
+                                        <Box sx={{ p: 0.5 }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{item.label}</Typography>
+                                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>{item.subtitle}</Typography>
+                                        </Box>
+                                    ) : ""}
+                                    placement="right"
+                                    arrow
+                                >
+                                    <ListItemButton
+                                        onClick={() => {
+                                            // 安全获取组件，防止 .elem 报错
+                                            const targetComponent = componentMap instanceof Map
+                                                ? componentMap.get(item.id)
+                                                : componentMap[item.id];
+
+                                            setCurrentBayContent({
+                                                title: item.label,
+                                                subheader: item.subtitle,
+                                                elem: targetComponent?.elem || <Box sx={{ p: 2 }}>未找到组件内容</Box>,
+                                                type: 'hub'
+                                            });
+
+                                            navigate('/main/trays');
+                                        }}
+                                        sx={{
+                                            py: open ? 1 : 1.5,
+                                            px: open ? 2 : 0,
+                                            borderRadius: '8px',
+                                            flexDirection: open ? 'row' : 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: open ? 1.5 : 0,
+                                            '&:hover': {
+                                                backgroundColor: !open ? 'transparent' : 'initial',
+                                            }
+                                        }}
+                                    >
+                                        {/* 1. 图标头像部分 */}
+                                        <ListItemAvatar
+                                            sx={{
+                                                minWidth: 0,
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                mr: open ? 0.5 : 0,
+                                                mb: open ? 0 : 0.5
+                                            }}
+                                        >
+                                            <Avatar
+                                                sx={{
+                                                    width: open ? 34 : 38,
+                                                    height: open ? 34 : 38,
+                                                    bgcolor: '#f8fafc',
+                                                    color: '#94a3b8',
+                                                    border: '1.5px solid',
+                                                    borderColor: '#e2e8f0',
+                                                    transition: 'all 0.3s ease',
+                                                    '& .MuiSvgIcon-root': {
+                                                        fontSize: open ? 18 : 22,
+                                                        color: 'inherit',
+                                                    }
+                                                }}
+                                            >
+                                                {/* 直接使用变量，不要用 ${} */}
+                                                {item.icon}
+                                            </Avatar>
+                                        </ListItemAvatar>
+
+                                        {/* 2. 文字内容部分 */}
+                                        <ListItemText
+                                            primary={item.label}
+                                            secondary={open ? item.subtitle : null}
+                                            slotProps={{
+                                                primary: {
+                                                    variant: 'caption',
+                                                    fontWeight: 600,
+                                                    noWrap: true,
+                                                    className: `transition-all duration-300 ${!open ? 'text-[10px] scale-90' : 'text-sm'}`,
+                                                    sx: {
+                                                        color: 'text.primary',
+                                                        textAlign: open ? 'left' : 'center',
+                                                        width: !open ? '60px' : 'auto',
+                                                    },
+                                                }
+                                            }}
+                                            sx={{
+                                                m: 0,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: !open ? 'center' : 'flex-start',
+                                                mt: !open ? 0.2 : 0,
+                                                '& .MuiListItemText-root': { m: 0 }
+                                            }}
+                                        />
+                                    </ListItemButton>
+                                </Tooltip>
+                            </ListItem>
+                        ))}
+                    </List>
+                </div>
+
+                <Divider
+                    sx={{
+                        borderBottomWidth: 1,
+                        my: 1,
+                        mx: -0.5,
+                    }}
+                />
+
+                {/* Navigation */}
+                {open && (
+                    <>
+                        <p className="text-sm font-semibold mt-4">{t('system.navigation')}</p>
+                    </>
+                )}
+                {appMenus && appMenus.map((item) => (
+                    <Box key={'box_' + item.id}>
+                        <Tooltip
+                            title={!open ? t(item.label) : ""}
+                            placement="right"
+                            arrow
+                        >
                             <ListItem
                                 component={Link}
                                 onClick={(event) => {
+                                    if (!open && item.children && item.children.length > 0) {
+                                        onExpandSidebar();
+                                    }
+
+                                    // 2. 正常逻辑：处理面包屑/点击跳转
                                     handleClick(event, item, [{
                                         name: t(item.label),
                                         url: item.url
                                     }]);
-                                    setCollapseSubmenus(prevData => ({ ...prevData, [item.id]: !collapseSubmenus[item.id] }));
+
+                                    // 3. 处理展开/收缩子菜单
+                                    setCollapseSubmenus(prevData => ({
+                                        ...prevData,
+                                        [item.id]: !collapseSubmenus[item.id]
+                                    }));
                                 }}
                                 key={item.id}
-                                className={`p-[5px] rounded-md ${item.id === activeItemId ? 'text-blue-500 cursor-pointer' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100 cursor-pointer'}`}
+                                className={`
+                                            rounded-md transition-all duration-200
+                                            ${item.id === activeItemId ? 'text-blue-500' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100'} 
+                                            ${!open ? 'flex-col justify-center py-2 px-0' : 'flex-row justify-start py-[2px] px-2'}
+                                            `}
+                                sx={{ cursor: 'pointer', position: 'relative' }}
                             >
-                                <ListItemIcon className={`${item.id === activeItemId ? 'min-w-8 text-blue-500' : 'min-w-8'}`}>
-                                    {item.icon && <item.icon />}
+                                {/* 1. 图标部分 */}
+                                <ListItemIcon
+                                    className={`
+                                                min-w-0 transition-all
+                                                ${item.id === activeItemId ? 'text-blue-500' : 'text-gray-500'}
+                                                ${!open ? 'mb-1' : 'mr-0'}
+                                            `}
+                                    sx={{ justifyContent: 'center' }}
+                                >
+                                    {item.icon && <item.icon sx={{ width: open ? '1.2rem' : '1.3rem', height: open ? '1.2rem' : '1.3rem' }} />}
                                 </ListItemIcon>
-                                <ListItemText primary={t(item.label)} slotProps={{
-                                    primary: {
-                                        className: `${item.id === activeItemId ? 'font-semibold text-base/8 sm:text-sm/8' : 'text-base/8 sm:text-sm/8'}`,
-                                    },
-                                }} style={{ marginTop: '0px', marginBottom: '0px' }} />
-                            </ListItem>
 
-                            {/* Sub-menu container and loop */}
-                            {item.children && (
-                                <Collapse in={collapseSubmenus[item.id]} timeout="auto" unmountOnExit>
-                                    {item.children.map((subItem) => (
-                                        <ListItem
-                                            key={subItem.id}
-                                            component={Link}
-                                            onClick={(event) => handleClick(event, subItem, [{
-                                                name: t(item.label),
-                                                url: item.url
-                                            }, {
-                                                name: t(subItem.label),
-                                                url: subItem.url
-                                            }], subItem.children)}
-                                            className={`p-[5px] ml-[10px] rounded-md ${subItem.id === activeItemId ? 'text-blue-500 cursor-pointer' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100 cursor-pointer'}`}
-                                        >
-                                            <ListItemIcon className={`${subItem.id === activeItemId ? 'min-w-8 text-blue-500' : 'min-w-8'}`}>
-                                                {subItem.icon && <subItem.icon />}
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={t(subItem.label)}
-                                                slotProps={{
-                                                    primary: {
-                                                        className: `${subItem.id === activeItemId ? 'font-semibold text-base/8 sm:text-sm/8' : 'text-base/8 sm:text-sm/8'}`,
-                                                    },
-                                                }}
-                                                style={{ marginTop: '0px', marginBottom: '0px', width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                                            />
-                                            {subItem.children && subItem.children.length > 0 && (
-                                                <ListItemIcon sx={{ minWidth: 0, ml: 'auto' }}>
-                                                    <ChevronRightIcon />
-                                                </ListItemIcon>
-                                            )}
-                                        </ListItem>
-                                    ))}
-                                </Collapse>
-                            )}
-
-                        </Box>
-
-                    ))}
-                    <Popover
-                        open={open}
-                        anchorEl={anchorEl}
-                        onClose={handleClose}
-                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                        classes={{
-                            paper: 'shadow-none border border-gray-200 w-[300px] rounded-md p-2',
-                        }}
-                    >
-                        <Box sx={{}}>
-                            <RichTreeView items={menuTreeNodes} onItemSelectionToggle={handleNodeClick}
-                                slotProps={{
-                                    item: {
-                                        sx: {
-                                            fontSize: '.875rem',
-                                            '& .MuiTreeItem-label': {
-                                                fontSize: '.875rem'
+                                {/* 2. 文字部分：现在收缩和展开都存在，但样式不同 */}
+                                <ListItemText
+                                    primary={t(item.label)}
+                                    slotProps={{
+                                        primary: {
+                                            className: `transition-all duration-200 ${!open
+                                                ? 'text-center text-[10px] leading-tight font-medium' // 收缩时的超小字体
+                                                : 'px-2 text-base/8 sm:text-sm/8'         // 展开时的正常字体
+                                                } ${item.id === activeItemId ? 'font-semibold' : ''}`,
+                                            sx: {
+                                                display: 'block',
+                                                maxWidth: !open ? '64px' : 'none',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
                                             }
+                                        },
+                                    }}
+                                    style={{ margin: 0 }}
+                                />
+
+                                {/* 3. 箭头部分：仅在有子项时显示 */}
+                                {item.children && item.children.length > 0 && (
+                                    <Box
+                                        sx={{
+                                            minWidth: 0,
+                                            display: 'flex',
+                                            // 收缩时绝对定位到右上角，展开时正常靠右
+                                            position: !open ? 'absolute' : 'static',
+                                            right: !open ? 4 : 0,
+                                            top: !open ? 8 : 'auto',
+                                            ml: open ? 'auto' : 0,
+                                            opacity: 0.6
+                                        }}
+                                    >
+                                        {!collapseSubmenus[item.id] || !open ? (
+                                            <KeyboardArrowRightIcon sx={{ fontSize: '0.9rem' }} />
+                                        ) : (
+                                            <ExpandMoreIcon sx={{ fontSize: '0.9rem' }} />
+                                        )}
+                                    </Box>
+                                )}
+                            </ListItem>
+                        </Tooltip>
+
+                        {/* Sub-menu container and loop */}
+                        {open && item.children && (
+                            <Collapse in={collapseSubmenus[item.id]} timeout="auto" unmountOnExit>
+                                {item.children.map((subItem) => (
+                                    <ListItem
+                                        key={subItem.id}
+                                        component={Link}
+                                        onClick={(event) => handleClick(event, subItem, [{
+                                            name: t(item.label),
+                                            url: item.url
+                                        }, {
+                                            name: t(subItem.label),
+                                            url: subItem.url
+                                        }], subItem.children)}
+                                        className={`p-[2px] ml-[10px] rounded-md ${subItem.id === activeItemId ? 'text-blue-500 cursor-pointer' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100 cursor-pointer'}`}
+                                    >
+                                        <ListItemIcon className={`min-w-0 ${subItem.id === activeItemId ? 'text-blue-500' : 'text-gray-500'}`}>
+                                            {subItem.icon && <subItem.icon sx={{ width: '1rem', height: '1rem' }} />}
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={t(subItem.label)}
+                                            slotProps={{
+                                                primary: {
+                                                    className: `px-2 ${subItem.id === activeItemId ? 'font-semibold text-base/8 sm:text-sm/8' : 'text-base/8 sm:text-sm/8'}`,
+                                                },
+                                            }}
+                                            style={{ marginTop: '0px', marginBottom: '0px', width: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                                        />
+                                        {subItem.children && subItem.children.length > 0 && (
+                                            <ListItemIcon sx={{ minWidth: 0, mr: '15px' }}>
+                                                <MoreVertIcon sx={{ width: '1rem', height: '1rem' }} />
+                                            </ListItemIcon>
+                                        )}
+                                    </ListItem>
+                                ))}
+                            </Collapse>
+                        )}
+
+                    </Box>
+
+                ))}
+                <Popover
+                    open={openPopover}
+                    anchorEl={anchorEl}
+                    onClose={handleClose}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                    classes={{
+                        paper: 'shadow-none border border-gray-200 rounded-md p-2',
+                    }}
+                >
+                    <Box sx={{}}>
+                        <RichTreeView
+                            items={menuTreeNodes}
+                            onItemSelectionToggle={handleNodeClick}
+                            slots={{
+                                item: (props) => {
+                                    // 这里的 props.itemId 对应你 menuTreeNodes 里的 id
+                                    // 我们可以通过 id 找回原始的 menu 对象，从而获取它的 icon
+                                    const nodeData = findNodeById(props.itemId, menuTreeOrigan);
+                                    const IconComponent = nodeData?.icon;
+
+                                    return (
+                                        <TreeItem
+                                            {...props}
+                                            slots={{
+                                                // 将数据里的图标注入到 TreeItem 的图标槽位中
+                                                icon: IconComponent ? () => <IconComponent sx={{ width: '1rem', height: '1rem' }} /> : undefined
+                                            }}
+                                        />
+                                    );
+                                }
+                            }}
+                            slotProps={{
+                                item: {
+                                    sx: {
+                                        fontSize: '.875rem',
+                                        '& .MuiTreeItem-label': {
+                                            fontSize: '.875rem'
                                         }
                                     }
+                                }
+                            }}
+                        />
+                    </Box>
+                </Popover>
+            </div>
+
+
+            {/* Powered By Content*/}
+            <div className={`flex flex-col items-center transition-all duration-300 justify-center ${!open ? 'w-full py-2' : 'gap-2'}`}>
+                {open && (
+                    <div className="flex justify-center">
+                        <IconButton size="small" onClick={() => scroll('up')}>
+                            <KeyboardArrowUpIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" onClick={() => scroll('down')}>
+                            <KeyboardArrowDownIcon fontSize="small" />
+                        </IconButton>
+                    </div>
+                )}
+
+                {open ? (
+                    // 展开状态：保持原样，精致小巧
+                    <>
+                        <Typography className="text-sm text-gray-500">
+                            Powered by <span className="font-semibold">{t('system.LLM')}</span>
+                        </Typography>
+                    </>
+                ) : (
+                    // 收缩状态：大图标居中 + Tooltip
+                    <Tooltip
+                        title={`Powered by ${t('system.LLM')}`}
+                        placement="right"
+                        arrow
+                        // 增加偏移量，让 Tooltip 离侧边栏远一点，不遮挡
+                        slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, 12] } }] } }}
+                    >
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                            <SmartToyIcon
+                                sx={{
+                                    color: 'primary.main',
+                                    fontSize: '1.6rem', // 图标加大，视觉冲击力更强
+                                    cursor: 'pointer',
+                                    // 增加一点呼吸动效，让它看起来更“智能”
+                                    '&:hover': { transform: 'scale(1.1)', transition: 'transform 0.2s' }
                                 }}
                             />
                         </Box>
-                    </Popover>
-                </div>
+                    </Tooltip>
+                )}
             </div>
 
-            {/* User Info */}
-            <div className="flex items-center space-x-2 mt-4">
-                <div>
-                    {/*<Typography className="font-semibold text-sm">Created by IATX</Typography>*/}
-                    <Typography className="text-sm text-gray-500">Powered by <span className="font-semibold">{t('system.LLM')}</span></Typography>
-                </div>
-            </div>
-        </aside>
+        </Box>
     );
 };
 

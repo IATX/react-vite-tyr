@@ -2,7 +2,8 @@ import React from 'react';
 import type { SvgIconProps } from '@mui/material';
 
 import componentMap from '../app/ComponentMap';
-import { WrapRouteFormNode, WrapRouteTableNode } from '../components/WrapNode';
+import { WrapRouteFormNode, WrapRouteTableNode, WrapRouteHubNode } from '../components/WrapNode';
+import type {SvgIconComponent} from "@mui/icons-material";
 
 export interface IRouteData {
   path: string;
@@ -28,6 +29,13 @@ export type IMenu = {
   children?: IMenu[];
 }
 
+export type IHub = {
+  id: string;
+  label: string;
+  subtitle: string;
+  icon?: React.ReactNode;
+}
+
 /**
  * 递归生成 React Router 路由配置
  * @param routesData 从后端获取的路由数据
@@ -51,6 +59,8 @@ export function generateRoutes(routesData: IRouteData[]): IRouteConfig[] {
       elementToRender = WrapRouteTableNode(Component.elem);
     } else if (Component.type == 'view') {
       elementToRender = WrapRouteFormNode(Component.elem);
+    } else if (Component.type == 'hub') {
+      elementToRender = WrapRouteHubNode(Component.elem);
     } if (Component.type == 'other') {
       elementToRender = Component.elem;
     }

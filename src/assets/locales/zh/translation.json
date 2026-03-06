@@ -1,0 +1,93 @@
+{
+    "common": {
+        "comma": "，",
+        "fullstop": "。",
+        "exclamationmark": "！",
+        "questionmark": "？",
+        "colon": "：",
+        "Semicolon": "；",
+        "leftdoublequotationmark": "“",
+        "rightdoublequotationmark": "”",
+        "leftquotationmark": "‘",
+        "rightquotationmark": "’",
+        "and": "和",
+        "or": "或"
+    },
+    "portal": {
+        "feature": "功能介绍",
+        "update": "最新动态",
+        "pricing": "价格计费",
+        "signin": "登录系统",
+        "workspace": "工作空间"
+    },
+    "system": {
+        "signinhint": "登录您的帐户",
+        "signin": "登录系统",
+        "signout": "退出系统",
+        "account": "账号",
+        "password": "密码",
+        "verificationcode": "验证码",
+        "backhome": "返回至首页",
+        "mainspace": "工作空间",
+        "navigation": "菜单导航",
+        "home": "主页",
+        "dashboard": "仪表盘",
+        "settings": "系统设置",
+        "LLM": "Ali Tongyi",
+        "getsignincode": "点击获取验证码",
+        "accountplaceholder" : "登录账号",
+        "pwdplaceholder" : "登录密码"
+    },
+    "page": {
+        "confirm": "确定",
+        "cancel": "取消",
+        "submit": "提交",
+        "save": "保存",
+        "delete": "删除",
+        "edit": "编辑",
+        "close": "关闭",
+        "back": "返回",
+        "query": "查询",
+        "search": "查询",
+        "noqueryset": "没有查询条件",
+        "rowsperpage": "每页记录数",
+        "nodata": "暂无数据",
+        "add": "新建",
+        "import": "导入",
+        "export": "导出",
+        "confirmsubmit": "确定提交？",
+        "confirmsave": "确定保存？",
+        "confirmdelete": "确定删除？",
+        "addnew": "新增一行",
+        "insertbefore": "插入一行",
+        "insertnext": "插入一行"
+    },
+    "uploader": {
+        "filetypes": "文档 图片 压缩包",
+        "upto": "最多",
+        "drapdrop": "拖拽文件",
+        "upload": "选择文件",
+        "files": "个文件",
+        "invalidation": {
+            "required": "请选择文件",
+            "filesizelimit": "已超过文件大小限制",
+            "filequartityimit": "已超过文件数量限制"
+        }
+    },
+    "prefab": {
+        "user": {
+            "name": "User"
+        },
+        "group": {},
+        "role": {},
+        "module": {},
+        "log": {}
+    },
+     "validation" : {
+        "signin" : {
+            "accounterror" : "请输入账号",
+            "pwderror" : "请输入密码",
+            "codeerror" : "请输入验证码"
+        }
+    }
+}

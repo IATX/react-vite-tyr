@@ -7,7 +7,7 @@ import {
   Storefront,
   ChevronRight
 } from '@mui/icons-material';
-import { useBreadcrumbs } from '../context/BreadcrumbContext';
+import { useBreadcrumbs } from '../../../context/BreadcrumbContext.tsx';
 
 import {
   AreaChart,
@@ -128,7 +128,7 @@ const StatWidget: React.FC<StatProps> = ({ title, value, trend, isUp, icon: Icon
   </Paper>
 );
 
-export default function DashboardPage() {
+export default function DashboardForm() {
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {

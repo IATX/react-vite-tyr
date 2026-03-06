@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
 
 import { useBreadcrumbs } from '../context/BreadcrumbContext';
+import { useState } from 'react';
 
 const LayoutContent = () => {
   const { breadcrumbs, defaultActiveItemId, setDefaultActiveItemId } = useBreadcrumbs();
@@ -15,17 +15,28 @@ const LayoutContent = () => {
     setDefaultActiveItemId(itemId);
   };
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // 定义两个状态下的宽度常量
+  const drawerWidth = 240;
+  const collapsedWidth = 72;
+
   return (
     <>
       <div className="flex h-screen bg-gray-50">
         {/* Sidebar */}
         <Sidebar activeItemId={defaultActiveItemId}
-          onItemClick={handleSidebarItemClick} />
+          onItemClick={handleSidebarItemClick}
+          open={sidebarOpen}
+          onExpandSidebar={() => setSidebarOpen(true)}
+          width={sidebarOpen ? drawerWidth : collapsedWidth}
+        />
 
         {/* Main Content Area */}
         <div className="flex flex-1 flex-col bg-white">
           {/* Header */}
-          <Header arr={breadcrumbs} />
+          <Header arr={breadcrumbs} sidebarOpen={sidebarOpen}
+            onToggle={() => setSidebarOpen(!sidebarOpen)} />
           <Box component="main" className="bg-white" sx={{
             overflowY: 'auto',
           }}>

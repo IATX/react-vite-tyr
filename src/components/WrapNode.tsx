@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 export function WrapRouteFormNode(elem: ReactNode): ReactNode {
   return (
@@ -19,6 +19,14 @@ export function WrapRouteTableNode(elem: ReactNode): ReactNode {
 export function WrapSoloFormNode(elem: ReactNode): ReactNode {
   return (
     <div className="bg-white">
+      {elem}
+    </div>
+  );
+}
+
+export function WrapRouteHubNode(elem: ReactNode): ReactNode {
+  return (
+    <div>
       {elem}
     </div>
   );

@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 在你的 index.css 或 Tailwind 插件中 */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 0px; /* 隐藏宽度 */
+    background: transparent;
+}
 
 :root {
     --template-frame-height: 52px;

@@ -1,0 +1,88 @@
+{
+    "common": {
+        "comma": ",",
+        "fullstop": ".",
+        "exclamationmark": "!",
+        "questionmark": "?",
+        "colon": ":",
+        "Semicolon": ";",
+        "leftdoublequotationmark": "\"",
+        "rightdoublequotationmark": "\"",
+        "leftquotationmark": "'",
+        "rightquotationmark": "'",
+        "and": "or",
+        "or": "and"
+    },
+    "portal": {
+        "feature" : "Features",
+        "update" : "News",
+        "pricing" : "Pricing",
+        "signin": "Sign in",
+        "workspace": "Workspace"
+    },
+    "system": {
+        "signinhint": "Sign-in to your account",
+        "signin": "Sign-in",
+        "signout": "Sign out",
+        "account": "Account",
+        "password": "Password",
+        "verificationcode": "Verification Code",
+        "backhome": "Return to Home",
+        "mainspace": "Main Space",
+        "navigation": "Navigation",
+        "home": "Home",
+        "dashboard": "Dashboard",
+        "settings": "Settings",
+        "LLM": "Gemini",
+        "getsignincode": "Click to get a new code",
+        "accountplaceholder" : "Your account",
+        "pwdplaceholder" : "Your password"
+    },
+    "page" : {
+        "confirm": "Confirm",
+        "cancel": "cancel",
+        "submit": "Submit",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "close": "Close",
+        "back": "Return",
+        "query": "Query",
+        "search": "Search",
+        "noqueryset": "No query conditions set",
+        "rowsperpage": "Rows per page",
+        "nodata": "No data found",
+        "add": "Add",
+        "import": "Import",
+        "export": "Export",
+        "confirmsubmit": "Comfirm submission?",
+        "confirmsave": "Comfirm save?",
+        "confirmdelete": "Comfirm deletion?",
+        "addnew": "Add a row",
+        "insertbefore": "Insert row above",
+        "insertnext": "Insert row below"
+    },
+     "uploader": {
+        "filetypes" : "DOC IMAGE ZIP",
+        "upto" : "up to",
+        "drapdrop" : "Drag and drop",
+        "upload" : "Upload files",
+        "files" : "files"
+    },
+    "prefab": {
+        "user": {
+            "name": "User"
+        },
+        "group": {},
+        "role": {},
+        "module": {},
+        "log": {}
+    },
+    "validation" : {
+        "signin" : {
+            "accounterror" : "Account is required",
+            "pwderror" : "Password is required",
+            "codeerror" : "Verification code is required"
+        }
+    }
+}

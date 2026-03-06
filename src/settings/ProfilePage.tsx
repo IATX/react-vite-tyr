@@ -194,7 +194,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
     return (
         <ThemeProvider theme={theme}>
             <form id="user_password_edit" onSubmit={handleSubmit}>
-                <div className="space-y-12" style={{ width: '320px' }}>
+                <div className="space-y-12">
                     <div className={groupCardStyle}>
                         <div className={groupContentStyle}>
                             <div className={oneRowStyle}>

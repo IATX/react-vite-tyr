@@ -7,5 +7,6 @@ export interface UserInfo {
     id: string,
     name: string,
     pictureUrl: string | null,
-    roles: Role[]
+    roles: Role[],
+    isGuest: boolean
 }

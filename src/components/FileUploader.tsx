@@ -39,6 +39,8 @@ import { useSession } from '../authority/SessionContext';
 import { useAlert } from './AlertContext';
 import axiosRequester, { requesterConfig } from './AxiosRequester';
 
+import { useTranslation } from 'react-i18next';
+
 // 定义文件状态和类型
 type FileStatus = 'idle' | 'uploading' | 'completed' | 'failed' | 'stopped';
 
@@ -109,7 +111,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
     id,
     name,
     label = 'File upload',
-    maxFiles = 5,
+    maxFiles = 1,
     maxFileSizeMB = 10,
     readOnly = false,
     rtn,
@@ -119,6 +121,8 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
     onChange,
     annexFiles,
 }, ref) => {
+    const { t } = useTranslation();
+
     const { token } = useSession();
     const VITE_JET_ASP_FRC_API = import.meta.env.VITE_JET_ASP_FRC_API;
 
@@ -247,7 +251,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
 
         Array.from(files).forEach(file => {
             if (selectedFiles.length + newFiles.length >= maxFiles) {
-                showAlert('The maximum number of files has been reached(5 files)', 'error');
+                showAlert('No more than ' + maxFiles + ' files can be uploaded.', 'error');
 
                 return;
             }
@@ -448,18 +452,18 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                             />
                             <CloudUploadIcon className="text-gray-400 text-6xl mb-4" />
                             <Typography variant="body1" className="text-gray-500">
-                                Drag and drop  or
+                                {t('uploader.drapdrop')} {t('common.or')} 
                                 <Tooltip title={label} arrow>
                                     <Button
                                         size="small"
                                         onClick={() => fileInputRef.current?.click()}
                                     >
-                                        upload files
+                                        {t('uploader.upload')}
                                     </Button>
                                 </Tooltip>
                             </Typography>
                             <Typography variant="body1" className="text-gray-500">
-                                DOC, IMAGE, ZIP up to {maxFileSizeMB}MB, up to {maxFiles} files
+                                {t('uploader.filetypes')}{t('common.comma')}{t('uploader.upto')} {maxFileSizeMB}MB{t('common.comma')}{t('uploader.upto')} {maxFiles}{t('uploader.files')}
                             </Typography>
                         </Paper>
                         {hasError && <FormHelperText error>{helperText}</FormHelperText>}

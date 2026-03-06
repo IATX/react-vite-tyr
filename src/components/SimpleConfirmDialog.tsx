@@ -1,6 +1,8 @@
 import React from 'react';
 import { Button, Box, Collapse, Typography, Slide, Modal, Stack } from '@mui/material';
 
+import { useTranslation } from 'react-i18next';
+
 import ContactSupportOutlinedIcon from '@mui/icons-material/ContactSupportOutlined';
 
 // 定义 props 的接口，确保类型安全
@@ -12,6 +14,8 @@ interface ConfirmProps {
 }
 
 const Confirm: React.FC<ConfirmProps> = ({ open, onConfirm, onCancel, children }) => {
+    const { t } = useTranslation();
+
     if (!open) {
         return null;
     }
@@ -55,10 +59,10 @@ const Confirm: React.FC<ConfirmProps> = ({ open, onConfirm, onCancel, children }
                     {/* 右侧：按钮 */}
                     <Stack direction="row" spacing={1}>
                         <Button size="small" color="primary" onClick={onConfirm}>
-                            Confirm
+                            {t('page.confirm')}
                         </Button>
                         <Button size="small" color="inherit" onClick={onCancel}>
-                            Cancel
+                            {t('page.cancel')}
                         </Button>
                     </Stack>
 
