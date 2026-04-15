@@ -24,6 +24,14 @@ export function WrapSoloFormNode(elem: ReactNode): ReactNode {
   );
 }
 
+export function WrapRouteOtherNode(elem: ReactNode): ReactNode {
+  return (
+    <div>
+      {elem}
+    </div>
+  );
+}
+
 export function WrapRouteHubNode(elem: ReactNode): ReactNode {
   return (
     <div>

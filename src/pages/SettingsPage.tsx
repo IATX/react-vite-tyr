@@ -7,7 +7,7 @@ import GroupTree, { type GroupTreeRef } from '../settings/GroupManagementTreePag
 import ModuleTree, { type ModuleTreeRef } from '../settings/ModuleManagementTreePage';
 import UserList from '../settings/UserListPage';
 
-import { Alert, Badge, Box, Card, CardActionArea, CardContent, CardHeader, Chip, Collapse, Divider, Grid, IconButton, Paper, Skeleton, Stack, Tooltip, Typography, type SvgIconProps } from '@mui/material';
+import { Badge, Box, Card, CardActionArea, CardContent, CardHeader, Chip, Collapse, Divider, Grid, IconButton, Paper, Skeleton, Stack, Tooltip, Typography, type SvgIconProps } from '@mui/material';
 
 import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
@@ -26,7 +26,6 @@ import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import DoneOutlinedIcon from '@mui/icons-material/DoneOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import PlaylistAddOutlinedIcon from '@mui/icons-material/PlaylistAddOutlined';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 
 import { useBreadcrumbs } from '../context/BreadcrumbContext';
 import { WrapSoloFormNode } from '../components/WrapNode';
@@ -506,10 +505,10 @@ const SettingsPage = () => {
     let initParams: { mnpid: string; mid: string } = { mnpid: '', mid: '' };
 
     if (values.key.indexOf('module_') > -1) {
-      initParams['mid'] = values.key.replace('module_', '');
+      initParams['mid'] = values.moduleId;
       initParams['mnpid'] = '';
     } else if (values.key.indexOf('menu_') > -1) {
-      initParams['mid'] = '';
+      initParams['mid'] = values.moduleId;
       initParams['mnpid'] = values.key.replace('menu_', '')
     }
 
@@ -536,7 +535,8 @@ const SettingsPage = () => {
         moduleTreeRef.current?.addNode(values.key, {
           'title': formData.mnname,
           'key': 'menu_' + formData.mnid,
-          'isLeaf': true
+          'isLeaf': true,
+          'moduleId': values.moduleId
         });
 
         setActiveForm(
@@ -612,7 +612,8 @@ const SettingsPage = () => {
         moduleTreeRef.current?.updateNode(values.key, {
           'title': nodeName,
           'key': values.key,
-          'isLeaf': values.isLeaf
+          'isLeaf': values.isLeaf,
+          'moduleId': values.moduleId
         });
 
         setActiveForm(

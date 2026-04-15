@@ -3,14 +3,19 @@ import React from 'react';
 
 // Import all dynamic routing page components
 	import QueryFzwlye from '../app/ilzpxj/query/QueryFzwlye';
+	import QueryGetoqx from '../app/ilzpxj/query/QueryGetoqx';
 	import QueryGxffwv from '../app/ilzpxj/query/QueryGxffwv';
 	import QueryIjjudr from '../app/ilzpxj/query/QueryIjjudr';
 	import QueryJokhkp from '../app/ilzpxj/query/QueryJokhkp';
 	import QueryJxzqzn from '../app/ilzpxj/query/QueryJxzqzn';
 	import QueryKaeany from '../app/ilzpxj/query/QueryKaeany';
+	import QueryKrrpkm from '../app/ilzpxj/query/QueryKrrpkm';
+	import QueryMmlokn from '../app/ilzpxj/query/QueryMmlokn';
+	import QueryOfgrem from '../app/ilzpxj/query/QueryOfgrem';
 	import QueryOldktk from '../app/ilzpxj/query/QueryOldktk';
 	import QueryQkjhps from '../app/ilzpxj/query/QueryQkjhps';
 	import QueryQrogsu from '../app/ilzpxj/query/QueryQrogsu';
+	import QueryTgtnvf from '../app/ilzpxj/query/QueryTgtnvf';
 	import QueryUugwep from '../app/ilzpxj/query/QueryUugwep';
 	import QueryVtqjos from '../app/ilzpxj/query/QueryVtqjos';
 	import QueryWnkrtk from '../app/ilzpxj/query/QueryWnkrtk';
@@ -19,6 +24,7 @@ import React from 'react';
 	import QueryXwztav from '../app/ilzpxj/query/QueryXwztav';
 	import QueryYagetq from '../app/ilzpxj/query/QueryYagetq';
 	import QueryZcolik from '../app/ilzpxj/query/QueryZcolik';
+	import QueryZqqxdz from '../app/ilzpxj/query/QueryZqqxdz';
 	import PrefabDepartmentList from '../app/ilzpxj/query/PrefabDepartmentList';
 	import PrefabDepartmentSearch from '../app/ilzpxj/query/PrefabDepartmentSearch';
 	import PrefabRoleList from '../app/ilzpxj/query/PrefabRoleList';
@@ -26,11 +32,16 @@ import React from 'react';
 	import PrefabUserList from '../app/ilzpxj/query/PrefabUserList';
 	import PrefabUserQueryList from '../app/ilzpxj/query/PrefabUserQueryList';
 	import PrefabLogList from '../app/ilzpxj/query/PrefabLogList';
+	import ViewTbCuqscwaiClbnay from '../app/ilzpxj/view/ViewTbCuqscwaiClbnay';
+	import ViewTbDailyLogsFjsjve from '../app/ilzpxj/view/ViewTbDailyLogsFjsjve';
 	import ViewTbDhnkqhqgNmiwkj from '../app/ilzpxj/view/ViewTbDhnkqhqgNmiwkj';
+	import ViewTbDhnkqhqgQdoeqk from '../app/ilzpxj/view/ViewTbDhnkqhqgQdoeqk';
+	import ViewTbEnpqommqStpinc from '../app/ilzpxj/view/ViewTbEnpqommqStpinc';
 	import ViewTbGvfrokeqSfidnf from '../app/ilzpxj/view/ViewTbGvfrokeqSfidnf';
 	import ViewTbIfsxuxeiLiyiee from '../app/ilzpxj/view/ViewTbIfsxuxeiLiyiee';
 	import ViewTbJdelyxiiRwhmui from '../app/ilzpxj/view/ViewTbJdelyxiiRwhmui';
 	import ViewTbJkywwxtlMsurqp from '../app/ilzpxj/view/ViewTbJkywwxtlMsurqp';
+	import ViewTbJpercefrEmaqau from '../app/ilzpxj/view/ViewTbJpercefrEmaqau';
 	import ViewTbKlxmblqlAcsguo from '../app/ilzpxj/view/ViewTbKlxmblqlAcsguo';
 	import ViewTbKrqdqnqcEcrvcd from '../app/ilzpxj/view/ViewTbKrqdqnqcEcrvcd';
 	import ViewTbLgtnnfggBdonpj from '../app/ilzpxj/view/ViewTbLgtnnfggBdonpj';
@@ -42,10 +53,13 @@ import React from 'react';
 	import ViewTbPiclbkqkXvhrik from '../app/ilzpxj/view/ViewTbPiclbkqkXvhrik';
 	import ViewTbStybmjgdRuiowc from '../app/ilzpxj/view/ViewTbStybmjgdRuiowc';
 	import ViewTbTcbogtyoAfmnqw from '../app/ilzpxj/view/ViewTbTcbogtyoAfmnqw';
+	import ViewTbWxcheztyNlyrlw from '../app/ilzpxj/view/ViewTbWxcheztyNlyrlw';
+	import ViewTbWzbgmxdiKoossp from '../app/ilzpxj/view/ViewTbWzbgmxdiKoossp';
 	import ViewTbWzghpmogSemlgb from '../app/ilzpxj/view/ViewTbWzghpmogSemlgb';
 	import ViewTbWzghpmogVxpfmm from '../app/ilzpxj/view/ViewTbWzghpmogVxpfmm';
 	import ViewTbXbbyezwtKxchdy from '../app/ilzpxj/view/ViewTbXbbyezwtKxchdy';
 	import ViewTbXbbyezwtMugqix from '../app/ilzpxj/view/ViewTbXbbyezwtMugqix';
+	import ViewTbXntlcwohNsxogn from '../app/ilzpxj/view/ViewTbXntlcwohNsxogn';
 	import ViewTbXntlcwohUzlwbg from '../app/ilzpxj/view/ViewTbXntlcwohUzlwbg';
 	import ViewTbYrnfwwvyQfxmub from '../app/ilzpxj/view/ViewTbYrnfwwvyQfxmub';
 	import PrefabDepartmentAdd from '../app/ilzpxj/view/PrefabDepartmentAdd';
@@ -59,12 +73,12 @@ import React from 'react';
 	import PrefabModuleEdit from '../app/ilzpxj/view/PrefabModuleEdit';
 	import PrefabMenuAdd from '../app/ilzpxj/view/PrefabMenuAdd';
 	import PrefabMenuEdit from '../app/ilzpxj/view/PrefabMenuEdit';
-
-import Dashboard from './ilzpxj/hub/DashboardForm.tsx';
-import MchElecPrice from '../app/ilzpxj/hub/MerchantElectricPriceForm';
+	import Agentpurchasepricing from '../app/ilzpxj/hub/Agentpurchasepricing';
+	import Mchelecprice from '../app/ilzpxj/hub/Mchelecprice';
+	import Billcenter from '../app/ilzpxj/hub/Billcenter';
 
 // Define the component mapping interface, the key is a string and the value is the React component type
-export type ComponentType = 'view' | 'query' | 'hub' | 'other';
+export type ComponentType = 'view' | 'query' | 'other' | 'hub';
 
 export interface IComponentItem {
   elem: React.ReactNode;
@@ -82,6 +96,11 @@ const componentMap: IComponentMap = {
 			'elem': <QueryFzwlye />,
 			'type': 'query',
 			'path': 'app/ilzpxj/query/QueryFzwlye',
+		},
+		'QueryGetoqx': {
+			'elem': <QueryGetoqx />,
+			'type': 'query',
+			'path': 'app/ilzpxj/query/QueryGetoqx',
 		},
 		'QueryGxffwv': {
 			'elem': <QueryGxffwv />,
@@ -108,6 +127,21 @@ const componentMap: IComponentMap = {
 			'type': 'query',
 			'path': 'app/ilzpxj/query/QueryKaeany',
 		},
+		'QueryKrrpkm': {
+			'elem': <QueryKrrpkm />,
+			'type': 'query',
+			'path': 'app/ilzpxj/query/QueryKrrpkm',
+		},
+		'QueryMmlokn': {
+			'elem': <QueryMmlokn />,
+			'type': 'query',
+			'path': 'app/ilzpxj/query/QueryMmlokn',
+		},
+		'QueryOfgrem': {
+			'elem': <QueryOfgrem />,
+			'type': 'query',
+			'path': 'app/ilzpxj/query/QueryOfgrem',
+		},
 		'QueryOldktk': {
 			'elem': <QueryOldktk />,
 			'type': 'query',
@@ -122,6 +156,11 @@ const componentMap: IComponentMap = {
 			'elem': <QueryQrogsu />,
 			'type': 'query',
 			'path': 'app/ilzpxj/query/QueryQrogsu',
+		},
+		'QueryTgtnvf': {
+			'elem': <QueryTgtnvf />,
+			'type': 'query',
+			'path': 'app/ilzpxj/query/QueryTgtnvf',
 		},
 		'QueryUugwep': {
 			'elem': <QueryUugwep />,
@@ -163,6 +202,11 @@ const componentMap: IComponentMap = {
 			'type': 'query',
 			'path': 'app/ilzpxj/query/QueryZcolik',
 		},
+		'QueryZqqxdz': {
+			'elem': <QueryZqqxdz />,
+			'type': 'query',
+			'path': 'app/ilzpxj/query/QueryZqqxdz',
+		},
 		'PrefabDepartmentList': {
 			'elem': <PrefabDepartmentList />,
 			'type': 'query',
@@ -198,10 +242,30 @@ const componentMap: IComponentMap = {
 			'type': 'query',
 			'path': 'app/ilzpxj/query/PrefabLogList',
 		},
+		'ViewTbCuqscwaiClbnay': {
+			'elem': <ViewTbCuqscwaiClbnay />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbCuqscwaiClbnay',
+		},
+		'ViewTbDailyLogsFjsjve': {
+			'elem': <ViewTbDailyLogsFjsjve />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbDailyLogsFjsjve',
+		},
 		'ViewTbDhnkqhqgNmiwkj': {
 			'elem': <ViewTbDhnkqhqgNmiwkj />,
 			'type': 'view',
 			'path': 'app/ilzpxj/view/ViewTbDhnkqhqgNmiwkj',
+		},
+		'ViewTbDhnkqhqgQdoeqk': {
+			'elem': <ViewTbDhnkqhqgQdoeqk />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbDhnkqhqgQdoeqk',
+		},
+		'ViewTbEnpqommqStpinc': {
+			'elem': <ViewTbEnpqommqStpinc />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbEnpqommqStpinc',
 		},
 		'ViewTbGvfrokeqSfidnf': {
 			'elem': <ViewTbGvfrokeqSfidnf />,
@@ -222,6 +286,11 @@ const componentMap: IComponentMap = {
 			'elem': <ViewTbJkywwxtlMsurqp />,
 			'type': 'view',
 			'path': 'app/ilzpxj/view/ViewTbJkywwxtlMsurqp',
+		},
+		'ViewTbJpercefrEmaqau': {
+			'elem': <ViewTbJpercefrEmaqau />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbJpercefrEmaqau',
 		},
 		'ViewTbKlxmblqlAcsguo': {
 			'elem': <ViewTbKlxmblqlAcsguo />,
@@ -278,6 +347,16 @@ const componentMap: IComponentMap = {
 			'type': 'view',
 			'path': 'app/ilzpxj/view/ViewTbTcbogtyoAfmnqw',
 		},
+		'ViewTbWxcheztyNlyrlw': {
+			'elem': <ViewTbWxcheztyNlyrlw />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbWxcheztyNlyrlw',
+		},
+		'ViewTbWzbgmxdiKoossp': {
+			'elem': <ViewTbWzbgmxdiKoossp />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbWzbgmxdiKoossp',
+		},
 		'ViewTbWzghpmogSemlgb': {
 			'elem': <ViewTbWzghpmogSemlgb />,
 			'type': 'view',
@@ -297,6 +376,11 @@ const componentMap: IComponentMap = {
 			'elem': <ViewTbXbbyezwtMugqix />,
 			'type': 'view',
 			'path': 'app/ilzpxj/view/ViewTbXbbyezwtMugqix',
+		},
+		'ViewTbXntlcwohNsxogn': {
+			'elem': <ViewTbXntlcwohNsxogn />,
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbXntlcwohNsxogn',
 		},
 		'ViewTbXntlcwohUzlwbg': {
 			'elem': <ViewTbXntlcwohUzlwbg />,
@@ -363,15 +447,20 @@ const componentMap: IComponentMap = {
 			'type': 'view',
 			'path': 'app/ilzpxj/view/PrefabMenuEdit',
 		},
-		'Dashboard': {
-			'elem': <Dashboard />,
+		'Agentpurchasepricing': {
+			'elem': <Agentpurchasepricing />,
 			'type': 'hub',
-			'path': 'app/ilzpxj/hub/Dashboard',
+			'path': 'app/ilzpxj/hub/Agentpurchasepricing',
 		},
-		'MchElecPrice': {
-			'elem': <MchElecPrice />,
-				'type': 'hub',
-				'path': 'app/ilzpxj/hub/MchElecPrice',
+		'Mchelecprice': {
+			'elem': <Mchelecprice />,
+			'type': 'hub',
+			'path': 'app/ilzpxj/hub/Mchelecprice',
+		},
+		'Billcenter': {
+			'elem': <Billcenter />,
+			'type': 'hub',
+			'path': 'app/ilzpxj/hub/Billcenter',
 		},
 };
 

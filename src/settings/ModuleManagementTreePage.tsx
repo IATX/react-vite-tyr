@@ -12,6 +12,7 @@ interface DataNode {
   key: string;
   isLeaf?: boolean;
   children?: DataNode[];
+  moduleId?: string;
 }
 
 interface TreeNodeWithParent extends DataNode {
@@ -47,6 +48,7 @@ const ModuleManagementTree = forwardRef<ModuleTreeRef, ModuleManagementTreeProps
     title: string,
     parentId?: string,
     parentName?: string,
+    moduleId?: string
   } | null>(null);
 
   const [popoverVisible, setPopoverVisible] = useState(false);
@@ -241,6 +243,8 @@ const ModuleManagementTree = forwardRef<ModuleTreeRef, ModuleManagementTreeProps
       const title = clickedNode?.title?.toString() || '';
       const key = clickedNode?.key?.toString() || '';
       const isLeaf = clickedNode?.isLeaf ?? true;
+      const moduleId = clickedNode?.moduleId?.toString() || '';
+
 
       setCurrentSelectedNode({
         'title': title,
@@ -248,6 +252,7 @@ const ModuleManagementTree = forwardRef<ModuleTreeRef, ModuleManagementTreeProps
         'isLeaf': isLeaf,
         'parentId': clickedNode.parent?.key || '',
         'parentName': clickedNode.parent?.title || '',
+        'moduleId': moduleId
       });
 
       const { clientX, clientY } = info.nativeEvent;

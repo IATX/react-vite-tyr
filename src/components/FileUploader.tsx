@@ -451,8 +451,9 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                                 accept="*"
                             />
                             <CloudUploadIcon className="text-gray-400 text-6xl mb-4" />
-                            <Typography variant="body1" className="text-gray-500">
-                                {t('uploader.drapdrop')} {t('common.or')} 
+                            <Typography variant="body1" className="text-sm text-gray-500 flex justify-center items-center gap-2">
+                                <span>{t('uploader.drapdrop')}</span>
+                                <span>{t('common.or')}</span> 
                                 <Tooltip title={label} arrow>
                                     <Button
                                         size="small"
@@ -462,7 +463,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                                     </Button>
                                 </Tooltip>
                             </Typography>
-                            <Typography variant="body1" className="text-gray-500">
+                            <Typography variant="body1" className="text-sm text-gray-500">
                                 {t('uploader.filetypes')}{t('common.comma')}{t('uploader.upto')} {maxFileSizeMB}MB{t('common.comma')}{t('uploader.upto')} {maxFiles}{t('uploader.files')}
                             </Typography>
                         </Paper>

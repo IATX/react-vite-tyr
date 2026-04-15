@@ -33,7 +33,8 @@ export type IHub = {
   id: string;
   label: string;
   subtitle: string;
-  icon?: React.ReactNode;
+  url: string;
+  icon?: React.ElementType<SvgIconProps>;
 }
 
 /**

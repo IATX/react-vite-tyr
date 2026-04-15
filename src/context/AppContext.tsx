@@ -11,13 +11,11 @@ import componentMap from '../app/ComponentMap';
 import SettingsPage from '../pages/SettingsPage.tsx';
 import HomePage from '../HomePage';
 import AppTrayPage, { type BayContentProp } from '../pages/AppTrayPage.tsx';
-import DashboardForm from '../app/ilzpxj/hub/DashboardForm.tsx';
+import DashboardForm from '../app/ilzpxj/hub/Dashboard.tsx';
 import LoginPage from '../LoginPage';
 import NotFoundPage from '../pages/PageNotFound';
 import UnauthorizedPage from '../pages/UnauthorizedPage.tsx';
 import PrivateRoute from '../components/PrivateRoute.tsx';
-
-import MchElecPrice from '../app/ilzpxj/hub/MerchantElectricPriceForm.tsx';
 
 import SubtitlesOutlinedIcon from '@mui/icons-material/SubtitlesOutlined';
 import LaptopWindowsOutlinedIcon from '@mui/icons-material/LaptopWindowsOutlined';
@@ -31,7 +29,31 @@ import { useNavigate } from 'react-router-dom';
 import { SessionManager } from '../authority/SessionManager.tsx';
 import MainPage from '../pages/MainPage.tsx';
 
-import { Dashboard, Storefront} from "@mui/icons-material";
+/**
+ * 菜单项接口（支持递归嵌套）
+ */
+export interface MenuDataItem {
+  id: string;
+  name: string;
+  descr: string;
+  url: string;
+  icon: string;
+  sort: string;
+  moduleId?: string; // 子菜单会有这个属性
+  component: string | null;
+  // 递归定义：菜单下面还可以有子菜单
+  menus: MenuDataItem[];
+}
+
+export interface HubItem {
+  id: string;
+  name: string;
+  descr: string;
+  url: string;
+  icon: string;
+  sort: string;
+  component: string | null;
+}
 
 // Define the context data type
 interface IAppContext {
@@ -81,6 +103,7 @@ const listModuleAndMenus = (menuList: any, routeArr: IRouteData[]): IMenu[] => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   menuList.forEach((menu: any) => {
+
     const menuItem = {
       icon: CodeOutlinedIcon,
       label: menu.name,
@@ -147,7 +170,6 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         { path: 'trays', element: <PrivateRoute><AppTrayPage /></PrivateRoute> },
         { path: 'dashboard', element: <PrivateRoute><DashboardForm /></PrivateRoute> },
         { path: 'settings', element: <PrivilegeRoute><SettingsPage /></PrivilegeRoute> },
-        { path: 'elecpricing', element: <PrivilegeRoute><MchElecPrice /></PrivilegeRoute> },
       ]
     },
     { path: '*', element: <NotFoundPage /> },
@@ -170,7 +192,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchDynamicRoutes = async (str: string) => {
     if (processingTokenRef.current === str) return;
-    
+
     const menuArr: IMenu[] = [];
     const hubArr: IHub[] = [];
 
@@ -191,7 +213,8 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         setAppRoutes(defaultRoutes);
       } else {
         const accUser = SessionManager.transform(res.data.data.user);
-        const modules = res.data.data.modules;
+        const modules = res.data.data.modules.modules;
+        const hubs = res.data.data.modules.hubs;
 
         // Set the session content twice to prevent the state from being lost due to a browser refresh (avoiding storing too much session content in localstorage).
         if (SessionManager.isGuest(user)) {
@@ -199,11 +222,11 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        modules.forEach((module: any) => {
-          const moduleRoute = {
+        modules?.forEach((module: MenuDataItem) => {
+          const moduleRoute: IRouteData = {
             name: module.name,
             path: '',
-            component: module.component,
+            component: module.component || undefined,
             children: []
           };
 
@@ -228,6 +251,34 @@ export default function AppProvider({ children }: { children: ReactNode }) {
           });
         });
 
+        hubs?.forEach((hub: HubItem) => {
+          const hubRoute: IRouteData = {
+            name: hub.name,
+            path: '',
+            component: hub.component || undefined,
+          };
+
+          if (hub.url != '') {
+            try {
+              const hubUrlObj = JSON.parse(hub.url);
+
+              hubRoute.path = hubUrlObj.url.replace(/\./g, "/");
+            } catch (error) {
+              hubRoute.path = hub.url;
+            }
+
+            appRouteArr.push(hubRoute);
+          }
+
+          hubArr.push({
+            id: hub.id,
+            label: hub.name,
+            subtitle: hub.descr,
+            url: hubRoute.path,
+            icon: LaptopWindowsOutlinedIcon
+          });
+        });
+
         if (SessionManager.isAdmin(accUser)) {
           menuArr.push(getTranslatedSettingsModule());
         }
@@ -244,21 +295,6 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         setAppRoutes(allRoutes);
 
         setAppMenus(menuArr);
-
-        // 待实现的hub功能加载过程，由后端返回hub功能页面定义参数，此处先mock测试数据。。
-        hubArr.push({
-          id: 'Dashboard',
-          label: '数据看板',
-          subtitle: '数据可视化总览',
-          icon: <Dashboard />
-        });
-
-        hubArr.push({
-          id: 'MchElecPrice',
-          label: '商户电价管理',
-          subtitle: '商户信息维护和电价方案配置',
-          icon: <Storefront />
-        });
 
         setAppHubs(hubArr);
       }
@@ -299,7 +335,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
       }
     } else {
       // 处理没 token 的逻辑...
-      processingTokenRef.current = null; 
+      processingTokenRef.current = null;
       setLoading(false);
     }
   }, [token, fetchDynamicRoutes]);

@@ -3166,7 +3166,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 									className={submitStyle}>
 									{t('page.submit')}
 								</button>
-								{formData.pkJkywwxtl !== '' && (
+								{/*formData.pkJkywwxtl !== '' && (
 									<Tooltip title="数据如有修改，请先提交表单后再生成结算单！" arrow placement="top-start">
 										<button
 											disabled={disabledAction}
@@ -3179,7 +3179,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 											生成结算单
 										</button>
 									</Tooltip>
-								)}
+								)*/}
 							</>
 						)}
 					</div>

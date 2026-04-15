@@ -21,7 +21,7 @@ const axiosRequester = (cfg: RequesterConfigInterface) => {
 
             if (cfg.useWhat == 'form') {
                 headers['Content-Type'] = 'multipart/form-data';
-            } else if (cfg.useWhat = 'json') {
+            } else if (cfg.useWhat == 'json') {
                 headers['Content-Type'] = 'application/json';
             }
 
@@ -103,7 +103,7 @@ class RequesterConfigImpl implements RequesterConfigInterface {
 
         if (this.useWhat == 'form') {
             this.headers['Content-Type'] = 'multipart/form-data';
-        } else if (this.useWhat = 'json') {
+        } else if (this.useWhat == 'json') {
             this.headers['Content-Type'] = 'application/json';
         }
 

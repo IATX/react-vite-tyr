@@ -58,7 +58,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const navigate = useNavigate();
 	
 	const isViewReadOnly = readOnly ?? false;
-	const from =  state?.from ?? '/main';
+	const from =  state?.from;
 	const fromData = state?.initialData;
 
 	const { showAlert } = useAlert();

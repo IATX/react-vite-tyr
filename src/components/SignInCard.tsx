@@ -8,12 +8,10 @@ import FormControl from '@mui/material/FormControl';
 import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
+import { styled, ThemeProvider } from '@mui/material/styles';
 import axiosRequester, { requesterConfig } from './AxiosRequester';
 import { useSession } from '../authority/SessionContext';
 import { useAlert } from '../components/AlertContext';
-
-import RivetIcon from './../assets/rivet.svg';
 
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -26,59 +24,16 @@ import AccountInput from './AccountInput';
 
 import { useTranslation } from 'react-i18next';
 
+import CodeInput from './CodeInput';
+
+import EpbpIcon from '../app/ilzpxj/assets/EpbpIcon';
 import theme from '../theme/tyr';
-import { ThemeProvider } from '@mui/material/styles';
-
-const Card = styled(MuiCard)(({ theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignSelf: 'center',
-    width: '100%',
-    padding: theme.spacing(4),
-    gap: theme.spacing(2),
-
-    // --- 核心改动：背景、边框与阴影的微调 ---
-    bgcolor: '#f8fafc', // 使用极浅的蓝灰色（类似 Tailwind 的 slate-50），比纯白更高级
-    border: '1px solid',
-    borderColor: '#fff', // 边框比背景色稍深一点点，形成精致的边界
-    boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.05)', // 更加克制的阴影
-
-    [theme.breakpoints.up('sm')]: {
-        width: '450px',
-    },
-
-    // --- 深色模式适配 ---
-    ...theme.applyStyles('dark', {
-        bgcolor: '#0f172a', // 深蓝色底色
-        borderColor: '#1e293b',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-    }),
-}));
-
-const StyledTextField = styled(TextField)({
-    '& .MuiOutlinedInput-root': {
-        borderRadius: '.375rem',
-        backgroundColor: '#fff',
-        // 悬浮时的边框
-        '&:hover': {
-            borderColor: '#9e9e9e',
-        },
-        // 聚焦时的边框
-        '&.Mui-focused': {
-            borderColor: 'hsl(210, 98%, 48%)',
-            outline: '1px solid hsl(210, 98%, 48%);'
-        },
-    },
-});
-
 
 
 const SignInCard: React.FC = () => {
     const { t } = useTranslation();
 
     const accApiUrl = import.meta.env.VITE_JET_ASP_ACC_API;
-
-    const BASE_PATH = import.meta.env.VITE_JET_ASP_CONTEXT || '/';
 
     const { showAlert } = useAlert();
 
@@ -256,21 +211,35 @@ const SignInCard: React.FC = () => {
 
     return (
         <>
+            <ThemeProvider theme={theme}>
+                <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+                    <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+                        <EpbpIcon className="mx-auto h-10 w-auto m-8"></EpbpIcon>
+                        
+                        <div className="flex items-center w-full gap-3 mt-2">
+                            {/* 左侧横线 */}
+                            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-blue-100" />
 
-            <Card variant="outlined" sx={{
-            }}>
-                <a href={BASE_PATH}><img src={RivetIcon} width={110} height={40} className='mb-4' /></a>
-                <p className="font-semibold text-xl">{t('system.signinhint')}</p>
-                <ThemeProvider theme={theme}>
-                    <Box
-                        component="form"
-                        onSubmit={handleSubmit}
-                        noValidate
-                    >
-                        <Grid container spacing={2}>
-                            <Grid size={{ xs: 12, md: 12 }}>
-                                <FormControl sx={{ width: '100%', height: '80px' }}>
-                                    <FormLabel htmlFor="logid">{t('system.account')}</FormLabel>
+                            {/* 副标题文字 */}
+                            <Typography
+                                className="text-sm text-gray-600 uppercase tracking-widest font-medium shrink-0"
+                            >
+                                {/* 建议这里写一个简短的英文或 Slogan */}
+                                {t('system.signinhint')}
+                            </Typography>
+
+                            {/* 右侧横线 */}
+                            <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-blue-100" />
+                        </div>
+                    </div>
+
+                    <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+                        <form method="POST" onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label htmlFor="logid" className="block text-sm/6 font-medium text-slate-900">
+                                    {t('system.account')}
+                                </label>
+                                <div className="mt-2">
                                     <AccountInput
                                         error={errors.logid}
                                         helperText={errors.logid ? t('validation.signin.accounterror') : ''}
@@ -281,19 +250,21 @@ const SignInCard: React.FC = () => {
                                         placeholder={t('system.accountplaceholder')}
                                         autoComplete="logid"
                                         disabled={isLoading}
-                                        required
                                         autoFocus
                                         fullWidth
                                         variant="outlined"
                                         color={errors.logid ? 'error' : 'primary'}
                                     ></AccountInput>
-                                </FormControl>
-                            </Grid>
-                            <Grid size={{ md: 12 }}>
-                                <FormControl sx={{ width: '100%', height: '80px' }}>
-                                    <FormLabel htmlFor="logid">{t('system.password')}
-                                    </FormLabel>
+                                </div>
+                            </div>
 
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <label htmlFor="pwd" className="block text-sm/6 font-medium text-gray-900">
+                                        {t('system.password')}
+                                    </label>
+                                </div>
+                                <div className="mt-2">
                                     <PasswordInput
                                         error={errors.pwd}
                                         helperText={errors.pwd ? t('validation.signin.pwderror') : ''}
@@ -304,63 +275,72 @@ const SignInCard: React.FC = () => {
                                         placeholder={t('system.pwdplaceholder')}
                                         autoComplete="pwd"
                                         disabled={isLoading}
-                                        required
                                         fullWidth
                                         variant="outlined"
                                         color={errors.pwd ? 'error' : 'primary'}
                                     ></PasswordInput>
-                                </FormControl>
-                            </Grid>
-                            <Grid size={{ xs: 8, md: 8 }}>
-                                <FormControl sx={{ width: '100%', height: '80px' }}>
-                                    <Box sx={{ display: { xs: 'flex', flexDirection: 'column' }, width: '100%' }}>
-                                        <FormLabel htmlFor="checkCode">{t('system.verificationcode')}</FormLabel>
-                                    </Box>
-                                    <StyledTextField
-                                        error={errors.checkCode}
-                                        helperText={errors.checkCode ? t('validation.signin.codeerror') : ''}
-                                        placeholder="******"
-                                        type="text"
-                                        id="checkCode"
-                                        name="checkCode"
-                                        value={formData.checkCode}
-                                        onChange={changeInputs}
-                                        autoComplete=""
-                                        disabled={isLoading}
-                                        required
-                                        fullWidth
-                                        variant="outlined"
-                                        color={errors.checkCode ? 'error' : 'primary'}
-                                    />
-                                </FormControl>
-                            </Grid>
-                            <Grid size={{ md: 4 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <FormLabel htmlFor="checkCode">&nbsp;</FormLabel>
-                                </Box>
-                                <CheckCodeImage></CheckCodeImage>
-                            </Grid>
-                            <Grid size={{ xs: 12 }}><Button type="submit" fullWidth onClick={validateInputs} disabled={isLoading} className='text-white bg-blue-500 hover:bg-blue-400'>
-                                {t('system.signin')}
-                            </Button>
-                            </Grid>
-                            <Grid size={{ xs: 12 }}>
-                                <Typography sx={{ textAlign: 'center' }}>
-                                    <span>
-                                        <Link
-                                            href={BASE_PATH}
-                                            variant="body2"
-                                            sx={{ alignSelf: 'center' }}
-                                        >
-                                            {t('system.backhome')}
-                                        </Link>
-                                    </span>
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    </Box>
-                </ThemeProvider>
-            </Card>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <label htmlFor="checkCode" className="block text-sm/6 font-medium text-gray-900">
+                                        {t('system.verificationcode')}
+                                    </label>
+                                </div>
+
+                                <div className="mt-2 flex flex-col gap-1">
+                                    <div className="flex items-start gap-3">
+                                        <div className="relative flex-1">
+                                            <CodeInput
+                                                error={errors.checkCode}
+                                                helperText={errors.checkCode ? t('validation.signin.codeerror') : ''}
+                                                id="checkCode"
+                                                name="checkCode"
+                                                value={formData.checkCode}
+                                                onChange={changeInputs}
+                                                placeholder={``}
+                                                autoComplete="pwd"
+                                                disabled={isLoading}
+                                                fullWidth
+                                                variant="outlined"
+                                                color={errors.checkCode ? 'error' : 'primary'}
+                                            ></CodeInput>
+                                        </div>
+
+                                        <div className="shrink-0 h-[38px] w-32 overflow-hidden rounded-lg transition-colors cursor-pointer flex items-center justify-start">
+                                            <CheckCodeImage />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <button
+                                    type="submit"
+                                    onClick={validateInputs}
+                                    disabled={isLoading}
+                                    className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm/6 text-white hover:bg-blue-500 focus-visible:outline-2 
+                                    focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-70"
+                                >
+                                    {isLoading ? '登录验证过程中...' : t('system.signin')}
+                                </button>
+                            </div>
+                        </form>
+
+                        <p className="mt-10 text-center text-sm/6 text-slate-400">
+                            <a href="#" className="text-blue-600 hover:text-blue-500" onClick={(e) => {
+                                e.preventDefault();
+
+                                navigate('/');
+                            }}>
+                                {t('system.backhome')}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </ThemeProvider>
+
             {isLoading && (
                 <Box
                     sx={{
@@ -378,4 +358,4 @@ const SignInCard: React.FC = () => {
     );
 }
 
-export default React.memo(SignInCard);
+export default SignInCard;

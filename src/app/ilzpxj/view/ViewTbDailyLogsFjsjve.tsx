@@ -7,11 +7,12 @@ import { FetchPreloadPkId } from '../../../components/FilePreloadPkId';
 import { useAlert } from '../../../components/AlertContext';
 import { useSession } from '../../../authority/SessionContext';
 import SimpleConfirmDialog from '../../../components/SimpleConfirmDialog';
+import { useTranslation } from 'react-i18next';
 import theme from '../../../theme/tyr';
 
 import { ThemeProvider } from '@mui/material/styles';
 
-import { FormControl, FormControlLabel, FormHelperText, MenuItem, Radio, Checkbox, RadioGroup, Select, TextField, type SelectChangeEvent, FormGroup, InputAdornment, Box, CircularProgress } from '@mui/material';
+import { FormControl, FormControlLabel, FormHelperText, MenuItem, Radio, Checkbox, RadioGroup, Select, TextField, type SelectChangeEvent, FormGroup, InputAdornment, Typography, Box, CircularProgress, ButtonGroup, Button } from '@mui/material';
 
 import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -19,6 +20,12 @@ import type { DateValidationError } from '@mui/x-date-pickers/models';
 
 import axios from 'axios';
 
+import InsertBeforeIcon from '@mui/icons-material/KeyboardArrowUpRounded';
+import InsertNextIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import AddIcon from '@mui/icons-material/AddCircleRounded';
+import EditIcon from '@mui/icons-material/EditRounded';
+import DeleteIcon from '@mui/icons-material/DeleteRounded';
+import CancelIcon from '@mui/icons-material/CancelRounded';
 import PhoneIcon from '@mui/icons-material/LocalPhoneRounded';
 import CurrencyPoundRounded from '@mui/icons-material/CurrencyPoundRounded';
 import CurrencyYenOutlinedIcon from '@mui/icons-material/CurrencyYenOutlined';
@@ -33,29 +40,31 @@ import TreeIcon from '@mui/icons-material/AccountTreeOutlined';
 import TreeSelectInput from '../../../components/TreeSelectInput';
 import type { DataNode } from 'antd/es/tree';
 import InputWithList from '../../../components/QuerySelectInput';
-
-import { useTranslation } from 'react-i18next';
+import { RowInputRenderer, type ColumnConfig } from '../../../components/RowInputRenderer';
 
 // Update your component props type to use this interface.
 interface ViewPageProps<T> {
+	readOnly?:boolean;
 	initialData?: T;
 	onSave?: (data: any) => void;
 	onSubmit?: (data: any) => void;
 	onCancel?: (data: any) => void;
 }
 
-export default function ViewPage<T extends object = { [key: string]: any }>({ initialData, onSave, onSubmit, onCancel }: ViewPageProps<T>) {
+export default function ViewPage<T extends object = { [key: string]: any }>({ readOnly, initialData, onSave, onSubmit, onCancel }: ViewPageProps<T>) {
+	const { t } = useTranslation();
 	const location = useLocation();
   	const { state } = location; 
 	const navigate = useNavigate();
 	
-	const from = state?.from;
+	const isViewReadOnly = readOnly ?? false;
+	const from =  state?.from ?? '/main';
 	const fromData = state?.initialData;
 
-	 const { showAlert } = useAlert();
-	 const { token, isAuthenticated } = useSession();
-	 const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
-	 const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
+	const { showAlert } = useAlert();
+	const { token, isAuthenticated } = useSession();
+	const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
+	const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
 	const [disabledAction, setDisabledAction] = useState(false);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -64,39 +73,52 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 	const groupCardStyle = "border-b border-gray-900/10 pb-12 mx-auto max-w-2xl";
 	const groupTitleStyle = "text-base/7 font-semibold text-gray-900";
 	const groupDescriptionStyle = "mt-1 text-sm/6 text-gray-600";
-	const groupContentStyle = "mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6";
-	const oneColumnStyle = "sm:col-span-3";
-	const oneRowStyle = "col-span-full sm:col-span-6";
+	const groupContentStyle = "mt-6 grid grid-cols-1 gap-x-6 gap-y-8";
+	const listFitCardStyle = "border-b border-gray-900/10 pb-12 mx-auto w-fit";
+	const listCardStyle = "border-b border-gray-900/10 pb-12 mx-auto max-w-2xl";
+	const tableStyle = "w-full table-fixed border-collapse text-sm";
+	const tableCaptionStyle = "caption-top text-left pb-6 text-base/7 font-semibold text-gray-900";
+	const tableThStyle = "border border-gray-200 bg-gray-50 h-[53px] text-center font-medium currentColor dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200";
+	const tableTbodyStyle = "bg-white dark:bg-gray-800";
+	const tableTdStyle = "border border-gray-200 h-[53px] text-center text-gray-900 dark:border-gray-600 dark:text-gray-400";
+	const oneColumnStyle = "";
+	const oneRowStyle = "col-span-full";
 	const labelStyle = "block text-sm/6 font-medium text-gray-900";
 	const uploadStyle = "mt-2 flex justify-center";
 	const errorStyle = "mt-2 text-sm text-red-600";
 	const submitStyle = "rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 	const cancelStyle = "rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold shadow-xs hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600";
 		
-  	    		const kptvdssb_fileUploaderRef = useRef<FileUploaderHandles | null>(null);
+  	    		const taskFiles_fileUploaderRef = useRef<FileUploaderHandles | null>(null);
 	
 	// Managing form data and validation errors with useState
 	const [formData, setFormData] = useState(() => {
 		const defaultData = {
-			        		imokbsia: '',
-	    	pkStybmjgd: '',
-		    		'TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId': '',
-	    	tableViewOPTMode: 'submit'
+			        		taskTitle: '',
+			        		taskTime: '',
+			        		taskStatusId: '',
+			        		taskDescr: '',
+			        		taskUserName: '',
+			        		taskUserId: '',
+			        		taskAuditStatus: '0',
+	    	pkTask: '',
+		    		'TB_DAILY_LOGS_org.limp.basework.impl.PreloadFakeId': '',
+	    	tableViewOPTMode: 'submit',
+	    	formDataBin:{}
     	}
     	
     	// Merge the incoming data with the default data
 		return { ...defaultData, ...initialData, ...fromData};
     });
     
+    
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const fieldRefs = useRef<Record<string, HTMLElement>>({});
     
-	const { t } = useTranslation();
-
     useEffect(() => {
 		// This effect will run whenever initialData changes
-		if (formData.pkStybmjgd !== '') {
-			axios.post(bpcApiUrl + '/tableview/queryformdata/view_tb_stybmjgd_ruiowc/' + formData.pkStybmjgd, {}, {
+		if (formData.pkTask !== '') {
+			axios.post(bpcApiUrl + '/tableview/queryformdata/view_tb_daily_logs_fjsjve/' + formData.pkTask, {}, {
 				headers: {
 					'Content-Type': 'application/json',
 					'grooveToken': token
@@ -129,9 +151,9 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 		      async function loadGlobalId() {
 		        
 		        try {
-		          const result = await FetchPreloadPkId(token, 'view_tb_stybmjgd_ruiowc', formData['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId']);
+		          const result = await FetchPreloadPkId(token, 'view_tb_daily_logs_fjsjve', formData['TB_DAILY_LOGS_org.limp.basework.impl.PreloadFakeId']);
 		          
-			    		setFormData((prevData: any) => ({ ...prevData, ['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId']: result['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId'] }));
+			    		setFormData((prevData: any) => ({ ...prevData, ['TB_DAILY_LOGS_org.limp.basework.impl.PreloadFakeId']: result['TB_DAILY_LOGS_org.limp.basework.impl.PreloadFakeId'] }));
 		        } catch (error) {
 		          if (error instanceof Error) {
 						const wrapError = error as { response?: { status: number, data: any } };
@@ -377,8 +399,18 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 	}
 	
 	const validationRules = {
-			    "kptvdssb": () => {
-			      const isFileUploaderValid = kptvdssb_fileUploaderRef.current?.validate();
+		    	"taskTitle": (value: any) => {
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			
+			      return '';
+			    },
+		    	"taskStatusId": (value: any) => {
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			
+			      return '';
+			    },
+			    "taskFiles": () => {
+			      const isFileUploaderValid = taskFiles_fileUploaderRef.current?.validate();
 			      if (!isFileUploaderValid)  return "File is required.";
 			
 			      return '';
@@ -415,34 +447,33 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 
 		return trimmedObj;
 	};
+	
 	const [isLoading, setIsLoading] = useState(false);
 	const submitFormData = () => {
 		setDisabledAction(true);
 		setIsLoading(true);
-	      axios.post(bpcApiUrl + '/tableview/remixjsondata/view_tb_stybmjgd_ruiowc', trimObjectValues(formData), {
+		
+	      axios.post(bpcApiUrl + '/tableview/remixjsondata/view_tb_daily_logs_fjsjve', trimObjectValues(formData), {
 	        headers: {
 	          'grooveToken': token
 	        }
 	      }).then(response => {
 	    	if (response.data && response.data.success) {
-	    		
-
-				setFormData((prevData: any) => ({
+	    		setFormData((prevData: any) => ({
 					...prevData,
-					pkStybmjgd: response.data.data.pkStybmjgd,
+					pkTask: response.data.data.pkTask,
 				}));
 	    	
 	      		const jsonData = { ...formData };
-				
 	
-				showAlert('文件已上传解析，稍后请查看账单数据。', 'success');
+				showAlert('Operation successfully.', 'success');
 	
 				onSubmit?.(jsonData);
-
-				navigate(from);
-	        } else {
-	          showAlert('Server returned invalid data.', 'error');
-	        }
+	        } else if(response.data && !response.data.success) {
+				showAlert(response.data.message, 'error');
+			} else {
+				showAlert('Server returned invalid data.', 'error');
+			}
 	      }).catch(error => {
 	        if (error instanceof Error) {
 				const wrapError = error as { response?: { status: number, data: any } };
@@ -466,11 +497,25 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 		
         const newErrors: { [key: string]: string } = {};
         
-				    		if (validationRules["kptvdssb"]) {
-						    	const errorMsg = validationRules["kptvdssb"]();
+					    	if (validationRules["taskTitle"]) {
+						    	const errorMsg = validationRules["taskTitle"](formData.taskTitle);
 						
 								if (errorMsg != '') {
-						    		newErrors["kptvdssb"] = errorMsg;
+						    		newErrors["taskTitle"] = errorMsg;
+						    	}
+						    }
+					    	if (validationRules["taskStatusId"]) {
+						    	const errorMsg = validationRules["taskStatusId"](formData.taskStatusId);
+						
+								if (errorMsg != '') {
+						    		newErrors["taskStatusId"] = errorMsg;
+						    	}
+						    }
+				    		if (validationRules["taskFiles"]) {
+						    	const errorMsg = validationRules["taskFiles"]();
+						
+								if (errorMsg != '') {
+						    		newErrors["taskFiles"] = errorMsg;
 						    	}
 						    }
     	
@@ -504,31 +549,34 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
         <>
             {/* Main Content */}
             <ThemeProvider theme={theme}>
-                 <form id="form_view_tb_stybmjgd_ruiowc" onSubmit={handleSubmit}>
+                 <form id="form_view_tb_daily_logs_fjsjve" onSubmit={handleSubmit}>
                     <div className="space-y-12">
       					    	<div className={groupCardStyle}>
-		                            <h2 className={groupTitleStyle}>电费账单导入</h2>
+		                            <h2 className={groupTitleStyle}>工作内容</h2>
 		                            <p className={groupDescriptionStyle}>
 		                                
 		                            </p>
-		                            <div className={groupContentStyle}>
-			<div className={'hidden'}>
-	            <label htmlFor="tb_stybmjgd_imokbsia" className={labelStyle}>
-	                标题
+		                            <div className={groupContentStyle + ` sm:grid-cols-2`}>
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_daily_logs_taskTitle" className={labelStyle}>
+	                任务标题
 	            </label>
 	            <div className="mt-2">
+	            {isViewReadOnly ? (
+	            	<Typography variant="body2" gutterBottom>{formData.taskTitle || ''}</Typography>
+	            ) : (
 	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['imokbsia'] = el;
+													if (el) fieldRefs.current['taskTitle'] = el;
 												}}>
 		              <TextField
-		                    id="tb_stybmjgd_imokbsia"
-		                    name="imokbsia"
-		                    value={formData.imokbsia || ''}
+		                    id="tb_daily_logs_taskTitle"
+		                    name="taskTitle"
+		                    value={formData.taskTitle || ''}
 		                    onChange={handleInputChange}
 		                    size="small"
 		                    variant="outlined"
-		                    error={errors.imokbsia ? true : false}
-		                    helperText={errors.imokbsia}
+		                    error={errors.taskTitle ? true : false}
+		                    helperText={errors.taskTitle}
 		                    slotProps={{
 					            input: {
 					                
@@ -539,53 +587,202 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 					          }}
 		                  />
 	              </FormControl>
+	              )}
 			     </div>
 	        </div>
-			<div className={oneRowStyle}>
-			    <label htmlFor="tb_stybmjgd_kptvdssb" className={labelStyle}>
-			       请选择文件
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_daily_logs_taskTime" className={labelStyle}>
+	                执行时间
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{new Date(formData.taskTime).toLocaleDateString() || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['taskTime'] = el;
+												}}>
+		               <DatePicker
+                          name="taskTime"
+                          format="YYYY-MM-DD"
+                          value={formData.taskTime ? dayjs(formData.taskTime) : null}
+                          views={['year', 'month', 'day']}
+                          onChange={(newValue: Dayjs | null)=> handleDateChange('taskTime', newValue)}
+                          sx={{
+                            '.Mui-focused': {
+                               borderColor: 'oklch(54.6% 0.245 262.881) !important',
+                            },
+                            '& .Mui-focused .MuiPickersOutlinedInput-notchedOutline': {
+                              borderColor: 'oklch(54.6% 0.245 262.881) !important',
+                            },
+                            '& .MuiPickersOutlinedInput-notchedOutline': {
+                              borderRadius: '.375rem',
+                              borderColor: 'oklch(87.2% 0.01 258.338)'
+                            },
+                            '&:hover .MuiPickersOutlinedInput-notchedOutline': {
+                              borderColor: 'oklch(70.7% 0.022 261.325) !important',
+                            },
+                            '& .MuiPickersSectionList-root': {
+                              padding: '8px 0',
+                              height: '35px'
+                            },
+                            '& .MuiSvgIcon-root': {
+                              height: '18px',
+                              width: '18px'
+                            }
+                          }}
+                          onError={(newError) => handleDateError('transactionDate', newError)}
+                          slotProps={{
+                            popper: {
+                              sx: {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                boxShadow: 'unset !important',
+                                marginTop: '5px !important',
+                                '& .MuiPaper-root': {
+                                  boxShadow: 'unset !important',
+                                  border: '1px solid oklch(87.2% 0.01 258.338)'
+                                },
+                              },
+                            },
+                            textField: {
+                              id: 'tb_daily_logs_taskTime',
+                              error: !!errors['taskTime'],
+                              helperText: errors['taskTime'],
+                            },
+                          }}
+                       />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>       
+	    	<div className={oneColumnStyle}>
+	            <label htmlFor="tb_daily_logs_taskStatusId" className={labelStyle}>
+	                执行状态
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.taskStatusId || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth size="small"
+	               error={!!errors['taskStatusId']}
+	               ref={(el) => {
+						if (el) fieldRefs.current['taskStatusId'] = el;
+					}}
+	               >
+                      <RadioGroup
+					        row
+					        aria-labelledby="taskStatusId-row-radio-buttons-group-label"
+					        name="taskStatusId"
+					        value={formData.taskStatusId}
+							onChange={(e) => { handleRadioChange(e, [{'id':'Pending','name':'准备中'},{'id':'Processing','name':'进行中'},{'id':'Done','name':'已完成'},], 'taskUserName' ) }}
+					      >
+				    	   	   <FormControlLabel value="Pending" control={<Radio />} label="准备中"   />
+				    	   	   <FormControlLabel value="Processing" control={<Radio />} label="进行中"   />
+				    	   	   <FormControlLabel value="Done" control={<Radio />} label="已完成"   />
+					  </RadioGroup>
+                      <FormHelperText>{errors['taskStatusId']}</FormHelperText>
+                    </FormControl>
+                    )}
+			     </div>
+	        </div> 
+	    	<div className={oneColumnStyle}>
+	            <label htmlFor="tb_daily_logs_taskDescr" className={labelStyle}>
+	                任务描述
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.taskDescr || ''}</Typography>
+	            	) : (
+	            	<FormControl fullWidth ref={(el) => {
+						if (el) fieldRefs.current['taskDescr'] = el;
+					}}>
+		               	<TextField
+		                    multiline
+		                    rows={4}
+		                    id="tb_daily_logs_taskDescr"
+		                    name="taskDescr"
+		                    value={formData.taskDescr || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    fullWidth
+		                    variant="outlined"
+		                    error={errors.taskDescr ? true : false}
+		                    helperText={errors.taskDescr}
+		                    slotProps={{
+					            input: {
+					                 
+					              startAdornment: <InputAdornment position="start"><TextareaIcon /></InputAdornment>
+					            },
+					          }}
+		                  />
+	                </FormControl>
+	                )}  
+			     </div>
+	        </div>
+			<div className={oneRowStyle + ` sm:col-span-2`}>
+			    <label htmlFor="tb_daily_logs_taskFiles" className={labelStyle}>
+			        说明文件
 			    </label>
 			    <div className={uploadStyle}>
 	                  <FileUploader
-		                    ref={kptvdssb_fileUploaderRef}
-		                    id="tb_stybmjgd_kptvdssb"
-		                    name="kptvdssb"
-		                    label="Select files upload, up to 10MB, up to 3 files."
-		                    rtn="TB_STYBMJGD"
-		                    rfn="kptvdssb"
-		                    rfpk={formData['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId']}
+		                    ref={taskFiles_fileUploaderRef}
+		                    id="tb_daily_logs_taskFiles"
+		                    name="taskFiles"
+		                    label="DOC, IMAGE, ZIP up to 10MB, up to 5 files"
+		                    rtn="TB_DAILY_LOGS"
+		                    rfn="taskFiles"
+		                    rfpk={formData['TB_DAILY_LOGS_org.limp.basework.impl.PreloadFakeId']}
 		                    cfn={''}
-							maxFiles={3}
-		                    annexFiles={formData['kptvdssb']}
+							maxFiles={5}
+		                    annexFiles={formData['taskFiles']}
 	                  />
                 </div>
 			</div>
+			<input type="hidden" name="taskUserName" placeholder="" value={formData.taskUserName || ''} />
+			<input type="hidden" name="taskUserId" placeholder="" value={formData.taskUserId || ''} />
+			<input type="hidden" name="taskAuditStatus" placeholder="" value={formData.taskAuditStatus || ''} />
 								    </div>
-						       </div>
-					</div>
-					
+						        </div>
+                    </div>	
 					<div className="mt-6 flex items-center justify-end gap-x-6">
-                        <button type="button" disabled={disabledAction} className={cancelStyle}
-                        onClick={() => {
-								if(from) {
-									navigate(from);
-								} else {
-									const jsonData = { ...formData };
-
-									onCancel?.(jsonData);
-								}
-							}}
-                        >
-                        {t('page.cancel')}
-                        </button>
-                        <button
-                        disabled={disabledAction}
-                        type="submit"
-                        className={submitStyle}>
-                        {t('page.submit')}
-                        </button>
+                        {isViewReadOnly ? (
+							<button type="button" disabled={disabledAction} className={cancelStyle}
+	                        onClick={() => {
+									if(from) {
+										navigate(from);
+									} else {
+										const jsonData = { ...formData };
+	
+										onCancel?.(jsonData);
+									}
+								}}
+	                        >
+	                        {t('page.back')}
+	                        </button>
+						) : (
+						<>
+	                        <button type="button" disabled={disabledAction} className={cancelStyle}
+		                        onClick={() => {
+										if(from) {
+											navigate(from);
+										} else {
+											const jsonData = { ...formData };
+		
+											onCancel?.(jsonData);
+										}
+									}}
+		                        >
+		                        {t('page.cancel')}
+	                        </button>
+	                        <button
+		                        disabled={disabledAction}
+		                        type="submit"
+		                        className={submitStyle}>
+		                        {t('page.submit')}
+	                        </button>
+						</>
+						)}
                     </div>
-					{isLoading && (
+                    {isLoading && (
 						<Box 
 							className="absolute inset-0 flex justify-center items-center bg-black/50 z-20 rounded-xl"
 						>
@@ -594,7 +791,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 					)}
 				</form>
 				<SimpleConfirmDialog open={isConfirmOpen} onConfirm={() => {submitFormData();setIsConfirmOpen(false);}} onCancel={() => {setIsConfirmOpen(false)}}>
-					Comfirm submission?
+					{t('page.confirmsubmit')}
 				</SimpleConfirmDialog>
              </ThemeProvider>
         </>

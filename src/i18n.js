@@ -18,7 +18,7 @@ const resources = {
   },
 };
 
-const BASE_PATH = import.meta.env.VITE_JET_ASP_CONTEXT || '';
+const BASE_PATH = import.meta.env.VITE_JET_ASP_CONTEXT || '/';
 const localesLng = import.meta.env.VITE_JET_LOCALES_LNG || 'en';
 
 i18n

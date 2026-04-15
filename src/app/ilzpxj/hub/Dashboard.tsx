@@ -133,8 +133,8 @@ export default function DashboardForm() {
 
   useEffect(() => {
     setBreadcrumbs([{
-      name: 'Dashboard',
-      url: '/main/dashboard'
+      name: '数据看板',
+      url: '/main/trays'
     }]);
   }, []);
 

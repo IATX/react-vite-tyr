@@ -56,15 +56,12 @@ const Item = styled(Paper)(({ theme }) => ({
 // --- Data Types and Service APIs ---
 // -----------------------------
 export interface Data {
-    pkXbbyezwt: number,
-			mrvqpphi: string,
-			bwblkhay: string,
-			ptkfgasa: string,
-			deimigjs: string,
-			xjegvvik: string,
-			qnttkoss: number,
-			columnBirp: string,		
-			pkWzghpmog: number,
+    pkTask: number,
+			taskTitle: string,
+			taskTime: string,
+			taskStatus: string,
+			gpowkfmz: string,
+			taskAuditStatus: number,
 }
 
 export interface ApiResponse<T> {
@@ -139,41 +136,48 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
 
     const columnData: ColumnDataProp[] = [
     			{
-		            id: 'mrvqpphi', label: '户名', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'taskTitle', label: '任务标题', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'bwblkhay', label: '发电户号', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'taskTime', label: '执行时间', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'ptkfgasa', label: '纳税人类型', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'taskStatus', label: '任务执行状态', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'deimigjs', label: '服务单位', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'gpowkfmz', label: 'Create time', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'xjegvvik', label: '电价计算依据', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'taskAuditStatus', label: '审阅状态', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'qnttkoss', label: '电价优惠', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
-		            				},	
-    			{
-		            id: 'columnBirp', label: '状态', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
-		            				},	
-    			{
-		            id: 'pkWzghpmog', label: '电价设置ID', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
-		            				},	
+		            id: 'autosp', label: '操作', minWidth: 150, align: 'center', type: 'autosp', truncate: false, display: true, render: (val: any, rowData: Data, allData: Data[]) => {
+		                return (<>
+		                	<Button size='small' onClick={() => {
+			                    handleEdit(rowData['pkTask' as keyof Data]);
+				        	}}
+				        	sx={{
+	                            textTransform: 'none',
+	                            fontSize: '0.875rem',
+	                        }}>{t('page.edit')}</Button>
+		                    <Button size='small' color="error" onClick={() => {
+		                        handleDelete(rowData['pkTask' as keyof Data]);
+		                    }}
+		                    sx={{
+	                            textTransform: 'none',
+	                            fontSize: '0.875rem',
+	                        }}>{t('page.delete')}</Button>
+		                 </>);
+				     }
+				},
     ];
 
     const [queryData, setQueryData] = useState<Record<string, string>>({
-    		mrvqpphi: props.queryParams?.mrvqpphi ?? '',
-    		bwblkhay: props.queryParams?.bwblkhay ?? '',
-    		fpllerek: props.queryParams?.fpllerek ?? '',
+    		taskTitle: props.queryParams?.taskTitle ?? '',
     });
 
     const [searchConditions, setSearchConditions] = useState<Record<string, string>>({
-    		mrvqpphi: props.queryParams?.mrvqpphi ?? '',
-    		bwblkhay: props.queryParams?.bwblkhay ?? '',
-    		fpllerek: props.queryParams?.fpllerek ?? '',
+    		taskTitle: props.queryParams?.taskTitle ?? '',
     });
 
     // Stores the Chip data to be displayed eventually
@@ -208,7 +212,7 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
             }
         };
 
-        axios.post(VITE_JET_ASP_BPC_API + '/tablequery/listreacttable/query_yagetq', params, {
+        axios.post(VITE_JET_ASP_BPC_API + '/tablequery/listreacttable/query_getoqx', params, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'grooveToken': token
@@ -332,6 +336,78 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         });
     };
     
+    const handleEdit = (val: any) => {
+		if (isInMainArea) {
+            setCurrentBayContent({
+                title: '每天工作完成情况记录表单',
+                subheader: '每天工作完成情况记录表单',
+                elem: Parameterization('ViewTbDailyLogsFjsjve', {
+                    key: 'ViewTbDailyLogsFjsjve',
+                    initialData: {
+                       'pkTask': val
+                    },
+                    onCancel: (formData: any) => {
+                        setCurrentBayContent({
+                            title: '每天工作记录列表',
+                            subheader: '员工每天工作记录列表',
+                            elem: Parameterization('QueryGetoqx', {
+								 page: page,
+                                 pageSize: pageSize,
+                                 queryParams: queryData
+                            }),
+                            type: 'query'
+                        });
+
+                        navigate('/main/trays');
+                    },
+                    onSubmit: (formData: any) => {
+                        setCurrentBayContent({
+                            title: '每天工作记录列表',
+                            subheader: '员工每天工作记录列表',
+                            elem: Parameterization('QueryGetoqx', {
+								 page: page,
+                                 pageSize: pageSize,
+                                 queryParams: queryData
+                            }),
+                            type: 'query'
+                        });
+
+                        navigate('/main/trays');
+                    }
+                }),
+                type: 'view'
+            });
+
+            navigate('/main/trays');
+        } else {
+            navigate('app/ilzpxj/view/ViewTbDailyLogsFjsjve', {
+                state: {
+                    key: 'ViewTbDailyLogsFjsjve',
+                    initialData: {
+                       'pkTask': val
+                    },
+                    onCancel: (formData: any) => {
+                        navigate('app/ilzpxj/query/QueryGetoqx', {
+                			state: {
+                				page: page,
+                                pageSize: pageSize,
+                                queryParams: queryData
+                			}
+                		});
+                    },
+                    onSubmit: (formData: any) => {
+                        navigate('app/ilzpxj/query/QueryGetoqx', {
+                			state: {
+                				page: page,
+                                pageSize: pageSize,
+                                queryParams: queryData
+                			}
+                		});
+                    }
+                }
+            });
+        }
+    }
 
     const handleDelete = async (val: any) => {
         const confirmed = await confirm({
@@ -344,9 +420,9 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         if (confirmed) {
             const formData = new FormData();
 
-            formData.append('pkXbbyezwt', val);
+            formData.append('pkTask', val);
 
-            axios.post(VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/', formData, {
+            axios.post(VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/view_tb_daily_logs_fjsjve', formData, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'grooveToken': token
@@ -369,6 +445,76 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         }
     }
 
+    const qkwehnlHandler = () => {
+    		if (isInMainArea) {
+	            setCurrentBayContent({
+	                title: '每天工作完成情况记录表单',
+	                subheader: '每天工作完成情况记录表单',
+	                elem: Parameterization('ViewTbDailyLogsFjsjve', {
+	                    key: 'ViewTbDailyLogsFjsjve',
+	                    initialData: {
+	                    },
+	                    onCancel: (formData: any) => {
+	                        setCurrentBayContent({
+	                            title: '每天工作记录列表',
+	                            subheader: '员工每天工作记录列表',
+	                            elem: Parameterization('QueryGetoqx', {
+									 page: page,
+	                                 pageSize: pageSize,
+	                                 queryParams: queryData
+	                            }),
+	                            type: 'query'
+	                        });
+	
+	                        navigate('/main/trays');
+	                    },
+	                    onSubmit: (formData: any) => {
+	                        setCurrentBayContent({
+	                            title: '每天工作记录列表',
+	                            subheader: '员工每天工作记录列表',
+	                            elem: Parameterization('QueryGetoqx', {
+									 page: page,
+	                                 pageSize: pageSize,
+	                                 queryParams: queryData
+	                            }),
+	                            type: 'query'
+	                        });
+	
+	                        navigate('/main/trays');
+	                    }
+	                }),
+	                type: 'view'
+	            });
+	
+	            navigate('/main/trays');
+	        } else {
+	            navigate('app/ilzpxj/view/ViewTbDailyLogsFjsjve', {
+	                state: {
+	                    key: 'ViewTbDailyLogsFjsjve',
+	                    initialData: {
+	                    },
+	                    onCancel: (formData: any) => {
+	                        navigate('app/ilzpxj/query/QueryGetoqx', {
+	                			state: {
+	                				page: page,
+	                                pageSize: pageSize,
+	                                queryParams: queryData
+	                			}
+	                		});
+	                    },
+	                    onSubmit: (formData: any) => {
+	                        navigate('app/ilzpxj/query/QueryGetoqx', {
+	                			state: {
+	                				page: page,
+	                                pageSize: pageSize,
+	                                queryParams: queryData
+	                			}
+	                		});
+	                    }
+	                }
+	            });
+	        }
+    }
 
     const open = Boolean(anchorEl);
     const id = open ? 'search-popover' : undefined;
@@ -383,6 +529,25 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
                     alignItems: 'center',
                 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
+                        <Box>
+                        	<Tooltip title="每天工作记录表单" arrow>
+	                            <Button
+	                                variant="outlined"
+	                                startIcon={<AddIcon sx={{ color: 'hsl(210, 100%, 45%);' }} />}
+	                                onClick={qkwehnlHandler}
+	                                aria-describedby={'qkwehnl'}
+	                                size="small"
+	                                sx={{
+	                                    color: 'hsl(215, 15%, 22%)',
+	                                    borderRadius: '12px',
+	                                    border: '1px solid hsl(215, 15%, 89%)',
+	                                    textTransform: 'capitalize'
+	                                }}
+	                            >
+	                                {t('page.add')}
+	                            </Button>
+                            </Tooltip>
+                        </Box>
                         <Box>
                             <Button
                                 variant="outlined"
@@ -418,27 +583,11 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
                                     <Stack spacing={2} sx={{ width: 400 }}>
                                         <Typography className="!text-sm">Enter query conditions</Typography>
 									    	<TextField
-	                                            label="户名"
-	                                            name="mrvqpphi"
+	                                            label="任务标题"
+	                                            name="taskTitle"
 	                                            variant="outlined"
 	                                            size="small"
-	                                            value={queryData.mrvqpphi}
-	                                            onChange={handleSearchInputChange}
-	                                        />
-									    	<TextField
-	                                            label="发电户号"
-	                                            name="bwblkhay"
-	                                            variant="outlined"
-	                                            size="small"
-	                                            value={queryData.bwblkhay}
-	                                            onChange={handleSearchInputChange}
-	                                        />
-									    	<TextField
-	                                            label="电价计算依据"
-	                                            name="fpllerek"
-	                                            variant="outlined"
-	                                            size="small"
-	                                            value={queryData.fpllerek}
+	                                            value={queryData.taskTitle}
 	                                            onChange={handleSearchInputChange}
 	                                        />
                                         <Box className="flex justify-end mt-4">

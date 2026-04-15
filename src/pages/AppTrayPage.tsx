@@ -8,7 +8,7 @@ import { Box } from "@mui/material";
 import React from "react";
 
 import { AppContext } from '../context/AppContext';
-import { WrapRouteFormNode, WrapRouteTableNode, WrapRouteHubNode } from '../components/WrapNode';
+import { WrapRouteFormNode, WrapRouteTableNode, WrapRouteOtherNode, WrapRouteHubNode } from '../components/WrapNode';
 
 type ContentType = 'view' | 'query' | 'hub' | 'other' | 'blank';
 
@@ -38,6 +38,8 @@ export default function AppTrayPage() {
             WrapRouteTableNode(currentBayContent.elem)
           ) : currentBayContent?.type === 'view' ? (
             WrapRouteFormNode(currentBayContent.elem)
+          ) : currentBayContent?.type === 'other' ? (
+            WrapRouteOtherNode(currentBayContent.elem)
           ) : currentBayContent?.type === 'hub' ? (
             WrapRouteHubNode(currentBayContent.elem)
           ) : (

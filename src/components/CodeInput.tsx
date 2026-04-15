@@ -5,11 +5,11 @@ import {
     type TextFieldProps,
 } from '@mui/material';
 
-import PersonIcon from '@mui/icons-material/Person';
+import CodeIcon from '@mui/icons-material/Code';
 
-type AccountInputProps = Omit<TextFieldProps, 'type'>;
+type CodeInputProps = Omit<TextFieldProps, 'type'>;
 
-const AccountInput: React.FC<AccountInputProps> = (props) => {
+const CodeInput: React.FC<CodeInputProps> = (props) => {
     return (
         <TextField
             {...props}
@@ -17,7 +17,7 @@ const AccountInput: React.FC<AccountInputProps> = (props) => {
             slotProps={{
                 input: {
                     startAdornment: (<InputAdornment position="start">
-                        <PersonIcon className='text-sm' />
+                        <CodeIcon className='text-sm' />
                     </InputAdornment>),
                     sx: {
                         fontSize: '0.775rem',
@@ -33,4 +33,4 @@ const AccountInput: React.FC<AccountInputProps> = (props) => {
     );
 };
 
-export default AccountInput;
+export default CodeInput;

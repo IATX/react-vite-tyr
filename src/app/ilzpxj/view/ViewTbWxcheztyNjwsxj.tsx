@@ -7,11 +7,12 @@ import { FetchPreloadPkId } from '../../../components/FilePreloadPkId';
 import { useAlert } from '../../../components/AlertContext';
 import { useSession } from '../../../authority/SessionContext';
 import SimpleConfirmDialog from '../../../components/SimpleConfirmDialog';
+import { useTranslation } from 'react-i18next';
 import theme from '../../../theme/tyr';
 
 import { ThemeProvider } from '@mui/material/styles';
 
-import { FormControl, FormControlLabel, FormHelperText, MenuItem, Radio, Checkbox, RadioGroup, Select, TextField, type SelectChangeEvent, FormGroup, InputAdornment, Box, CircularProgress } from '@mui/material';
+import { FormControl, FormControlLabel, FormHelperText, MenuItem, Radio, Checkbox, RadioGroup, Select, TextField, type SelectChangeEvent, FormGroup, InputAdornment, Typography, Box, CircularProgress, ButtonGroup, Button } from '@mui/material';
 
 import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -19,6 +20,12 @@ import type { DateValidationError } from '@mui/x-date-pickers/models';
 
 import axios from 'axios';
 
+import InsertBeforeIcon from '@mui/icons-material/KeyboardArrowUpRounded';
+import InsertNextIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import AddIcon from '@mui/icons-material/AddCircleRounded';
+import EditIcon from '@mui/icons-material/EditRounded';
+import DeleteIcon from '@mui/icons-material/DeleteRounded';
+import CancelIcon from '@mui/icons-material/CancelRounded';
 import PhoneIcon from '@mui/icons-material/LocalPhoneRounded';
 import CurrencyPoundRounded from '@mui/icons-material/CurrencyPoundRounded';
 import CurrencyYenOutlinedIcon from '@mui/icons-material/CurrencyYenOutlined';
@@ -33,29 +40,31 @@ import TreeIcon from '@mui/icons-material/AccountTreeOutlined';
 import TreeSelectInput from '../../../components/TreeSelectInput';
 import type { DataNode } from 'antd/es/tree';
 import InputWithList from '../../../components/QuerySelectInput';
-
-import { useTranslation } from 'react-i18next';
+import { RowInputRenderer, type ColumnConfig } from '../../../components/RowInputRenderer';
 
 // Update your component props type to use this interface.
 interface ViewPageProps<T> {
+	readOnly?:boolean;
 	initialData?: T;
 	onSave?: (data: any) => void;
 	onSubmit?: (data: any) => void;
 	onCancel?: (data: any) => void;
 }
 
-export default function ViewPage<T extends object = { [key: string]: any }>({ initialData, onSave, onSubmit, onCancel }: ViewPageProps<T>) {
+export default function ViewPage<T extends object = { [key: string]: any }>({ readOnly, initialData, onSave, onSubmit, onCancel }: ViewPageProps<T>) {
+	const { t } = useTranslation();
 	const location = useLocation();
   	const { state } = location; 
 	const navigate = useNavigate();
 	
-	const from = state?.from;
+	const isViewReadOnly = readOnly ?? false;
+	const from =  state?.from ?? '/main';
 	const fromData = state?.initialData;
 
-	 const { showAlert } = useAlert();
-	 const { token, isAuthenticated } = useSession();
-	 const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
-	 const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
+	const { showAlert } = useAlert();
+	const { token, isAuthenticated } = useSession();
+	const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
+	const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
 	const [disabledAction, setDisabledAction] = useState(false);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -64,39 +73,47 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 	const groupCardStyle = "border-b border-gray-900/10 pb-12 mx-auto max-w-2xl";
 	const groupTitleStyle = "text-base/7 font-semibold text-gray-900";
 	const groupDescriptionStyle = "mt-1 text-sm/6 text-gray-600";
-	const groupContentStyle = "mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6";
-	const oneColumnStyle = "sm:col-span-3";
-	const oneRowStyle = "col-span-full sm:col-span-6";
+	const groupContentStyle = "mt-6 grid grid-cols-1 gap-x-6 gap-y-8";
+	const listFitCardStyle = "border-b border-gray-900/10 pb-12 mx-auto w-fit";
+	const listCardStyle = "border-b border-gray-900/10 pb-12 mx-auto max-w-2xl";
+	const tableStyle = "w-full table-fixed border-collapse text-sm";
+	const tableCaptionStyle = "caption-top text-left pb-6 text-base/7 font-semibold text-gray-900";
+	const tableThStyle = "border border-gray-200 bg-gray-50 h-[53px] text-center font-medium currentColor dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200";
+	const tableTbodyStyle = "bg-white dark:bg-gray-800";
+	const tableTdStyle = "border border-gray-200 h-[53px] text-center text-gray-900 dark:border-gray-600 dark:text-gray-400";
+	const oneColumnStyle = "";
+	const oneRowStyle = "col-span-full";
 	const labelStyle = "block text-sm/6 font-medium text-gray-900";
 	const uploadStyle = "mt-2 flex justify-center";
 	const errorStyle = "mt-2 text-sm text-red-600";
 	const submitStyle = "rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 	const cancelStyle = "rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold shadow-xs hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600";
 		
-  	    		const kptvdssb_fileUploaderRef = useRef<FileUploaderHandles | null>(null);
+  	    		const lexzkkaq_fileUploaderRef = useRef<FileUploaderHandles | null>(null);
 	
 	// Managing form data and validation errors with useState
 	const [formData, setFormData] = useState(() => {
 		const defaultData = {
-			        		imokbsia: '',
-	    	pkStybmjgd: '',
-		    		'TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId': '',
-	    	tableViewOPTMode: 'submit'
+			        		kaodyext: '',
+			        		tattbjbi: 'FixedPrice',
+	    	pkWxchezty: '',
+		    		'TB_WXCHEZTY_org.limp.basework.impl.PreloadFakeId': '',
+	    	tableViewOPTMode: 'submit',
+	    	formDataBin:{}
     	}
     	
     	// Merge the incoming data with the default data
 		return { ...defaultData, ...initialData, ...fromData};
     });
     
+    
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const fieldRefs = useRef<Record<string, HTMLElement>>({});
     
-	const { t } = useTranslation();
-
     useEffect(() => {
 		// This effect will run whenever initialData changes
-		if (formData.pkStybmjgd !== '') {
-			axios.post(bpcApiUrl + '/tableview/queryformdata/view_tb_stybmjgd_ruiowc/' + formData.pkStybmjgd, {}, {
+		if (formData.pkWxchezty !== '') {
+			axios.post(bpcApiUrl + '/tableview/queryformdata/view_tb_wxchezty_njwsxj/' + formData.pkWxchezty, {}, {
 				headers: {
 					'Content-Type': 'application/json',
 					'grooveToken': token
@@ -129,9 +146,9 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 		      async function loadGlobalId() {
 		        
 		        try {
-		          const result = await FetchPreloadPkId(token, 'view_tb_stybmjgd_ruiowc', formData['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId']);
+		          const result = await FetchPreloadPkId(token, 'view_tb_wxchezty_njwsxj', formData['TB_WXCHEZTY_org.limp.basework.impl.PreloadFakeId']);
 		          
-			    		setFormData((prevData: any) => ({ ...prevData, ['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId']: result['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId'] }));
+			    		setFormData((prevData: any) => ({ ...prevData, ['TB_WXCHEZTY_org.limp.basework.impl.PreloadFakeId']: result['TB_WXCHEZTY_org.limp.basework.impl.PreloadFakeId'] }));
 		        } catch (error) {
 		          if (error instanceof Error) {
 						const wrapError = error as { response?: { status: number, data: any } };
@@ -377,12 +394,6 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 	}
 	
 	const validationRules = {
-			    "kptvdssb": () => {
-			      const isFileUploaderValid = kptvdssb_fileUploaderRef.current?.validate();
-			      if (!isFileUploaderValid)  return "File is required.";
-			
-			      return '';
-			    },
 	}
 	
 	/**
@@ -415,34 +426,33 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 
 		return trimmedObj;
 	};
+	
 	const [isLoading, setIsLoading] = useState(false);
 	const submitFormData = () => {
 		setDisabledAction(true);
 		setIsLoading(true);
-	      axios.post(bpcApiUrl + '/tableview/remixjsondata/view_tb_stybmjgd_ruiowc', trimObjectValues(formData), {
+		
+	      axios.post(bpcApiUrl + '/tableview/remixjsondata/view_tb_wxchezty_njwsxj', trimObjectValues(formData), {
 	        headers: {
 	          'grooveToken': token
 	        }
 	      }).then(response => {
 	    	if (response.data && response.data.success) {
-	    		
-
-				setFormData((prevData: any) => ({
+	    		setFormData((prevData: any) => ({
 					...prevData,
-					pkStybmjgd: response.data.data.pkStybmjgd,
+					pkWxchezty: response.data.data.pkWxchezty,
 				}));
 	    	
 	      		const jsonData = { ...formData };
-				
 	
-				showAlert('文件已上传解析，稍后请查看账单数据。', 'success');
+				showAlert('Operation successfully.', 'success');
 	
 				onSubmit?.(jsonData);
-
-				navigate(from);
-	        } else {
-	          showAlert('Server returned invalid data.', 'error');
-	        }
+	        } else if(response.data && !response.data.success) {
+				showAlert(response.data.message, 'error');
+			} else {
+				showAlert('Server returned invalid data.', 'error');
+			}
 	      }).catch(error => {
 	        if (error instanceof Error) {
 				const wrapError = error as { response?: { status: number, data: any } };
@@ -466,13 +476,6 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 		
         const newErrors: { [key: string]: string } = {};
         
-				    		if (validationRules["kptvdssb"]) {
-						    	const errorMsg = validationRules["kptvdssb"]();
-						
-								if (errorMsg != '') {
-						    		newErrors["kptvdssb"] = errorMsg;
-						    	}
-						    }
     	
         // update error state
         setErrors(newErrors);
@@ -504,88 +507,77 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
         <>
             {/* Main Content */}
             <ThemeProvider theme={theme}>
-                 <form id="form_view_tb_stybmjgd_ruiowc" onSubmit={handleSubmit}>
+                 <form id="form_view_tb_wxchezty_njwsxj" onSubmit={handleSubmit}>
                     <div className="space-y-12">
       					    	<div className={groupCardStyle}>
-		                            <h2 className={groupTitleStyle}>电费账单导入</h2>
+		                            <h2 className={groupTitleStyle}>文件上传</h2>
 		                            <p className={groupDescriptionStyle}>
 		                                
 		                            </p>
-		                            <div className={groupContentStyle}>
-			<div className={'hidden'}>
-	            <label htmlFor="tb_stybmjgd_imokbsia" className={labelStyle}>
-	                标题
-	            </label>
-	            <div className="mt-2">
-	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['imokbsia'] = el;
-												}}>
-		              <TextField
-		                    id="tb_stybmjgd_imokbsia"
-		                    name="imokbsia"
-		                    value={formData.imokbsia || ''}
-		                    onChange={handleInputChange}
-		                    size="small"
-		                    variant="outlined"
-		                    error={errors.imokbsia ? true : false}
-		                    helperText={errors.imokbsia}
-		                    slotProps={{
-					            input: {
-					                
-					              startAdornment: <InputAdornment position="start">
-					              <TextIcon className='text-base'/>
-					              </InputAdornment>
-					            },
-					          }}
-		                  />
-	              </FormControl>
-			     </div>
-	        </div>
-			<div className={oneRowStyle}>
-			    <label htmlFor="tb_stybmjgd_kptvdssb" className={labelStyle}>
-			       请选择文件
+		                            <div className={groupContentStyle + ` sm:grid-cols-2`}>
+			<input type="hidden" name="kaodyext" placeholder="" value={formData.kaodyext || ''} />
+			<div className={oneRowStyle + ` sm:col-span-2`}>
+			    <label htmlFor="tb_wxchezty_lexzkkaq" className={labelStyle}>
+			        账单文件
 			    </label>
 			    <div className={uploadStyle}>
 	                  <FileUploader
-		                    ref={kptvdssb_fileUploaderRef}
-		                    id="tb_stybmjgd_kptvdssb"
-		                    name="kptvdssb"
-		                    label="Select files upload, up to 10MB, up to 3 files."
-		                    rtn="TB_STYBMJGD"
-		                    rfn="kptvdssb"
-		                    rfpk={formData['TB_STYBMJGD_org.limp.basework.impl.PreloadFakeId']}
+		                    ref={lexzkkaq_fileUploaderRef}
+		                    id="tb_wxchezty_lexzkkaq"
+		                    name="lexzkkaq"
+		                    label="DOC, IMAGE, ZIP up to 10MB, up to 5 files"
+		                    rtn="TB_WXCHEZTY"
+		                    rfn="lexzkkaq"
+		                    rfpk={formData['TB_WXCHEZTY_org.limp.basework.impl.PreloadFakeId']}
 		                    cfn={''}
-							maxFiles={3}
-		                    annexFiles={formData['kptvdssb']}
+		                    annexFiles={formData['lexzkkaq']}
 	                  />
                 </div>
 			</div>
+			<input type="hidden" name="tattbjbi" placeholder="" value={formData.tattbjbi || ''} />
 								    </div>
-						       </div>
-					</div>
-					
+						        </div>
+                    </div>	
 					<div className="mt-6 flex items-center justify-end gap-x-6">
-                        <button type="button" disabled={disabledAction} className={cancelStyle}
-                        onClick={() => {
-								if(from) {
-									navigate(from);
-								} else {
-									const jsonData = { ...formData };
-
-									onCancel?.(jsonData);
-								}
-							}}
-                        >
-                        {t('page.cancel')}
-                        </button>
-                        <button
-                        disabled={disabledAction}
-                        type="submit"
-                        className={submitStyle}>
-                        {t('page.submit')}
-                        </button>
+                        {isViewReadOnly ? (
+							<button type="button" disabled={disabledAction} className={cancelStyle}
+	                        onClick={() => {
+									if(from) {
+										navigate(from);
+									} else {
+										const jsonData = { ...formData };
+	
+										onCancel?.(jsonData);
+									}
+								}}
+	                        >
+	                        {t('page.back')}
+	                        </button>
+						) : (
+						<>
+	                        <button type="button" disabled={disabledAction} className={cancelStyle}
+		                        onClick={() => {
+										if(from) {
+											navigate(from);
+										} else {
+											const jsonData = { ...formData };
+		
+											onCancel?.(jsonData);
+										}
+									}}
+		                        >
+		                        {t('page.cancel')}
+	                        </button>
+	                        <button
+		                        disabled={disabledAction}
+		                        type="submit"
+		                        className={submitStyle}>
+		                        {t('page.submit')}
+	                        </button>
+						</>
+						)}
                     </div>
-					{isLoading && (
+                    {isLoading && (
 						<Box 
 							className="absolute inset-0 flex justify-center items-center bg-black/50 z-20 rounded-xl"
 						>
@@ -594,7 +586,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 					)}
 				</form>
 				<SimpleConfirmDialog open={isConfirmOpen} onConfirm={() => {submitFormData();setIsConfirmOpen(false);}} onCancel={() => {setIsConfirmOpen(false)}}>
-					Comfirm submission?
+					{t('page.confirmsubmit')}
 				</SimpleConfirmDialog>
              </ThemeProvider>
         </>

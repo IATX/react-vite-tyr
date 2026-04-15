@@ -19,6 +19,7 @@ import { WrapSoloFormNode } from './WrapNode';
 import theme from '../theme/tyr';
 
 import { useTranslation } from 'react-i18next';
+import { blue, blueGrey } from '@mui/material/colors';
 
 export type TyrBreadcrumb = {
     arr: { name: string; url?: string; }[];
@@ -64,7 +65,7 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr, sidebarOpen, onToggle }) => {
     return (
         <>
             <ThemeProvider theme={theme}>
-                <div className='flex flex-col border border-white border-b-gray-200'>
+                <div className="flex flex-col border-b" style={{borderColor: blueGrey[50]}}>
                     <header className="p-4 bg-white flex justify-between items-center">
                         {/* 左侧区域：切换按钮 + 标题 */}
                         <div className='flex items-center gap-3'>

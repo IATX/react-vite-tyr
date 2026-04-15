@@ -37,6 +37,7 @@
     "react-hook-form": "^7.63.0",
     "react-i18next": "^16.3.3",
     "react-icons": "^5.5.0",
+    "react-quick-pinch-zoom": "^5.1.1",
     "react-router-dom": "^7.9.5",
     "recharts": "^3.3.0"
   },

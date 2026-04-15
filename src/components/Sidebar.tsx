@@ -7,6 +7,7 @@ import {
     SmartToy as SmartToyIcon,
     KeyboardArrowUp as KeyboardArrowUpIcon,
     KeyboardArrowDown as KeyboardArrowDownIcon,
+    BorderColor,
 } from '@mui/icons-material';
 
 import RivetSvg from "./RivetSvg";
@@ -23,6 +24,7 @@ import componentMap, { type IComponentItem, type IComponentMap } from '../app/Co
 
 import { useTranslation } from 'react-i18next';
 import { RichTreeView } from '@mui/x-tree-view';
+import { blue, blueGrey, grey } from '@mui/material/colors';
 
 interface SidebarProps {
     activeItemId: string;
@@ -176,8 +178,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
 
     // @ts-ignore
     return (
-        <Box className={`w-64 p-4 flex flex-col justify-between border-r border-gray-100
-                transition-all duration-300 ease-in-out overflow-hidden`} style={{ width: `${width}px` }}>
+        <Box className={`w-64 p-4 flex flex-col justify-between border-r
+                transition-all duration-300 ease-in-out overflow-hidden`} style={{ width: `${width}px` }} sx={{borderColor: blueGrey[50]}}>
             {/* Logo */}
             <div className={`flex items-center mb-8 transition-all duration-300 ${!open ? 'justify-center' : ''}`}>
                 <div className="transition-opacity duration-300 ease-in-out">
@@ -196,15 +198,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                             <ListItem
                                 key={item.id}
                                 disablePadding
-                                className={open ? 'bg-slate-100' : 'bg-blue-50/80'}
                                 sx={{
+                                    minHeight: 75,
                                     borderRadius: '8px',
                                     mb: 1,
-                                    border: '1px solid',
-                                    borderColor: open ? '#e2e8f0' : 'transparent',
+                                    backgroundColor: open ? 'rgba(0, 0, 0, 0.02)' : 'transparent',
+                                    border: open ? '1px solid' : '1px solid transparent',
+                                    borderColor: open ? '#eceff1' : 'transparent',
                                     transition: 'all 0.3s ease',
                                     '&:hover': {
                                         backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                                        borderColor: '#cfd8dc',
                                         '& .MuiAvatar-root': {
                                             transform: !open ? 'scale(1.1)' : 'scale(1.05)',
                                             color: 'primary.main',
@@ -216,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                 <Tooltip
                                     title={!open ? (
                                         <Box sx={{ p: 0.5 }}>
-                                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{item.label}</Typography>
+                                            <Typography variant="body2" sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>{item.label}</Typography>
                                             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>{item.subtitle}</Typography>
                                         </Box>
                                     ) : ""}
@@ -226,14 +230,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                     <ListItemButton
                                         onClick={() => {
                                             // 安全获取组件，防止 .elem 报错
-                                            const targetComponent = componentMap instanceof Map
-                                                ? componentMap.get(item.id)
-                                                : componentMap[item.id];
+                                            const componentItem = findComponentItemByPath(componentMap, item.url);    
 
                                             setCurrentBayContent({
                                                 title: item.label,
                                                 subheader: item.subtitle,
-                                                elem: targetComponent?.elem || <Box sx={{ p: 2 }}>未找到组件内容</Box>,
+                                                elem: componentItem?.elem || <Box sx={{ p: 2 }}>未找到Hub页面</Box>,
                                                 type: 'hub'
                                             });
 
@@ -264,12 +266,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                         >
                                             <Avatar
                                                 sx={{
-                                                    width: open ? 34 : 38,
-                                                    height: open ? 34 : 38,
+                                                    width: open ? 34 : 30,
+                                                    height: open ? 34 : 30,
                                                     bgcolor: '#f8fafc',
-                                                    color: '#94a3b8',
+                                                    color: 'primary.main',
                                                     border: '1.5px solid',
-                                                    borderColor: '#e2e8f0',
+                                                    borderColor: 'primary.main',
                                                     transition: 'all 0.3s ease',
                                                     '& .MuiSvgIcon-root': {
                                                         fontSize: open ? 18 : 22,
@@ -278,7 +280,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                                 }}
                                             >
                                                 {/* 直接使用变量，不要用 ${} */}
-                                                {item.icon}
+                                                {item.icon && <item.icon sx={{  }} />}
                                             </Avatar>
                                         </ListItemAvatar>
 
@@ -320,13 +322,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                         borderBottomWidth: 1,
                         my: 1,
                         mx: -0.5,
+                        borderColor: blueGrey[100]
                     }}
                 />
 
                 {/* Navigation */}
                 {open && (
                     <>
-                        <p className="text-sm font-semibold mt-4">{t('system.navigation')}</p>
+                        <p className="text-sm font-semibold mt-4 mb-2">{t('system.navigation')}</p>
                     </>
                 )}
                 {appMenus && appMenus.map((item) => (
@@ -411,7 +414,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                         }}
                                     >
                                         {!collapseSubmenus[item.id] || !open ? (
-                                            <KeyboardArrowRightIcon sx={{ fontSize: '0.9rem' }} />
+                                            <KeyboardArrowRightIcon sx={{ fontSize: '0.9rem', color: grey[900] }} />
                                         ) : (
                                             <ExpandMoreIcon sx={{ fontSize: '0.9rem' }} />
                                         )}

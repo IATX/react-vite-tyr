@@ -56,15 +56,22 @@ const Item = styled(Paper)(({ theme }) => ({
 // --- Data Types and Service APIs ---
 // -----------------------------
 export interface Data {
-    pkXbbyezwt: number,
-			mrvqpphi: string,
-			bwblkhay: string,
-			ptkfgasa: string,
-			deimigjs: string,
-			xjegvvik: string,
-			qnttkoss: number,
-			columnBirp: string,		
-			pkWzghpmog: number,
+    pkXntlcwoh: number,
+			uxmevhzr: string,
+			tgfmfgug: string,
+			vjtwicby: string,
+			ppleoliy: number,
+			yqjhrqpv: number,
+			dbjcahum: number,
+			stmwshrs: number,
+			shwsiwey: number,
+			mqnwdfoo: number,
+			batuyfhf: number,
+			zaftbdnw: number,
+			lhlvljqd: number,
+			tzikxfvh: number,
+			xkatnuim: number,
+			zmvivlpk: number,
 }
 
 export interface ApiResponse<T> {
@@ -139,41 +146,62 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
 
     const columnData: ColumnDataProp[] = [
     			{
-		            id: 'mrvqpphi', label: '户名', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'uxmevhzr', label: '用电分类', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'bwblkhay', label: '发电户号', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'tgfmfgug', label: '用电制度', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'ptkfgasa', label: '纳税人类型', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'vjtwicby', label: '电压等级', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'deimigjs', label: '服务单位', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'ppleoliy', label: '非分时电度电价', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'xjegvvik', label: '电价计算依据', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'yqjhrqpv', label: '代理购电价格', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'qnttkoss', label: '电价优惠', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            id: 'dbjcahum', label: '上网环节线损电价', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'columnBirp', label: '状态', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'stmwshrs', label: '电度输配电价', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'pkWzghpmog', label: '电价设置ID', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            id: 'shwsiwey', label: '系统运行费折价', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'mqnwdfoo', label: '政府性基金及附加', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'batuyfhf', label: '尖峰时段', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'zaftbdnw', label: '高峰时段', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'lhlvljqd', label: '平时段', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'tzikxfvh', label: '低谷时段', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'xkatnuim', label: '最大需量', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'zmvivlpk', label: '变压器容量', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     ];
 
     const [queryData, setQueryData] = useState<Record<string, string>>({
-    		mrvqpphi: props.queryParams?.mrvqpphi ?? '',
-    		bwblkhay: props.queryParams?.bwblkhay ?? '',
-    		fpllerek: props.queryParams?.fpllerek ?? '',
+    		cdtylzeq: props.queryParams?.cdtylzeq ?? '',
+    		dmnbozws: props.queryParams?.dmnbozws ?? '',
+    		jtenztaq: props.queryParams?.jtenztaq ?? '',
     });
 
     const [searchConditions, setSearchConditions] = useState<Record<string, string>>({
-    		mrvqpphi: props.queryParams?.mrvqpphi ?? '',
-    		bwblkhay: props.queryParams?.bwblkhay ?? '',
-    		fpllerek: props.queryParams?.fpllerek ?? '',
+    		cdtylzeq: props.queryParams?.cdtylzeq ?? '',
+    		dmnbozws: props.queryParams?.dmnbozws ?? '',
+    		jtenztaq: props.queryParams?.jtenztaq ?? '',
     });
 
     // Stores the Chip data to be displayed eventually
@@ -208,7 +236,7 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
             }
         };
 
-        axios.post(VITE_JET_ASP_BPC_API + '/tablequery/listreacttable/query_yagetq', params, {
+        axios.post(VITE_JET_ASP_BPC_API + '/tablequery/listreacttable/query_zqqxdz', params, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'grooveToken': token
@@ -344,7 +372,7 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         if (confirmed) {
             const formData = new FormData();
 
-            formData.append('pkXbbyezwt', val);
+            formData.append('pkXntlcwoh', val);
 
             axios.post(VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/', formData, {
                 headers: {
@@ -418,27 +446,27 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
                                     <Stack spacing={2} sx={{ width: 400 }}>
                                         <Typography className="!text-sm">Enter query conditions</Typography>
 									    	<TextField
-	                                            label="户名"
-	                                            name="mrvqpphi"
+	                                            label="执行时间从"
+	                                            name="cdtylzeq"
 	                                            variant="outlined"
 	                                            size="small"
-	                                            value={queryData.mrvqpphi}
+	                                            value={queryData.cdtylzeq}
 	                                            onChange={handleSearchInputChange}
 	                                        />
 									    	<TextField
-	                                            label="发电户号"
-	                                            name="bwblkhay"
+	                                            label="执行时间至"
+	                                            name="dmnbozws"
 	                                            variant="outlined"
 	                                            size="small"
-	                                            value={queryData.bwblkhay}
+	                                            value={queryData.dmnbozws}
 	                                            onChange={handleSearchInputChange}
 	                                        />
 									    	<TextField
-	                                            label="电价计算依据"
-	                                            name="fpllerek"
+	                                            label="类型"
+	                                            name="jtenztaq"
 	                                            variant="outlined"
 	                                            size="small"
-	                                            value={queryData.fpllerek}
+	                                            value={queryData.jtenztaq}
 	                                            onChange={handleSearchInputChange}
 	                                        />
                                         <Box className="flex justify-end mt-4">

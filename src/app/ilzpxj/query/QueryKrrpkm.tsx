@@ -56,15 +56,14 @@ const Item = styled(Paper)(({ theme }) => ({
 // --- Data Types and Service APIs ---
 // -----------------------------
 export interface Data {
-    pkXbbyezwt: number,
-			mrvqpphi: string,
-			bwblkhay: string,
-			ptkfgasa: string,
-			deimigjs: string,
-			xjegvvik: string,
-			qnttkoss: number,
-			columnBirp: string,		
-			pkWzghpmog: number,
+    pkEnpqommq: number,
+			kwotkios: string,
+			bykrkknf: string,
+			qyziqspn: string,
+			ongridelectricity: number,
+			surpluselectricity: number,
+			selfconsumption: number,
+			gzbcbqvn: string,
 }
 
 export interface ApiResponse<T> {
@@ -139,41 +138,56 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
 
     const columnData: ColumnDataProp[] = [
     			{
-		            id: 'mrvqpphi', label: '户名', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'kwotkios', label: '商户', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'bwblkhay', label: '发电户号', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'bykrkknf', label: '发电户号', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'ptkfgasa', label: '纳税人类型', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'qyziqspn', label: '结算年', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'deimigjs', label: '服务单位', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'ongridelectricity', label: '总上网电量', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'xjegvvik', label: '电价计算依据', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'surpluselectricity', label: '余电上网电量', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'qnttkoss', label: '电价优惠', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            id: 'selfconsumption', label: '自发自发用电量', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'columnBirp', label: '状态', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'gzbcbqvn', label: '创建时间', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'pkWzghpmog', label: '电价设置ID', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
-		            				},	
+		            id: 'autosp', label: '操作', minWidth: 150, align: 'center', type: 'autosp', truncate: false, display: true, render: (val: any, rowData: Data, allData: Data[]) => {
+		                return (<>
+		                	<Button size='small' onClick={() => {
+			                    handleEdit(rowData['pkEnpqommq' as keyof Data]);
+				        	}}
+				        	sx={{
+	                            textTransform: 'none',
+	                            fontSize: '0.875rem',
+	                        }}>{t('page.edit')}</Button>
+		                    <Button size='small' color="error" onClick={() => {
+		                        handleDelete(rowData['pkEnpqommq' as keyof Data]);
+		                    }}
+		                    sx={{
+	                            textTransform: 'none',
+	                            fontSize: '0.875rem',
+	                        }}>{t('page.delete')}</Button>
+		                 </>);
+				     }
+				},
     ];
 
     const [queryData, setQueryData] = useState<Record<string, string>>({
-    		mrvqpphi: props.queryParams?.mrvqpphi ?? '',
-    		bwblkhay: props.queryParams?.bwblkhay ?? '',
-    		fpllerek: props.queryParams?.fpllerek ?? '',
+    		kwotkios: props.queryParams?.kwotkios ?? '',
+    		bykrkknf: props.queryParams?.bykrkknf ?? '',
     });
 
     const [searchConditions, setSearchConditions] = useState<Record<string, string>>({
-    		mrvqpphi: props.queryParams?.mrvqpphi ?? '',
-    		bwblkhay: props.queryParams?.bwblkhay ?? '',
-    		fpllerek: props.queryParams?.fpllerek ?? '',
+    		kwotkios: props.queryParams?.kwotkios ?? '',
+    		bykrkknf: props.queryParams?.bykrkknf ?? '',
     });
 
     // Stores the Chip data to be displayed eventually
@@ -208,7 +222,7 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
             }
         };
 
-        axios.post(VITE_JET_ASP_BPC_API + '/tablequery/listreacttable/query_yagetq', params, {
+        axios.post(VITE_JET_ASP_BPC_API + '/tablequery/listreacttable/query_krrpkm', params, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'grooveToken': token
@@ -332,6 +346,78 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         });
     };
     
+    const handleEdit = (val: any) => {
+		if (isInMainArea) {
+            setCurrentBayContent({
+                title: '消纳比电费结算单',
+                subheader: '消纳比电费结算单',
+                elem: Parameterization('ViewTbEnpqommqStpinc', {
+                    key: 'ViewTbEnpqommqStpinc',
+                    initialData: {
+                       'pkEnpqommq': val
+                    },
+                    onCancel: (formData: any) => {
+                        setCurrentBayContent({
+                            title: '消纳比电费结算单列表',
+                            subheader: '消纳比电费结算单管理列表',
+                            elem: Parameterization('QueryKrrpkm', {
+								 page: page,
+                                 pageSize: pageSize,
+                                 queryParams: queryData
+                            }),
+                            type: 'query'
+                        });
+
+                        navigate('/main/trays');
+                    },
+                    onSubmit: (formData: any) => {
+                        setCurrentBayContent({
+                            title: '消纳比电费结算单列表',
+                            subheader: '消纳比电费结算单管理列表',
+                            elem: Parameterization('QueryKrrpkm', {
+								 page: page,
+                                 pageSize: pageSize,
+                                 queryParams: queryData
+                            }),
+                            type: 'query'
+                        });
+
+                        navigate('/main/trays');
+                    }
+                }),
+                type: 'view'
+            });
+
+            navigate('/main/trays');
+        } else {
+            navigate('app/ilzpxj/view/ViewTbEnpqommqStpinc', {
+                state: {
+                    key: 'ViewTbEnpqommqStpinc',
+                    initialData: {
+                       'pkEnpqommq': val
+                    },
+                    onCancel: (formData: any) => {
+                        navigate('app/ilzpxj/query/QueryKrrpkm', {
+                			state: {
+                				page: page,
+                                pageSize: pageSize,
+                                queryParams: queryData
+                			}
+                		});
+                    },
+                    onSubmit: (formData: any) => {
+                        navigate('app/ilzpxj/query/QueryKrrpkm', {
+                			state: {
+                				page: page,
+                                pageSize: pageSize,
+                                queryParams: queryData
+                			}
+                		});
+                    }
+                }
+            });
+        }
+    }
 
     const handleDelete = async (val: any) => {
         const confirmed = await confirm({
@@ -344,9 +430,9 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         if (confirmed) {
             const formData = new FormData();
 
-            formData.append('pkXbbyezwt', val);
+            formData.append('pkEnpqommq', val);
 
-            axios.post(VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/', formData, {
+            axios.post(VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/view_tb_enpqommq_stpinc', formData, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'grooveToken': token
@@ -369,6 +455,76 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         }
     }
 
+    const zdgksdkHandler = () => {
+    		if (isInMainArea) {
+	            setCurrentBayContent({
+	                title: '消纳比电费结算单',
+	                subheader: '消纳比电费结算单',
+	                elem: Parameterization('ViewTbEnpqommqStpinc', {
+	                    key: 'ViewTbEnpqommqStpinc',
+	                    initialData: {
+	                    },
+	                    onCancel: (formData: any) => {
+	                        setCurrentBayContent({
+	                            title: '消纳比电费结算单列表',
+	                            subheader: '消纳比电费结算单管理列表',
+	                            elem: Parameterization('QueryKrrpkm', {
+									 page: page,
+	                                 pageSize: pageSize,
+	                                 queryParams: queryData
+	                            }),
+	                            type: 'query'
+	                        });
+	
+	                        navigate('/main/trays');
+	                    },
+	                    onSubmit: (formData: any) => {
+	                        setCurrentBayContent({
+	                            title: '消纳比电费结算单列表',
+	                            subheader: '消纳比电费结算单管理列表',
+	                            elem: Parameterization('QueryKrrpkm', {
+									 page: page,
+	                                 pageSize: pageSize,
+	                                 queryParams: queryData
+	                            }),
+	                            type: 'query'
+	                        });
+	
+	                        navigate('/main/trays');
+	                    }
+	                }),
+	                type: 'view'
+	            });
+	
+	            navigate('/main/trays');
+	        } else {
+	            navigate('app/ilzpxj/view/ViewTbEnpqommqStpinc', {
+	                state: {
+	                    key: 'ViewTbEnpqommqStpinc',
+	                    initialData: {
+	                    },
+	                    onCancel: (formData: any) => {
+	                        navigate('app/ilzpxj/query/QueryKrrpkm', {
+	                			state: {
+	                				page: page,
+	                                pageSize: pageSize,
+	                                queryParams: queryData
+	                			}
+	                		});
+	                    },
+	                    onSubmit: (formData: any) => {
+	                        navigate('app/ilzpxj/query/QueryKrrpkm', {
+	                			state: {
+	                				page: page,
+	                                pageSize: pageSize,
+	                                queryParams: queryData
+	                			}
+	                		});
+	                    }
+	                }
+	            });
+	        }
+    }
 
     const open = Boolean(anchorEl);
     const id = open ? 'search-popover' : undefined;
@@ -383,6 +539,25 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
                     alignItems: 'center',
                 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
+                        <Box>
+                        	<Tooltip title="消纳比电费结算单" arrow>
+	                            <Button
+	                                variant="outlined"
+	                                startIcon={<AddIcon sx={{ color: 'hsl(210, 100%, 45%);' }} />}
+	                                onClick={zdgksdkHandler}
+	                                aria-describedby={'zdgksdk'}
+	                                size="small"
+	                                sx={{
+	                                    color: 'hsl(215, 15%, 22%)',
+	                                    borderRadius: '12px',
+	                                    border: '1px solid hsl(215, 15%, 89%)',
+	                                    textTransform: 'capitalize'
+	                                }}
+	                            >
+	                                {t('page.add')}
+	                            </Button>
+                            </Tooltip>
+                        </Box>
                         <Box>
                             <Button
                                 variant="outlined"
@@ -418,27 +593,19 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
                                     <Stack spacing={2} sx={{ width: 400 }}>
                                         <Typography className="!text-sm">Enter query conditions</Typography>
 									    	<TextField
-	                                            label="户名"
-	                                            name="mrvqpphi"
+	                                            label="商户"
+	                                            name="kwotkios"
 	                                            variant="outlined"
 	                                            size="small"
-	                                            value={queryData.mrvqpphi}
+	                                            value={queryData.kwotkios}
 	                                            onChange={handleSearchInputChange}
 	                                        />
 									    	<TextField
 	                                            label="发电户号"
-	                                            name="bwblkhay"
+	                                            name="bykrkknf"
 	                                            variant="outlined"
 	                                            size="small"
-	                                            value={queryData.bwblkhay}
-	                                            onChange={handleSearchInputChange}
-	                                        />
-									    	<TextField
-	                                            label="电价计算依据"
-	                                            name="fpllerek"
-	                                            variant="outlined"
-	                                            size="small"
-	                                            value={queryData.fpllerek}
+	                                            value={queryData.bykrkknf}
 	                                            onChange={handleSearchInputChange}
 	                                        />
                                         <Box className="flex justify-end mt-4">

@@ -518,7 +518,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 							</p>
 							<div className={groupContentStyle + ` sm:grid-cols-2`}>
-								<div className={oneColumnStyle}>
+								<div className={oneRowStyle}>
 									<label htmlFor="tb_wzghpmog_xdsjflqz" className={labelStyle}>
 										商户
 									</label>
@@ -551,7 +551,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 										)}
 									</div>
 								</div>
-								<div className={oneColumnStyle}>
+								<div className={oneRowStyle + ` hidden`}>
 									<label htmlFor="tb_wzghpmog_imxdflym" className={labelStyle}>
 										户号
 									</label>
@@ -585,7 +585,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 									</div>
 								</div>
 								<input type="hidden" name="qepibxbv" placeholder="" value={formData.qepibxbv || ''} />
-								<div className={oneColumnStyle}>
+								<div className={oneRowStyle}>
 									<label htmlFor="tb_wzghpmog_fpllerek" className={labelStyle}>
 										电价计算依据
 									</label>
@@ -604,10 +604,12 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 													aria-labelledby="fpllerek-row-radio-buttons-group-label"
 													name="fpllerek"
 													value={formData.fpllerek}
-													onChange={(e) => { handleRadioChange(e, [{ 'id': 'P0001', 'name': '代理购电工商业用户电价表' }, { 'id': 'P0002', 'name': '电费单电价' },], 'xjegvvik') }}
+													onChange={(e) => { handleRadioChange(e, [{ 'id': 'P0001', 'name': '代理购电工商业用户电价表' }, { 'id': 'P0002', 'name': '电费单电价' }, { 'id': 'P0003', 'name': '固定电价' }, { 'id': 'P0004', 'name': '消纳比电价' }], 'xjegvvik') }}
 												>
 													<FormControlLabel value="P0001" control={<Radio />} label="代理购电工商业用户电价表" />
 													<FormControlLabel value="P0002" control={<Radio />} label="电费单电价" />
+													<FormControlLabel value="P0003" control={<Radio />} label="固定电价" />
+													<FormControlLabel value="P0004" control={<Radio />} label="消纳比电价" />
 												</RadioGroup>
 												<FormHelperText>{errors['fpllerek']}</FormHelperText>
 											</FormControl>

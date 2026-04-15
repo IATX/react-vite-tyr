@@ -44,16 +44,16 @@ interface ViewPageProps<T> {
 
 export default function ViewPage<T extends object = { [key: string]: any }>({ initialData, onSave, onSubmit, onCancel }: ViewPageProps<T>) {
 	const location = useLocation();
-  	const { state } = location; 
+	const { state } = location;
 	const navigate = useNavigate();
-	
+
 	const from = state?.from;
 	const fromData = state?.initialData;
 
-	 const { showAlert } = useAlert();
-	 const { token, isAuthenticated } = useSession();
-	 const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
-	 const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
+	const { showAlert } = useAlert();
+	const { token, isAuthenticated } = useSession();
+	const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
+	const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
 	const [disabledAction, setDisabledAction] = useState(false);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -77,29 +77,29 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 	const errorStyle = "mt-2 text-sm text-red-600";
 	const submitStyle = "rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 	const cancelStyle = "rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold shadow-xs hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600";
-		
-  		
+
+
 	// Managing form data and validation errors with useState
 	const [formData, setFormData] = useState(() => {
 		const defaultData = {
-			        		mnname: '',
-			        		mnmemo: '',
-			        		mnurl: '',
-			        		mnsort: '0',
-			        		mnpid: '@mnpid',
-			        		mid: '@mid',
-	    	mnid: '',
-	    	tableViewOPTMode: 'submit'
-    	}
-    	
-    	// Merge the incoming data with the default data
-		return { ...defaultData, ...initialData, ...fromData};
-    });
-    
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const fieldRefs = useRef<Record<string, HTMLElement>>({});
-    
-    useEffect(() => {
+			mnname: '',
+			mnmemo: '',
+			mnurl: '',
+			mnsort: '0',
+			mnpid: '@mnpid',
+			mid: '@mid',
+			mnid: '',
+			tableViewOPTMode: 'submit'
+		}
+
+		// Merge the incoming data with the default data
+		return { ...defaultData, ...initialData, ...fromData };
+	});
+
+	const [errors, setErrors] = useState<{ [key: string]: string }>({});
+	const fieldRefs = useRef<Record<string, HTMLElement>>({});
+
+	useEffect(() => {
 		// This effect will run whenever initialData changes
 		if (formData.mnid !== '') {
 			axios.post(bpcApiUrl + '/tableview/queryformdata/prefab_menu_add/' + formData.mnid, {}, {
@@ -131,10 +131,10 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 
 			});
 		}
-		
-	}, []);    
-    
-   const handleDateError = (itemName: string, dateError: DateValidationError) => {
+
+	}, []);
+
+	const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
 				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
@@ -178,7 +178,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 
 			return newErrors;
 		});
-		
+
 		if (targetItemName) {
 			const selectedOption = options.find(option => option.id === value);
 
@@ -207,7 +207,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 		}
 
 	};
-	
+
 	// Unified tree input processing function
 	const handleTreeInputChange = (e: any) => {
 		const { idName, idValue } = e.idsTarget;
@@ -226,7 +226,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 			const { [nameName]: nameValue, ...newErrors } = prevErrors;
 
 			return newErrors;
-		});	
+		});
 	};
 
 	const handleListInputChange = (e: any) => {
@@ -246,7 +246,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 			const { [nameName]: nameValue, ...newErrors } = prevErrors;
 
 			return newErrors;
-		});	
+		});
 	};
 
 	/**
@@ -325,24 +325,24 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 	};
 
 	const isEmpty = (value: any, zeroIsEmpty: boolean): boolean => {
-		  if (value === null || value === undefined) {
-		    return true;
-		  }
-		  
-		  // If it is an empty string.
-		  if (typeof value === 'string' && value.trim() === '') {
-		    return true;
-		  }
-		  
-		  // If the value is 0 and can be considered empty, return true.
-		  if (typeof value === 'number' && value === 0 && zeroIsEmpty) {
-		    return true;
-		  }
+		if (value === null || value === undefined) {
+			return true;
+		}
 
-		  return false;
+		// If it is an empty string.
+		if (typeof value === 'string' && value.trim() === '') {
+			return true;
+		}
+
+		// If the value is 0 and can be considered empty, return true.
+		if (typeof value === 'number' && value === 0 && zeroIsEmpty) {
+			return true;
+		}
+
+		return false;
 	};
-	
-	
+
+
 	const handleDateChange = (name: string, value: any) => {
 		const newTimestamp = value.valueOf();
 
@@ -357,20 +357,20 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 			return newErrors;
 		});
 	}
-	
+
 	const validationRules = {
-		    	"mnname": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
-			
-			      return '';
-			    },
+		"mnname": (value: any) => {
+			if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+
+			return '';
+		},
 	}
-	
+
 	/**
- 	* Recursively iterate over an object or array and trim all string property values.
- 	* @param obj The object or array to trim.
- 	* @returns A new object with all string attributes trimmed.
- 	*/
+	  * Recursively iterate over an object or array and trim all string property values.
+	  * @param obj The object or array to trim.
+	  * @returns A new object with all string attributes trimmed.
+	  */
 	const trimObjectValues = (obj: any): any => {
 		if (obj === null || typeof obj !== 'object') {
 			return obj;
@@ -396,31 +396,34 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 
 		return trimmedObj;
 	};
-	
+
 	const submitFormData = () => {
 		setDisabledAction(true);
-	
-	      axios.post(bpcApiUrl + '/tableview/remixjsondata/prefab_menu_add', trimObjectValues(formData), {
-	        headers: {
-	          'grooveToken': token
-	        }
-	      }).then(response => {
-	    	if (response.data && response.data.success) {
-	    		setFormData((prevData: any) => ({
+
+		axios.post(bpcApiUrl + '/tableview/remixjsondata/prefab_menu_add', trimObjectValues(formData), {
+			headers: {
+				'grooveToken': token
+			}
+		}).then(response => {
+			if (response.data && response.data.success) {
+				setFormData((prevData: any) => ({
 					...prevData,
 					mnid: response.data.data.mnid,
 				}));
-	    	
-	      		const jsonData = { ...formData };
-	
+
+				const jsonData = {
+					...formData,
+					mnid: response.data.data.mnid
+				};
+
 				showAlert('Operation successfully.', 'success');
-	
+
 				onSubmit?.(jsonData);
-	        } else {
-	          showAlert('Server returned invalid data.', 'error');
-	        }
-	      }).catch(error => {
-	        if (error instanceof Error) {
+			} else {
+				showAlert('Server returned invalid data.', 'error');
+			}
+		}).catch(error => {
+			if (error instanceof Error) {
 				const wrapError = error as { response?: { status: number, data: any } };
 				if (wrapError.response?.status == 400) {
 					showAlert('Bad format request', 'error');
@@ -430,33 +433,33 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 					showAlert('Submit operation exception.', 'error');
 				}
 			}
-	      }).finally(() => {
-				setDisabledAction(false);
-	      });
+		}).finally(() => {
+			setDisabledAction(false);
+		});
 	};
-	
+
 	// Submit processing function
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		
-        const newErrors: { [key: string]: string } = {};
-        
-					    	if (validationRules["mnname"]) {
-						    	const errorMsg = validationRules["mnname"](formData.mnname);
-						
-								if (errorMsg != '') {
-						    		newErrors["mnname"] = errorMsg;
-						    	}
-						    }
-    	
-        // update error state
-        setErrors(newErrors);
 
-        // If there is no error, execute the submission logic
-        if (Object.keys(newErrors).length === 0) {
-            setIsConfirmOpen(true);
-        } else {
-        	const firstError = Object.keys(newErrors).find((key) => newErrors[key]);
+		const newErrors: { [key: string]: string } = {};
+
+		if (validationRules["mnname"]) {
+			const errorMsg = validationRules["mnname"](formData.mnname);
+
+			if (errorMsg != '') {
+				newErrors["mnname"] = errorMsg;
+			}
+		}
+
+		// update error state
+		setErrors(newErrors);
+
+		// If there is no error, execute the submission logic
+		if (Object.keys(newErrors).length === 0) {
+			setIsConfirmOpen(true);
+		} else {
+			const firstError = Object.keys(newErrors).find((key) => newErrors[key]);
 
 			if (firstError) {
 				const errorElement = fieldRefs.current[firstError];
@@ -470,122 +473,122 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 					// errorElement.focus();
 				}
 			}
-        }
+		}
 	}
-	
-	
-	
-    return (
-        <>
-            {/* Main Content */}
-            <ThemeProvider theme={theme}>
-                 <form id="form_prefab_menu_add" onSubmit={handleSubmit}>
-                    <div className="space-y-12">
-      					    	<div className={groupCardStyle}>
-		                            <h2 className={groupTitleStyle}>Application menu definition</h2>
-		                            <p className={groupDescriptionStyle}>
-		                                The menu is the main entry point for users to enter and operate the application, displaying all available functions and operations.
-		                            </p>
-		                            <div className={groupContentStyle}>
-			<div className={oneColumnStyle}>
-	            <label htmlFor="ISYS_MODULE_MENU_mnname" className={labelStyle}>
-	                Name
-	            </label>
-	            <div className="mt-2">
-	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['mnname'] = el;
-												}}>
-		              <TextField
-		                    id="ISYS_MODULE_MENU_mnname"
-		                    name="mnname"
-		                    value={formData.mnname || ''}
-		                    onChange={handleInputChange}
-		                    size="small"
-		                    variant="outlined"
-		                    error={errors.mnname ? true : false}
-		                    helperText={errors.mnname}
-		                    slotProps={{
-					            input: {
-					                
-					              startAdornment: <InputAdornment position="start">
-					              <TextIcon className='text-base'/>
-					              </InputAdornment>
-					            },
-					          }}
-		                  />
-	              </FormControl>
-			     </div>
-	        </div>
-			<div className={oneColumnStyle}>
-	            <label htmlFor="ISYS_MODULE_MENU_mnmemo" className={labelStyle}>
-	                Description
-	            </label>
-	            <div className="mt-2">
-	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['mnmemo'] = el;
-												}}>
-		              <TextField
-		                    id="ISYS_MODULE_MENU_mnmemo"
-		                    name="mnmemo"
-		                    value={formData.mnmemo || ''}
-		                    onChange={handleInputChange}
-		                    size="small"
-		                    variant="outlined"
-		                    error={errors.mnmemo ? true : false}
-		                    helperText={errors.mnmemo}
-		                    slotProps={{
-					            input: {
-					                
-					              startAdornment: <InputAdornment position="start">
-					              <TextIcon className='text-base'/>
-					              </InputAdornment>
-					            },
-					          }}
-		                  />
-	              </FormControl>
-			     </div>
-	        </div>
-	    	<div className={oneRowStyle}>
-	            <label htmlFor="ISYS_MODULE_MENU_mnurl" className={labelStyle}>
-	                Address
-	            </label>
-	            <div className="mt-2">
-	            	<FormControl fullWidth ref={(el) => {
-						if (el) fieldRefs.current['mnurl'] = el;
-					}}>
-		               	<TextField
-		                    multiline
-		                    rows={4}
-		                    id="ISYS_MODULE_MENU_mnurl"
-		                    name="mnurl"
-		                    value={formData.mnurl || ''}
-		                    onChange={handleInputChange}
-		                    size="small"
-		                    fullWidth
-		                    variant="outlined"
-		                    error={errors.mnurl ? true : false}
-		                    helperText={errors.mnurl}
-		                    slotProps={{
-					            input: {
-					                 
-					              startAdornment: <InputAdornment position="start"><TextareaIcon /></InputAdornment>
-					            },
-					          }}
-		                  />
-	                </FormControl>  
-			     </div>
-	        </div>
-			<input type="hidden" name="mnsort" placeholder="" value={formData.mnsort || ''} />
-			<input type="hidden" name="mnpid" placeholder="" value={formData.mnpid || ''} />
-			<input type="hidden" name="mid" placeholder="" value={formData.mid || ''} />
-								    </div>
-						       </div>
+
+
+
+	return (
+		<>
+			{/* Main Content */}
+			<ThemeProvider theme={theme}>
+				<form id="form_prefab_menu_add" onSubmit={handleSubmit}>
+					<div className="space-y-12">
+						<div className={groupCardStyle}>
+							<h2 className={groupTitleStyle}>Application menu definition</h2>
+							<p className={groupDescriptionStyle}>
+								The menu is the main entry point for users to enter and operate the application, displaying all available functions and operations.
+							</p>
+							<div className={groupContentStyle}>
+								<div className={oneColumnStyle}>
+									<label htmlFor="ISYS_MODULE_MENU_mnname" className={labelStyle}>
+										Name
+									</label>
+									<div className="mt-2">
+										<FormControl fullWidth ref={(el) => {
+											if (el) fieldRefs.current['mnname'] = el;
+										}}>
+											<TextField
+												id="ISYS_MODULE_MENU_mnname"
+												name="mnname"
+												value={formData.mnname || ''}
+												onChange={handleInputChange}
+												size="small"
+												variant="outlined"
+												error={errors.mnname ? true : false}
+												helperText={errors.mnname}
+												slotProps={{
+													input: {
+
+														startAdornment: <InputAdornment position="start">
+															<TextIcon className='text-base' />
+														</InputAdornment>
+													},
+												}}
+											/>
+										</FormControl>
+									</div>
+								</div>
+								<div className={oneColumnStyle}>
+									<label htmlFor="ISYS_MODULE_MENU_mnmemo" className={labelStyle}>
+										Description
+									</label>
+									<div className="mt-2">
+										<FormControl fullWidth ref={(el) => {
+											if (el) fieldRefs.current['mnmemo'] = el;
+										}}>
+											<TextField
+												id="ISYS_MODULE_MENU_mnmemo"
+												name="mnmemo"
+												value={formData.mnmemo || ''}
+												onChange={handleInputChange}
+												size="small"
+												variant="outlined"
+												error={errors.mnmemo ? true : false}
+												helperText={errors.mnmemo}
+												slotProps={{
+													input: {
+
+														startAdornment: <InputAdornment position="start">
+															<TextIcon className='text-base' />
+														</InputAdornment>
+													},
+												}}
+											/>
+										</FormControl>
+									</div>
+								</div>
+								<div className={oneRowStyle}>
+									<label htmlFor="ISYS_MODULE_MENU_mnurl" className={labelStyle}>
+										Address
+									</label>
+									<div className="mt-2">
+										<FormControl fullWidth ref={(el) => {
+											if (el) fieldRefs.current['mnurl'] = el;
+										}}>
+											<TextField
+												multiline
+												rows={4}
+												id="ISYS_MODULE_MENU_mnurl"
+												name="mnurl"
+												value={formData.mnurl || ''}
+												onChange={handleInputChange}
+												size="small"
+												fullWidth
+												variant="outlined"
+												error={errors.mnurl ? true : false}
+												helperText={errors.mnurl}
+												slotProps={{
+													input: {
+
+														startAdornment: <InputAdornment position="start"><TextareaIcon /></InputAdornment>
+													},
+												}}
+											/>
+										</FormControl>
+									</div>
+								</div>
+								<input type="hidden" name="mnsort" placeholder="" value={formData.mnsort || ''} />
+								<input type="hidden" name="mnpid" placeholder="" value={formData.mnpid || ''} />
+								<input type="hidden" name="mid" placeholder="" value={formData.mid || ''} />
+							</div>
+						</div>
 					</div>
-					
+
 					<div className="mt-6 flex items-center justify-end gap-x-6">
-                        <button type="button" disabled={disabledAction} className={cancelStyle}
-                        onClick={() => {
-								if(from) {
+						<button type="button" disabled={disabledAction} className={cancelStyle}
+							onClick={() => {
+								if (from) {
 									navigate(from);
 								} else {
 									const jsonData = { ...formData };
@@ -593,21 +596,21 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 									onCancel?.(jsonData);
 								}
 							}}
-                        >
-                        Cancel
-                        </button>
-                        <button
-                        disabled={disabledAction}
-                        type="submit"
-                        className={submitStyle}>
-                        Submit
-                        </button>
-                    </div>
+						>
+							Cancel
+						</button>
+						<button
+							disabled={disabledAction}
+							type="submit"
+							className={submitStyle}>
+							Submit
+						</button>
+					</div>
 				</form>
-				<SimpleConfirmDialog open={isConfirmOpen} onConfirm={() => {submitFormData();setIsConfirmOpen(false);}} onCancel={() => {setIsConfirmOpen(false)}}>
+				<SimpleConfirmDialog open={isConfirmOpen} onConfirm={() => { submitFormData(); setIsConfirmOpen(false); }} onCancel={() => { setIsConfirmOpen(false) }}>
 					Comfirm submission?
 				</SimpleConfirmDialog>
-             </ThemeProvider>
-        </>
-    )
+			</ThemeProvider>
+		</>
+	)
 }

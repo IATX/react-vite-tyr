@@ -32,7 +32,7 @@ const PasswordInput: React.FC<PasswordInputProps> = (props) => {
             slotProps={{
                 input: {
                     startAdornment: <InputAdornment position="start">
-                        <KeyIcon className='text-base' />
+                        <KeyIcon className='text-sm' />
                     </InputAdornment>,
                     endAdornment: (
                         <InputAdornment position="end">
@@ -48,7 +48,7 @@ const PasswordInput: React.FC<PasswordInputProps> = (props) => {
                                     },
                                 }}
                             >
-                                {showPassword ? <VisibilityOff sx={{ fontSize: '1.25rem' }} /> : <Visibility sx={{ fontSize: '1.25rem' }} />}
+                                {showPassword ? <VisibilityOff className='text-sm' /> : <Visibility className='text-sm' />}
                             </IconButton>
                         </InputAdornment>
                     ),
