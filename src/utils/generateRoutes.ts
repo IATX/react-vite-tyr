@@ -2,7 +2,7 @@ import React from 'react';
 import type { SvgIconProps } from '@mui/material';
 
 import componentMap from '../app/ComponentMap';
-import { WrapRouteFormNode, WrapRouteTableNode, WrapRouteHubNode } from '../components/WrapNode';
+import { WrapRouteFormNode, WrapRouteTableNode, WrapRouteHubNode, WrapRouteOtherNode } from '../components/WrapNode';
 import type {SvgIconComponent} from "@mui/icons-material";
 
 export interface IRouteData {
@@ -56,14 +56,14 @@ export function generateRoutes(routesData: IRouteData[]): IRouteConfig[] {
 
     let elementToRender: React.ReactNode;
 
-    if (Component.type == 'query') {
+    if (Component.type === 'query') {
       elementToRender = WrapRouteTableNode(Component.elem);
-    } else if (Component.type == 'view') {
+    } else if (Component.type === 'view') {
       elementToRender = WrapRouteFormNode(Component.elem);
-    } else if (Component.type == 'hub') {
+    } else if (Component.type === 'hub') {
       elementToRender = WrapRouteHubNode(Component.elem);
-    } if (Component.type == 'other') {
-      elementToRender = Component.elem;
+    } else if (Component.type === 'other') {
+      elementToRender = WrapRouteOtherNode(Component.elem);
     }
 
     const routeConfig: IRouteConfig = {

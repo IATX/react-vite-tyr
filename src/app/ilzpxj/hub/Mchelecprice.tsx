@@ -37,9 +37,9 @@ interface CurrentMchPricing {
 
 // --- 2. 电价计算依据筛选条件 ---
 const filterOptions = [
-    { id: 'P0001', name: '代理购电' }, // 简写名称以适应布局
-    { id: 'P0002', name: '电费单' },
-    { id: 'P0003', name: '固定' },
+    { id: 'P0001', name: '代理购电电价' }, // 简写名称以适应布局
+    { id: 'P0002', name: '商户电费单' },
+    { id: 'P0003', name: '固定电价' },
     { id: 'P0004', name: '消纳比' }
 ];
 
@@ -80,6 +80,8 @@ const MerchantElectricityManager: React.FC = () => {
         "eznomrac": string,
         "columnBirp": string,
         "xjegvvik": string,
+        "gwsnkwpp": string,
+        "pwayuydj": string,
         "pkWzghpmog": number
     }
 
@@ -89,12 +91,13 @@ const MerchantElectricityManager: React.FC = () => {
     }
 
     // 搜索条件的 key 类型收窄，避免用宽泛的 string
-    type SearchConditionKey = 'mrvqpphi' | 'bwblkhay';
+    type SearchConditionKey = 'mrvqpphi' | 'bwblkhay' | 'fpllerek';
     type SearchConditions = Record<SearchConditionKey, string>;
 
     const INITIAL_SEARCH_CONDITIONS: SearchConditions = {
         mrvqpphi: '',
         bwblkhay: '',
+        fpllerek: '',
     };
 
     const [loading, setLoading] = useState(true);
@@ -172,7 +175,7 @@ const MerchantElectricityManager: React.FC = () => {
         // fetchList({ priceType: newId }); 
         setSearchConditions(prev => ({
             ...prev,       // 1. 保留现有的所有属性（如日期、关键词等）
-            'xjegvvik': newId // 2. 增加或覆盖新的参数
+            'fpllerek': newId // 2. 增加或覆盖新的参数
         }));
     };
 
@@ -271,7 +274,7 @@ const MerchantElectricityManager: React.FC = () => {
 
                                     {/* 右侧：文字置底，去掉多余行高 */}
                                     <div className={`
-                                        text-[12px] leading-tight pb-1
+                                        text-xs leading-tight pb-1
                                         flex flex-col gap-0.5  {/* 🌟 核心：设为 Flex 列布局，并加一点点间距 */}
                                         ${m.columnBirp === '已设置' ? 'text-slate-900' : 'text-slate-400'}
                                     `}>
@@ -280,7 +283,7 @@ const MerchantElectricityManager: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <Typography className="text-base line-clamp-1 group-hover:text-blue-600 transition-colors">
+                                <Typography className={`text-base mt-1 mb-4 line-clamp-1 group-hover:text-blue-600 transition-colors ${m.gwsnkwpp ? 'text-slate-800' : 'text-slate-400 italic'}`}>
                                     <a href={`#`} onClick={(e) => {
                                         e.preventDefault();
 
@@ -289,15 +292,21 @@ const MerchantElectricityManager: React.FC = () => {
 
                                         setMerchantPkId(m.pkXbbyezwt);
                                     }} >
-                                        {m.mrvqpphi}
+                                        {m.gwsnkwpp ?? '未命名项目'}
                                     </a>
                                 </Typography>
-                                <Typography className="text-slate-800 text-sm mt-1 mb-4 flex items-center gap-1 font-mono">
+                                <Typography className="text-slate-800 text-sm flex items-center gap-1 font-mono">
+                                    {m.mrvqpphi}
+                                </Typography>
+                                <Typography className="text-slate-800 text-sm mt-1 flex items-center gap-1 font-mono">
                                     {m.bwblkhay}
                                 </Typography>
+                                <Typography className={`text-sm mt-1 mb-4 flex items-center gap-1 font-mono ${m.deimigjs ? 'text-slate-800' : 'text-slate-400 italic'}`}>
+                                    {m.deimigjs ?? '-'}
+                                </Typography>
 
-                                <div className="flex items-center gap-2 text-slate-800 text-sm mb-4">
-                                    <span className="truncate">{m.deimigjs} &nbsp;</span>
+                                <div className={`flex items-center gap-2 text-sm mb-4 ${m.deimigjs ? 'text-slate-800' : 'text-slate-400 italic'}`}>
+                                    <span className="truncate">{m.pwayuydj ?? '-'}</span>
                                 </div>
 
                                 <Divider className="mb-4 opacity-50" />

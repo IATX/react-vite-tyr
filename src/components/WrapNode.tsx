@@ -1,17 +1,30 @@
-import { type ReactNode } from 'react';
+import React, { Suspense, type ReactNode } from 'react';
+import { Box, CircularProgress } from '@mui/material';
 
-export function WrapRouteFormNode(elem: ReactNode): ReactNode {
+type AnyComponent = React.ComponentType<any>;
+
+const LazyFallback = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 4 }}>
+    <CircularProgress size={24} />
+  </Box>
+);
+
+export function WrapRouteFormNode(Comp: AnyComponent): ReactNode {
   return (
     <div className='bg-white mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8'>
-      {elem}
+      <Suspense fallback={<LazyFallback />}>
+        <Comp />
+      </Suspense>
     </div>
   );
 }
 
-export function WrapRouteTableNode(elem: ReactNode): ReactNode {
+export function WrapRouteTableNode(Comp: AnyComponent): ReactNode {
   return (
     <div className='bg-white mx-auto p-4'>
-      {elem}
+      <Suspense fallback={<LazyFallback />}>
+        <Comp />
+      </Suspense>
     </div>
   );
 }
@@ -24,18 +37,22 @@ export function WrapSoloFormNode(elem: ReactNode): ReactNode {
   );
 }
 
-export function WrapRouteOtherNode(elem: ReactNode): ReactNode {
+export function WrapRouteOtherNode(Comp: AnyComponent): ReactNode {
   return (
     <div>
-      {elem}
+      <Suspense fallback={<LazyFallback />}>
+        <Comp />
+      </Suspense>
     </div>
   );
 }
 
-export function WrapRouteHubNode(elem: ReactNode): ReactNode {
+export function WrapRouteHubNode(Comp: AnyComponent): ReactNode {
   return (
     <div>
-      {elem}
+      <Suspense fallback={<LazyFallback />}>
+        <Comp />
+      </Suspense>
     </div>
   );
 }

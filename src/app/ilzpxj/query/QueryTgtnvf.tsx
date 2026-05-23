@@ -64,7 +64,7 @@ export interface Data {
 			gwqejsjc: number,
 			iifqgvji: number,
 			pcczlucm: number,
-			auaqendl: number,
+			mhqescps: number,
 }
 
 export interface ApiResponse<T> {
@@ -160,7 +160,7 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
 		            id: 'pcczlucm', label: '上网电量千瓦时', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
-		            id: 'auaqendl', label: '上网电费元含税', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            id: 'mhqescps', label: '账单金额', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
 		            				},	
     			{
 		            id: 'autosp', label: '操作', minWidth: 150, align: 'center', type: 'autosp', truncate: false, display: true, render: (val: any, rowData: Data, allData: Data[]) => {
@@ -461,7 +461,7 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
         }
     }
 
-    const btfazusHandler = () => {
+    const dedbgvjHandler = () => {
     		if (isInMainArea) {
 	            setCurrentBayContent({
 	                title: '固定电价账单表单页面',
@@ -550,8 +550,8 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
 	                            <Button
 	                                variant="outlined"
 	                                startIcon={<AddIcon sx={{ color: 'hsl(210, 100%, 45%);' }} />}
-	                                onClick={btfazusHandler}
-	                                aria-describedby={'btfazus'}
+	                                onClick={dedbgvjHandler}
+	                                aria-describedby={'dedbgvj'}
 	                                size="small"
 	                                sx={{
 	                                    color: 'hsl(215, 15%, 22%)',

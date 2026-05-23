@@ -329,10 +329,10 @@ const RenderPowerCompanyList: React.FC<ManageListProps> = (prop) => {
         });
         if (!confirmed) return;
         const formData = new FormData();
-        formData.append('pkLgtnnfgg', data.pkPiclbkqk.toString());
+        formData.append('pkPiclbkqk', data.pkPiclbkqk.toString());
         axios.post(
             import.meta.env.VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/view_tb_piclbkqk_isjbmb',
-            { formData },
+            formData,
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'grooveToken': token } }
         ).then(response => {
             if (response.data?.success) {
@@ -377,7 +377,7 @@ const RenderPowerCompanyList: React.FC<ManageListProps> = (prop) => {
                     <div className="flex flex-col h-full overflow-y-auto p-2">
                         {Parameterization('ViewTbPiclbkqkIsjbmb', {
                             key: 'ViewTbPiclbkqkIsjbmb',
-                            readOnly: true,
+                            readOnly: false,
                             initialData: { pkPiclbkqk: dataClue.pkId },
                             onCancel: () => setDataClue(null),
                         })}
@@ -568,7 +568,7 @@ const RenderMerchantList: React.FC<ManageListProps> = (prop) => {
         formData.append('pkJkywwxtl', data.pkJkywwxtl.toString());
         axios.post(
             import.meta.env.VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/view_tb_jkywwxtl_msurqp',
-            { formData },
+            formData,
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'grooveToken': token } }
         ).then(response => {
             if (response.data?.success) {
@@ -613,7 +613,7 @@ const RenderMerchantList: React.FC<ManageListProps> = (prop) => {
                     <div className="flex flex-col h-full overflow-y-auto p-2">
                         {Parameterization('ViewTbJkywwxtlMsurqp', {
                             key: 'ViewTbJkywwxtlMsurqp',
-                            readOnly: true,
+                            readOnly: false,
                             initialData: { pkJkywwxtl: dataClue.pkId },
                             onCancel: () => setDataClue(null),
                         })}
@@ -848,7 +848,6 @@ const RenderFixedBillList: React.FC<ManageListProps> = (prop) => {
                     <div className="flex flex-col h-full overflow-y-auto p-2">
                         {Parameterization('ViewTbWxcheztyNlyrlw', {
                             key: 'ViewTbWxcheztyNlyrlw',
-                            readOnly: true,
                             initialData: { pkWxchezty: dataClue.pkId },
                             onCancel: () => setDataClue(null),
                         })}
@@ -1076,6 +1075,22 @@ const RenderConsumptionRatioList: React.FC<ManageListProps> = (prop) => {
 
     return (
         <React.Fragment>
+             {dataClue && (
+                <FileComparisonPreviewDialog
+                    open={true}
+                    onClose={() => setDataClue(null)}
+                    fileUrl={dataClue.fileUrl}
+                    title={dataClue.title}
+                >
+                    <div className="flex flex-col h-full overflow-y-auto p-2">
+                        {Parameterization('ViewTbWxcheztyNlyrlw', {
+                            key: 'ViewTbWxcheztyNlyrlw',
+                            initialData: { pkWxchezty: dataClue.pkId },
+                            onCancel: () => setDataClue(null),
+                        })}
+                    </div>
+                </FileComparisonPreviewDialog>
+            )}
             {loading ? <LoadingBlock /> : (
                 <ListCard prop={prop}>
                     <ListHeader
@@ -1257,7 +1272,7 @@ const RenderConsumptionStatList: React.FC<ManageListProps> = (prop) => {
         formData.append('pkGvfrokeq', data.pkGvfrokeq.toString());
         axios.post(
             import.meta.env.VITE_JET_ASP_BPC_API + '/tableview/deleteformdata/view_tb_gvfrokeq_sfidnf',
-            { formData },
+            formData,
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'grooveToken': token } }
         ).then(response => {
             if (response.data?.success) {
@@ -1337,10 +1352,10 @@ const BillingMuiPro = (props: any) => {
     const [activeTab, setActiveTab] = useState<string>(defaultActiveTab || 'P0001');
 
     const configs = [
-        { id: 'P0001', name: '公司电费账单', title: 'Power Company', listTitle: '公司电费账单列表', listDescription: '供电公司电费账单文件导入，账单数据维护', icon: <AccountBalanceTwoTone />, color: 'text-blue-600', bg: 'bg-blue-50', borderColor: 'border-blue-200/80' },
-        { id: 'P0002', name: '商户电费账单', title: 'Merchant Bill', listTitle: '市场化商户电费账单列表', listDescription: '市场化商户电费账单文件导入，账单数据维护', icon: <StorefrontTwoTone />, color: 'text-indigo-600', bg: 'bg-indigo-50', borderColor: 'border-indigo-200/80' },
-        { id: 'P0003', name: '固定电价电费账单', title: 'Fixed Price Bill', listTitle: '固定电价电费账单列表', listDescription: '固定电价电费账单文件导入，账单数据维护', icon: <OfflineBoltTwoTone />, color: 'text-amber-600', bg: 'bg-amber-50', borderColor: 'border-amber-200/80' },
-        { id: 'P0004', name: '消纳比电费账单', title: 'Consumption Ratio Bill', listTitle: '消纳比电费账单列表', listDescription: '消纳比电费账单文件导入，账单数据维护', icon: <DataUsage />, color: 'text-rose-600', bg: 'bg-rose-50', borderColor: 'border-rose-200/80' },
+        { id: 'P0001', name: '余电上网电费账单', title: 'Surplus Power Grid Injection', listTitle: '余电上网电费账单列表', listDescription: '余电上网电费账单文件导入，账单数据维护', icon: <AccountBalanceTwoTone />, color: 'text-blue-600', bg: 'bg-blue-50', borderColor: 'border-blue-200/80' },
+        { id: 'P0002', name: '自用电费账单', title: 'Self-Consumption Bill', listTitle: '自用电费账单列表', listDescription: '自用电费账单文件导入，账单数据维护', icon: <StorefrontTwoTone />, color: 'text-indigo-600', bg: 'bg-indigo-50', borderColor: 'border-indigo-200/80' },
+        // { id: 'P0003', name: '固定电价电费账单', title: 'Fixed Price Bill', listTitle: '固定电价电费账单列表', listDescription: '固定电价电费账单文件导入，账单数据维护', icon: <OfflineBoltTwoTone />, color: 'text-amber-600', bg: 'bg-amber-50', borderColor: 'border-amber-200/80' },
+        // { id: 'P0004', name: '消纳比电费账单', title: 'Consumption Ratio Bill', listTitle: '消纳比电费账单列表', listDescription: '消纳比电费账单文件导入，账单数据维护', icon: <DataUsage />, color: 'text-rose-600', bg: 'bg-rose-50', borderColor: 'border-rose-200/80' },
         { id: 'T0001', name: '用电量统计', title: 'Consumption Statistics', listTitle: '用电量统计列表', listDescription: '商户用电量统计数据维护', icon: <DonutLargeTwoTone />, color: 'text-emerald-600', bg: 'bg-emerald-50', borderColor: 'border-emerald-200/80' },
     ];
 
@@ -1365,7 +1380,7 @@ const BillingMuiPro = (props: any) => {
             <div className="flex justify-between items-end mb-4">
                 <div>
                     <div className="flex items-center gap-3">
-                        <h1 className="text-base font-bold text-slate-900 tracking-tight">账单管理系统</h1>
+                        <h1 className="text-base font-bold text-slate-900 tracking-tight">电费账单管理</h1>
                     </div>
                     <p className="text-sm text-slate-500 mt-2 flex items-center gap-2">
                         <InfoOutlined fontSize="small" /> 点击下方卡片导入账单数据并切换明细表，实时核对数据
@@ -1374,7 +1389,7 @@ const BillingMuiPro = (props: any) => {
             </div>
 
             {/* 功能按钮卡片 */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {configs.map((item) => (
                     <Card
                         key={item.id}

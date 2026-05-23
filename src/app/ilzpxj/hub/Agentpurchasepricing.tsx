@@ -45,7 +45,6 @@ import { useSession } from '../../../authority/SessionContext.tsx';
 import { WrapSoloFormNode } from '../../../components/WrapNode.tsx';
 import PriceNewDialog from '../../../components/FormDialogSoloPage.tsx';
 import PriceImportDialog from '../../../components/FormDialogSoloPage.tsx';
-import FormulaNewDialog from '../../../components/FormDialogSoloPage.tsx';
 import Parameterization from '../../../components/RenderComponent.tsx';
 import { useBreadcrumbs } from '../../../context/BreadcrumbContext.tsx';
 import FileComparisonPreview from '../../../components/FileComparisonPreview.tsx';
@@ -723,7 +722,7 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
                 id: item.pkXntlcwoh,
                 category: `${item.uxmevhzr || ''} ${item.tgfmfgug || ''}`.trim(),
                 voltage: item.vjtwicby,
-                nonTimePrice: item.yqjhrqpv,
+                nonTimePrice: item.ppleoliy,
                 breakdown: {
                     agent: item.yqjhrqpv,
                     online: item.dbjcahum,

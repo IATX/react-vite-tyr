@@ -697,6 +697,70 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			     </div>
 	        </div>
 			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_wxchezty_nplhjcqw" className={labelStyle}>
+	                发电周期（起始）
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{new Date(formData.nplhjcqw).toLocaleDateString() || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['nplhjcqw'] = el;
+												}}>
+		               <DatePicker
+                          name="nplhjcqw"
+                          format="YYYY-MM-DD"
+                          value={formData.nplhjcqw ? dayjs(formData.nplhjcqw) : null}
+                          views={['year', 'month', 'day']}
+                          onChange={(newValue: Dayjs | null)=> handleDateChange('nplhjcqw', newValue)}
+                          sx={{
+                            '.Mui-focused': {
+                               borderColor: 'oklch(54.6% 0.245 262.881) !important',
+                            },
+                            '& .Mui-focused .MuiPickersOutlinedInput-notchedOutline': {
+                              borderColor: 'oklch(54.6% 0.245 262.881) !important',
+                            },
+                            '& .MuiPickersOutlinedInput-notchedOutline': {
+                              borderRadius: '.375rem',
+                              borderColor: 'oklch(87.2% 0.01 258.338)'
+                            },
+                            '&:hover .MuiPickersOutlinedInput-notchedOutline': {
+                              borderColor: 'oklch(70.7% 0.022 261.325) !important',
+                            },
+                            '& .MuiPickersSectionList-root': {
+                              padding: '8px 0',
+                              height: '35px'
+                            },
+                            '& .MuiSvgIcon-root': {
+                              height: '18px',
+                              width: '18px'
+                            }
+                          }}
+                          onError={(newError) => handleDateError('transactionDate', newError)}
+                          slotProps={{
+                            popper: {
+                              sx: {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                boxShadow: 'unset !important',
+                                marginTop: '5px !important',
+                                '& .MuiPaper-root': {
+                                  boxShadow: 'unset !important',
+                                  border: '1px solid oklch(87.2% 0.01 258.338)'
+                                },
+                              },
+                            },
+                            textField: {
+                              id: 'tb_wxchezty_nplhjcqw',
+                              error: !!errors['nplhjcqw'],
+                              helperText: errors['nplhjcqw'],
+                            },
+                          }}
+                       />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>    
+			<div className={oneColumnStyle}>
 	            <label htmlFor="tb_wxchezty_zymjxejd" className={labelStyle}>
 	                发电周期（截至）
 	            </label>
@@ -760,70 +824,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	              )}
 			     </div>
 	        </div>       
-			<div className={oneColumnStyle}>
-	            <label htmlFor="tb_wxchezty_nplhjcqw" className={labelStyle}>
-	                发电周期（起始）
-	            </label>
-	            <div className="mt-2">
-	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{new Date(formData.nplhjcqw).toLocaleDateString() || ''}</Typography>
-	            	) : (
-	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['nplhjcqw'] = el;
-												}}>
-		               <DatePicker
-                          name="nplhjcqw"
-                          format="YYYY-MM-DD"
-                          value={formData.nplhjcqw ? dayjs(formData.nplhjcqw) : null}
-                          views={['year', 'month', 'day']}
-                          onChange={(newValue: Dayjs | null)=> handleDateChange('nplhjcqw', newValue)}
-                          sx={{
-                            '.Mui-focused': {
-                               borderColor: 'oklch(54.6% 0.245 262.881) !important',
-                            },
-                            '& .Mui-focused .MuiPickersOutlinedInput-notchedOutline': {
-                              borderColor: 'oklch(54.6% 0.245 262.881) !important',
-                            },
-                            '& .MuiPickersOutlinedInput-notchedOutline': {
-                              borderRadius: '.375rem',
-                              borderColor: 'oklch(87.2% 0.01 258.338)'
-                            },
-                            '&:hover .MuiPickersOutlinedInput-notchedOutline': {
-                              borderColor: 'oklch(70.7% 0.022 261.325) !important',
-                            },
-                            '& .MuiPickersSectionList-root': {
-                              padding: '8px 0',
-                              height: '35px'
-                            },
-                            '& .MuiSvgIcon-root': {
-                              height: '18px',
-                              width: '18px'
-                            }
-                          }}
-                          onError={(newError) => handleDateError('transactionDate', newError)}
-                          slotProps={{
-                            popper: {
-                              sx: {
-                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                boxShadow: 'unset !important',
-                                marginTop: '5px !important',
-                                '& .MuiPaper-root': {
-                                  boxShadow: 'unset !important',
-                                  border: '1px solid oklch(87.2% 0.01 258.338)'
-                                },
-                              },
-                            },
-                            textField: {
-                              id: 'tb_wxchezty_nplhjcqw',
-                              error: !!errors['nplhjcqw'],
-                              helperText: errors['nplhjcqw'],
-                            },
-                          }}
-                       />
-	              </FormControl>
-	              )}
-			     </div>
-	        </div>       
+			   
 								    </div>
 						        </div>
       					    	<div className={groupCardStyle}>

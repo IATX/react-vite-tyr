@@ -65,6 +65,8 @@ export interface Data {
 			qnttkoss: number,
 			columnBirp: string,		
 			pkWzghpmog: number,
+			gwsnkwpp: string,
+			pwayuydj: string,
 }
 
 export interface ApiResponse<T> {
@@ -161,6 +163,12 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
 		            				},	
     			{
 		            id: 'pkWzghpmog', label: '电价设置ID', minWidth: 150, align: 'center', type: 'number', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'gwsnkwpp', label: '项目名称', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            				},	
+    			{
+		            id: 'pwayuydj', label: '结算单类型', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     ];
 

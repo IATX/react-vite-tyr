@@ -58,7 +58,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const navigate = useNavigate();
 	
 	const isViewReadOnly = readOnly ?? false;
-	const from = state?.from;
+	const from =  state?.from;
 	const fromData = state?.initialData;
 
 	const { showAlert } = useAlert();
@@ -93,6 +93,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	// Managing form data and validation errors with useState
 	const [formData, setFormData] = useState(() => {
 		const defaultData = {
+			        		gwsnkwpp: '',
 			        		mrvqpphi: '',
 			        		bwblkhay: '',
 			        		deimigjs: '',
@@ -102,6 +103,9 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			        		eznomrac: '',
 			        		cejacmfl: '',
 			        		gagumdjb: '',
+			        		yejsbuca: '',
+			        		zxfodonb: '',
+			        		pwayuydj: '',
 	    	pkXbbyezwt: '',
 	    	tableViewOPTMode: 'submit',
 	    	formDataBin:{}
@@ -309,7 +313,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		const { name, checked } = e.target;
 
 		if (checked) {
-			let formDataVal = formData[name as keyof typeof formData].trim();
+			let formDataVal = formData[name as keyof typeof formData]?.trim();
 
 			if (!hasValue(formDataVal, checkedObj.id)) {
 				setFormData((prevData: any) => ({ ...prevData, [name]: (formDataVal === '' ? checkedObj.id : (formDataVal + ',' + checkedObj.id)) }));
@@ -395,6 +399,11 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			
 			      return '';
 			    },
+		    	"zxfodonb": (value: any) => {
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			
+			      return '';
+			    },
 	}
 	
 	/**
@@ -449,9 +458,11 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 				showAlert('Operation successfully.', 'success');
 	
 				onSubmit?.(jsonData);
-	        } else {
-	          showAlert('Server returned invalid data.', 'error');
-	        }
+	        } else if(response.data && !response.data.success) {
+				showAlert(response.data.message, 'error');
+			} else {
+				showAlert('Server returned invalid data.', 'error');
+			}
 	      }).catch(error => {
 	        if (error instanceof Error) {
 				const wrapError = error as { response?: { status: number, data: any } };
@@ -503,6 +514,13 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 						    		newErrors["jasosmzz"] = errorMsg;
 						    	}
 						    }
+					    	if (validationRules["zxfodonb"]) {
+						    	const errorMsg = validationRules["zxfodonb"](formData.zxfodonb);
+						
+								if (errorMsg != '') {
+						    		newErrors["zxfodonb"] = errorMsg;
+						    	}
+						    }
     	
         // update error state
         setErrors(newErrors);
@@ -542,6 +560,39 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		                                
 		                            </p>
 		                            <div className={groupContentStyle + ` sm:grid-cols-2`}>
+			<div className={oneRowStyle}>
+	            <label htmlFor="tb_xbbyezwt_gwsnkwpp" className={labelStyle}>
+	                项目名称
+	            </label>
+	            <div className="mt-2">
+	            {isViewReadOnly ? (
+	            	<Typography variant="body2" gutterBottom>{formData.gwsnkwpp || ''}</Typography>
+	            ) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['gwsnkwpp'] = el;
+												}}>
+		              <TextField
+		                    id="tb_xbbyezwt_gwsnkwpp"
+		                    name="gwsnkwpp"
+		                    value={formData.gwsnkwpp || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    variant="outlined"
+		                    error={errors.gwsnkwpp ? true : false}
+		                    helperText={errors.gwsnkwpp}
+		                    slotProps={{
+					            input: {
+					                
+					              startAdornment: <InputAdornment position="start">
+					              <TextIcon className='text-base'/>
+					              </InputAdornment>
+					            },
+					          }}
+		                  />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>
 			<div className={oneColumnStyle}>
 	            <label htmlFor="tb_xbbyezwt_mrvqpphi" className={labelStyle}>
 	                户名
@@ -816,6 +867,37 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	              )}
 			     </div>
 	        </div>
+			<input type="hidden" name="yejsbuca" placeholder="" value={formData.yejsbuca || ''} />
+	    	<div className={oneColumnStyle}>
+	            <label htmlFor="tb_xbbyezwt_zxfodonb" className={labelStyle}>
+	                余电上网
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.pwayuydj || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth size="small"
+	               error={!!errors['zxfodonb']}
+	               ref={(el) => {
+						if (el) fieldRefs.current['zxfodonb'] = el;
+					}}
+	               >
+                      <RadioGroup
+					        row
+					        aria-labelledby="zxfodonb-row-radio-buttons-group-label"
+					        name="zxfodonb"
+					        value={formData.zxfodonb}
+							onChange={(e) => { handleRadioChange(e, [{'id':'no','name':'No'},{'id':'yes','name':'Yes'},] , 'pwayuydj') }}
+					      >
+				    	   	   <FormControlLabel value="no" control={<Radio />} label="否"   />
+				    	   	   <FormControlLabel value="yes" control={<Radio />} label="是"   />
+					  </RadioGroup>
+                      <FormHelperText>{errors['zxfodonb']}</FormHelperText>
+                    </FormControl>
+                    )}
+			     </div>
+	        </div> 
+			<input type="hidden" name="pwayuydj" placeholder="" value={formData.pwayuydj || ''} />
 								    </div>
 						        </div>
                     </div>	
@@ -832,7 +914,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 									}
 								}}
 	                        >
-	                        Close
+	                        {t('page.back')}
 	                        </button>
 						) : (
 						<>

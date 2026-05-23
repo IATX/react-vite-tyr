@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"D:\\\\vscode-workspace\\\\dmaxi-epbp-tyr\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Sort-Object Name)"
+    ]
+  }
+}

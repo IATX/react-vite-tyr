@@ -729,6 +729,42 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 													'relative',
 													isFocused ? 'bg-blue-50' : 'hover:bg-gray-50',
 												].join(' ')}>
+												<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'kzvyaals',
+																	'header': '所属期',
+																	'type': 'date'
+																}}
+																value={item.kzvyaals}
+																onChange={(newValue) => {
+																	const updatedList = formData.listMmpppb.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
+
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['kzvyaals']: newValue,
+																			};
+																		}
+																		return row;
+																	});
+
+																	setFormData((prevData: any) => {
+																		return {
+																			...prevData,
+																			listMmpppb: updatedList,
+																		};
+																	});
+																}}
+															/>
+														) : (
+															<>{item.kzvyaals}</>
+														)}
+														
+														
+			      					    				</td>	
 												<td className={tableTdStyle}>
 													{isEditing ? (
 														<RowInputRenderer

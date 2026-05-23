@@ -5,21 +5,23 @@ import AppProvider from './context/AppContext'
 import AppRoutes from './AppRoutes';
 import { SessionProvider } from './authority/SessionContext';
 import { BreadcrumbProvider } from './context/BreadcrumbContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   const BASE_PATH = import.meta.env.VITE_JET_ASP_CONTEXT || '/';
 
   return (
     <BrowserRouter basename={BASE_PATH}>
-      <SessionProvider>
-        <BreadcrumbProvider>
-          <AppProvider>
-            <AppRoutes />
-          </AppProvider>
-        </BreadcrumbProvider>
-      </SessionProvider>
+      <ErrorBoundary>
+        <SessionProvider>
+          <BreadcrumbProvider>
+            <AppProvider>
+              <AppRoutes />
+            </AppProvider>
+          </BreadcrumbProvider>
+        </SessionProvider>
+      </ErrorBoundary>
     </BrowserRouter>
-
   );
 }
 

@@ -58,7 +58,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const navigate = useNavigate();
 	
 	const isViewReadOnly = readOnly ?? false;
-	const from = state?.from;
+	const from =  state?.from ?? '/main';
 	const fromData = state?.initialData;
 
 	const { showAlert } = useAlert();
@@ -310,7 +310,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		const { name, checked } = e.target;
 
 		if (checked) {
-			let formDataVal = formData[name as keyof typeof formData].trim();
+			let formDataVal = formData[name as keyof typeof formData]?.trim();
 
 			if (!hasValue(formDataVal, checkedObj.id)) {
 				setFormData((prevData: any) => ({ ...prevData, [name]: (formDataVal === '' ? checkedObj.id : (formDataVal + ',' + checkedObj.id)) }));
