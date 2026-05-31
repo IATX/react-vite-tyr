@@ -32,7 +32,7 @@ interface FetchState<T> {
     hasMore: boolean;
 }
 
-const useFetchData = <T extends FetchedData>(url: string | null, page: number, pageSize: number, pointId: string, pointName: string): FetchState<T> => {
+const useFetchData = <T extends FetchedData>(url: string | null, page: number, pageSize: number, pointId: string, pointName: string, pointTitle: string): FetchState<T> => {
     const { showAlert } = useAlert();
     const { token } = useSession();
 
@@ -78,6 +78,7 @@ const useFetchData = <T extends FetchedData>(url: string | null, page: number, p
                     const formattedData: T[] = data.data.map((item: any) => ({
                         key: item[pointId] + '',
                         name: item[pointName] + '',
+                        subTitle: pointTitle ? item[pointTitle] + '' : null
                     }));
 
                     const totalCount = data.totalCount;
@@ -170,7 +171,7 @@ const MyDataList: React.FC<MyDataListProps<any>> = ({
                                         sx={{ p: '4px' }}
                                     />
                                 )}
-                                <ListItemText primary={item.name} />
+                                <ListItemText primary={item.name} {...(item.subTitle && { secondary: item.subTitle })}/>
                             </ListItemButton>
                         </ListItem>
                     ))}
@@ -201,6 +202,7 @@ const InputWithList: React.FC<any> = ({
     onChange,
     pointId,
     pointName,
+    pointTitle,
     ...rest
 }) => {
     const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
@@ -209,7 +211,7 @@ const InputWithList: React.FC<any> = ({
 
     const [open, setOpen] = useState(false);
 
-    const { data, loading, error, hasMore } = useFetchData(`${bpcApiUrl}/tablequery/listreacttable/${dataKey}`, page, pageSize, pointId, pointName);
+    const { data, loading, error, hasMore } = useFetchData(`${bpcApiUrl}/tablequery/listreacttable/${dataKey}`, page, pageSize, pointId, pointName, pointTitle);
 
     const handleItemClick = (key: string) => {
         let newSelectedKeys: string[] = [];

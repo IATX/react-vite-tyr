@@ -132,8 +132,9 @@ const ListHeader: React.FC<{
     prop: ManageListProps;
     onImport?: () => void;
     onAdd: () => void;
+    onFresh?: () => void;
     showImport?: boolean;
-}> = ({ prop, onImport, onAdd, showImport = true }) => (
+}> = ({ prop, onImport, onAdd, onFresh, showImport = true }) => (
     <div className="flex justify-between items-start mb-8">
         <div>
             <div className="flex items-center gap-3">
@@ -159,6 +160,12 @@ const ListHeader: React.FC<{
                 onClick={onAdd}
             >
                 新增
+            </button>
+            <button
+                className={`text-indigo-600 hover:text-indigo-500 hover:opacity-80 px-4 py-2 rounded-md text-sm font-semibold transition-colors shadow-sm`}
+                onClick={onFresh}
+            >
+                刷新
             </button>
         </div>
     </div>
@@ -225,7 +232,7 @@ const makeNavBack = (
 };
 
 // =====================================================================
-// 子组件：公司电费账单
+// 子组件：余电上网电费账单
 // =====================================================================
 const RenderPowerCompanyList: React.FC<ManageListProps> = (prop) => {
     const [loading, setLoading] = useState(true);
@@ -323,6 +330,11 @@ const RenderPowerCompanyList: React.FC<ManageListProps> = (prop) => {
         navigate('/main/trays');
     };
 
+    const hanldeRefresh = () => {
+        setLoading(true);
+        loadData();
+    }
+
     const handleDelete = async (data: PowerCompanyData) => {
         const confirmed = await confirm({
             title: '提示', message: '确定删除该条数据吗？', confirmText: '确定', cancelText: '取消'
@@ -391,6 +403,7 @@ const RenderPowerCompanyList: React.FC<ManageListProps> = (prop) => {
                         prop={prop}
                         onImport={() => { setDialogOpen(true); setInitialData({}); }}
                         onAdd={handleAdd}
+                        onFresh={hanldeRefresh}
                     />
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
@@ -559,6 +572,11 @@ const RenderMerchantList: React.FC<ManageListProps> = (prop) => {
         navigate('/main/trays');
     };
 
+    const hanldeRefresh = () => {
+        setLoading(true);
+        loadData();
+    }
+
     const handleDelete = async (data: MerchantData) => {
         const confirmed = await confirm({
             title: '提示', message: '确定删除该条数据吗？', confirmText: '确定', cancelText: '取消'
@@ -626,6 +644,7 @@ const RenderMerchantList: React.FC<ManageListProps> = (prop) => {
                         prop={prop}
                         onImport={() => { setDialogOpen(true); setInitialData({}); }}
                         onAdd={handleAdd}
+                        onFresh={hanldeRefresh}
                     />
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">

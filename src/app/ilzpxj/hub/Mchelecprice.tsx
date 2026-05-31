@@ -306,7 +306,7 @@ const MerchantElectricityManager: React.FC = () => {
                                 </Typography>
 
                                 <div className={`flex items-center gap-2 text-sm mb-4 ${m.deimigjs ? 'text-slate-800' : 'text-slate-400 italic'}`}>
-                                    <span className="truncate">{m.pwayuydj ?? '-'}</span>
+                                    <span className="truncate">{m.pwayuydj === 'Yes' ? '余电上网' : '-'}</span>
                                 </div>
 
                                 <Divider className="mb-4 opacity-50" />

@@ -134,6 +134,8 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 					}));
 
 					setDisplayPriceDetails(response.data.data.fpllerek === 'P0001');
+
+					setDisplayPrice(response.data.data.fpllerek === 'P0003' || response.data.data.fpllereklue === 'P0004');
 				} else {
 					showAlert('Server returned invalid data.', 'error');
 				}
@@ -193,6 +195,8 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 	const [displayPriceDetails, setDisplayPriceDetails] = useState<Boolean>(false);
 
+	const [displayPrice, setDisplayPrice] = useState<Boolean>(false);
+	
 	const handleSelectChange = (e: SelectChangeEvent, options: { id: string, name: string }[], targetItemName?: string) => {
 		const { name, value } = e.target;
 		setFormData((prevData: any) => ({ ...prevData, [name]: value }));
@@ -230,6 +234,8 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			}
 
 			setDisplayPriceDetails(value === 'P0001');
+
+			setDisplayPrice(value === 'P0003' || value === 'P0004');
 		}
 
 	};
@@ -617,6 +623,50 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 									</div>
 								</div>
 								<input type="hidden" name="xjegvvik" placeholder="" value={formData.xjegvvik || ''} />
+								<div className={`${oneColumnStyle} ${!displayPrice ? 'hidden' : ''}`}>
+									<label htmlFor="tb_wzghpmog_colPrice" className={labelStyle}>
+										电价
+									</label>
+									<div className="mt-2">
+										{isViewReadOnly ? (
+											<Typography variant="body2" gutterBottom>{formData.colPrice || ''}</Typography>
+										) : (
+											<FormControl fullWidth ref={(el) => {
+												if (el) fieldRefs.current['colPrice'] = el;
+											}}>
+												<TextField
+													type="number"
+													id="tb_wzghpmog_colPrice"
+													name="colPrice"
+													value={formData.colPrice || ''}
+													onChange={handleInputChange}
+													size="small"
+													variant="outlined"
+													error={errors.colPrice ? true : false}
+													helperText={errors.colPrice}
+													slotProps={{
+														input: {
+
+															startAdornment: <InputAdornment position="start">
+																{
+																	VITE_JET_CURRENCY_CODE === 'GBP' ? (
+																		<CurrencyPoundRounded className='text-base' />
+																	) : VITE_JET_CURRENCY_CODE === 'CNY' ? (
+																		<CurrencyYenOutlinedIcon className='text-base' />
+																	) : VITE_JET_CURRENCY_CODE === 'USD' ? (
+																		<AttachMoneyOutlinedIcon className='text-base' />
+																	) : (
+																		<CurrencyPoundRounded className='text-base' />
+																	)
+																}
+															</InputAdornment>
+														},
+													}}
+												/>
+											</FormControl>
+										)}
+									</div>
+								</div>
 								<div className={oneColumnStyle}>
 									<label htmlFor="tb_wzghpmog_qnttkoss" className={labelStyle}>
 										电价优惠

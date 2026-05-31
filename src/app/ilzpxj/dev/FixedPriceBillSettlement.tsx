@@ -867,10 +867,10 @@ const TimelineList: React.FC = () => {
           'grooveToken': token
         }
       }).then(response => {
-        if (response.data) {
-          handleRefreshSelfConsumption()
+        if (response.data.success === false) {
+           showAlert(response.data.message, 'error');
         } else {
-          showAlert(response.data.message, 'error');
+           handleRefreshSelfConsumption()
         }
       }).catch(err => {
         showAlert('Handle self-consumption data exception: ' + err.message, 'error');
@@ -889,17 +889,33 @@ const TimelineList: React.FC = () => {
     setAccountNumber(accountNumber);
     setSettlementYear(year);
 
+    /*
     if (id != null) {
       setSelectedBillId(id);
       setSelectedBillType('P0003');
       setOpen(true);
-    } else {
-      showAlert('请上传余电上网电费账单', 'warning');
-    }
+    } else { */
+      axios.post(import.meta.env.VITE_JET_ASP_BPC_API + `/billsettlement/surplustogrid/creation/${accountNumber}/${year}`, {
 
-
-
-
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'grooveToken': token
+        }
+      }).then(response => {
+        if (response.data) {
+          setSelectedBillId(response.data);
+          setSelectedBillType('P0003');
+          setOpen(true);
+        } else {
+          showAlert(response.data.message, 'error');
+        }
+      }).catch(err => {
+        showAlert('Handle surplus to grid data exception: ' + err.message, 'error');
+      }).finally(() => {
+        setLoading(false);
+      });
+    // }
   };
 
   const handleDownloadPDF = async () => {
@@ -987,9 +1003,6 @@ const TimelineList: React.FC = () => {
             <h1 className="text-base font-bold text-slate-900 tracking-tight flex items-center">
               商户电费结算概览
             </h1>
-            <p className="text-sm text-slate-500 mt-2 flex items-center gap-2"><svg className="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="InfoOutlinedIcon"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8"></path></svg>
-              基于瀑布流布局的紧凑型账单看板
-            </p>
           </div>
           <Button startIcon={<Refresh />} onClick={fetchMerchants} size="small">
             刷新数据
