@@ -96,6 +96,8 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			        		gwsnkwpp: '',
 			        		mrvqpphi: '',
 			        		bwblkhay: '',
+			        		colFvcsyx: '',
+			        		areaId: '',
 			        		deimigjs: '',
 			        		jasosmzz: '01',
 			        		ptkfgasa: '一般纳税人',
@@ -389,6 +391,11 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			
 			      return '';
 			    },
+		    	"areaId": (value: any) => {
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			
+			      return '';
+			    },
 		    	"deimigjs": (value: any) => {
 			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
 			
@@ -455,7 +462,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	    	
 	      		const jsonData = { ...formData };
 	
-				showAlert('Operation successfully.', 'success');
+				showAlert(t('message.operationSuccess'), 'success');
 	
 				onSubmit?.(jsonData);
 	        } else if(response.data && !response.data.success) {
@@ -498,6 +505,13 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 						
 								if (errorMsg != '') {
 						    		newErrors["bwblkhay"] = errorMsg;
+						    	}
+						    }
+					    	if (validationRules["areaId"]) {
+						    	const errorMsg = validationRules["areaId"](formData.areaId);
+						
+								if (errorMsg != '') {
+						    		newErrors["areaId"] = errorMsg;
 						    	}
 						    }
 					    	if (validationRules["deimigjs"]) {
@@ -657,6 +671,86 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		                  />
 	              </FormControl>
 	              )}
+			     </div>
+	        </div>
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_xbbyezwt_colFvcsyx" className={labelStyle}>
+	                场站名称
+	            </label>
+	            <div className="mt-2">
+	            {isViewReadOnly ? (
+	            	<Typography variant="body2" gutterBottom>{formData.colFvcsyx || ''}</Typography>
+	            ) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['colFvcsyx'] = el;
+												}}>
+		              <TextField
+		                    id="tb_xbbyezwt_colFvcsyx"
+		                    name="colFvcsyx"
+		                    value={formData.colFvcsyx || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    variant="outlined"
+		                    error={errors.colFvcsyx ? true : false}
+		                    helperText={errors.colFvcsyx}
+		                    slotProps={{
+					            input: {
+					                
+					              startAdornment: <InputAdornment position="start">
+					              <TextIcon className='text-base'/>
+					              </InputAdornment>
+					            },
+					          }}
+		                  />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>
+	    	<div className={oneColumnStyle}>
+	            <label htmlFor="tb_xbbyezwt_areaId" className={labelStyle}>
+	                所属区域
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.areaId || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth size="small"
+	               error={!!errors['areaId']}
+	               ref={(el) => {
+							if (el) fieldRefs.current['areaId'] = el;
+						}}
+	               >
+                      <Select
+                        id="tb_xbbyezwt_areaId"
+                        name='areaId'
+                        value={formData.areaId || ''}
+                        onChange={(e) => handleSelectChange(e, [{'id':'Shanghai','name':'上海市'},{'id':'Jiangsu','name':'江苏省'},{'id':'Zhejiang','name':'浙江省'},{'id':'Guangdong','name':'广东省'},{'id':'Jiangxi','name':'江西省'},{'id':'Yunnan','name':'云南省'},{'id':'Shandong','name':'山东省'},] )}
+                        inputProps={{ 'aria-label': 'Without label' }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              marginTop: '5px',
+                              boxShadow: 'none',
+                              border: '1px solid oklch(87.2% 0.01 258.338)',
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem value="">
+                          <em>&nbsp;</em>
+                        </MenuItem>
+                        
+				    		<MenuItem value='Shanghai'>上海市</MenuItem>
+				    		<MenuItem value='Jiangsu'>江苏省</MenuItem>
+				    		<MenuItem value='Zhejiang'>浙江省</MenuItem>
+				    		<MenuItem value='Guangdong'>广东省</MenuItem>
+				    		<MenuItem value='Jiangxi'>江西省</MenuItem>
+				    		<MenuItem value='Yunnan'>云南省</MenuItem>
+				    		<MenuItem value='Shandong'>山东省</MenuItem>
+                      </Select>
+                      <FormHelperText>{errors['areaId']}</FormHelperText>
+                    </FormControl>
+                    )}
 			     </div>
 	        </div>
 			<div className={oneColumnStyle}>
@@ -868,9 +962,9 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			     </div>
 	        </div>
 			<input type="hidden" name="yejsbuca" placeholder="" value={formData.yejsbuca || ''} />
-	    	<div className={oneColumnStyle}>
+	    	<div className={oneRowStyle}>
 	            <label htmlFor="tb_xbbyezwt_zxfodonb" className={labelStyle}>
-	                余电上网
+	                上网形式
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
@@ -887,10 +981,10 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 					        aria-labelledby="zxfodonb-row-radio-buttons-group-label"
 					        name="zxfodonb"
 					        value={formData.zxfodonb}
-							onChange={(e) => { handleRadioChange(e, [{'id':'no','name':'No'},{'id':'yes','name':'Yes'},] , 'pwayuydj') }}
+							onChange={(e) => { handleRadioChange(e, [{'id':'00','name':'全额上网'},{'id':'01','name':'自发自用 余电上网'},] , 'pwayuydj') }}
 					      >
-				    	   	   <FormControlLabel value="no" control={<Radio />} label="否"   />
-				    	   	   <FormControlLabel value="yes" control={<Radio />} label="是"   />
+				    	   	   <FormControlLabel value="00" control={<Radio />} label="全额上网"   />
+				    	   	   <FormControlLabel value="01" control={<Radio />} label="自发自用 余电上网"   />
 					  </RadioGroup>
                       <FormHelperText>{errors['zxfodonb']}</FormHelperText>
                     </FormControl>

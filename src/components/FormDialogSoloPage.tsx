@@ -11,21 +11,26 @@ import CloseIcon from '@mui/icons-material/Close';
 
 interface DialogFormProps {
   title: string,
+  subtitle?: React.ReactNode,
   dialogSize?: Breakpoint | false | 'sm',
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
 }
 
-const DialogForm: React.FC<DialogFormProps> = ({ title, open, dialogSize, onClose, children }) => {
-  
+const DialogForm: React.FC<DialogFormProps> = ({ title, subtitle, open, dialogSize, onClose, children }) => {
+
   return (
-    <Dialog 
-    fullWidth={true} 
+    <Dialog
+    fullWidth={true}
     maxWidth={dialogSize}
-    open={open} 
+    open={open}
     onClose={() => {}}>
-      <DialogTitle>{title}
+      <DialogTitle sx={{ pr: 6 }}>
+        <span className="block text-md font-semibold text-slate-800">{title}</span>
+        {subtitle ? (
+          <span className="mt-0.5 block text-xs font-normal text-slate-500">{subtitle}</span>
+        ) : null}
         {onClose ? (
           <IconButton
             aria-label="close"

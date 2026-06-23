@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
-import { Button, Chip, IconButton, Tooltip } from '@mui/material';
+import { Chip, Divider, IconButton, Tooltip } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import MenuIcon from '@mui/icons-material/Menu';
-import { styled, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 
 import { useSession } from '../authority/SessionContext';
 import { useAlert } from '../components/AlertContext';
@@ -49,19 +49,6 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr, sidebarOpen, onToggle }) => {
         setIsDialogOpen(true);
     }
 
-    const CustomStyledButton = styled(Button)({
-        borderRadius: 8,
-        padding: '6px 8px 6px 10px',
-        '&:hover': {
-            backgroundColor: 'oklch(97% 0.014 254.604)',
-        },
-        textTransform: 'none',
-        // height: '26px',
-        // fontSize: '0.8125rem',
-        fontWeight: '500',
-        letterSpacing: '0.01rem'
-    });
-
     return (
         <>
             <ThemeProvider theme={theme}>
@@ -80,7 +67,7 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr, sidebarOpen, onToggle }) => {
                                         transition: 'all 0.3s ease',
                                         // 增加点击时的旋转动画感（可选）
                                         transform: sidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)',
-                                        '&:hover': { bgcolor: 'primary.50', color: 'primary.main' }
+                                        '&:hover': { bgcolor: '#ecfdf5', color: '#059669' }
                                     }}
                                 >
                                     {/* 使用 MenuOpen 图标更有“收缩”的指向感 */}
@@ -95,7 +82,7 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr, sidebarOpen, onToggle }) => {
 
                         {/* 右侧区域：用户信息 + 退出 */}
                         <div className='flex items-center gap-2'>
-                            <Tooltip title={'Password management'} arrow>
+                            <Tooltip title={'密码管理'} arrow>
 
                                 <Chip variant="outlined" sx={{
 
@@ -105,7 +92,9 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr, sidebarOpen, onToggle }) => {
 
                                     avatar={<Avatar alt="Natacha" sx={{
 
-                                        border: 'none'
+                                        border: 'none',
+                                        bgcolor: '#ecfdf5',
+                                        color: '#059669',
 
                                     }}
 
@@ -119,15 +108,19 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr, sidebarOpen, onToggle }) => {
 
                             </Tooltip>
 
-                            <Tooltip title={'Sign out'} arrow>
+                            <Divider orientation="vertical" flexItem sx={{ my: 0.75, borderColor: '#e2e8f0' }} />
 
-                                <CustomStyledButton variant="text" onClick={handleSignOut} endIcon={<LogoutIcon className='text-xs' />}>
-
+                            <button
+                                type="button"
+                                onClick={handleSignOut}
+                                className="group flex items-center rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                            >
+                                <LogoutIcon fontSize="small" />
+                                {/* 悬浮时从右侧滑出文字，移出自动收起 */}
+                                <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm opacity-0 transition-all duration-300 ease-out group-hover:ml-1.5 group-hover:max-w-[6rem] group-hover:opacity-100">
                                     {t('system.signout')}
-
-                                </CustomStyledButton>
-
-                            </Tooltip>
+                                </span>
+                            </button>
                         </div>
                     </header>
 
@@ -136,7 +129,7 @@ const Header: React.FC<TyrBreadcrumb> = ({ arr, sidebarOpen, onToggle }) => {
                     </div>
                 </div>
                 <ProfilePage
-                    title="Change the password"
+                    title="密码管理"
                     open={isDialogOpen}
                     dialogSize={`xs`}
                     onClose={() => {

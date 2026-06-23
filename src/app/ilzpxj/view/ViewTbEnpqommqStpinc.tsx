@@ -151,14 +151,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
 			}
 
 			default: {
@@ -374,7 +374,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 	const validationRules = {
 		"kwotkios": (value: any) => {
-			if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 
 			return '';
 		},
@@ -429,7 +429,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 				const jsonData = { ...formData };
 
-				showAlert('Operation successfully.', 'success');
+				showAlert(t('message.operationSuccess'), 'success');
 
 				onSubmit?.(jsonData);
 			} else if (response.data && !response.data.success) {

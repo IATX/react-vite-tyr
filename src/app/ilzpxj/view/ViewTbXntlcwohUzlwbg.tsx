@@ -169,14 +169,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
    const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
 			}
 
 			default: {
@@ -392,52 +392,52 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	
 	const validationRules = {
 		    	"uislfbtj": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"jtenztaq": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"vghyjelr": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"hsoyoxad": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"ppleoliy": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"yqjhrqpv": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"dbjcahum": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"stmwshrs": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"shwsiwey": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
 		    	"mqnwdfoo": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 			
 			      return '';
 			    },
@@ -493,7 +493,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	    	
 	      		const jsonData = { ...formData };
 	
-				showAlert('Operation successfully.', 'success');
+				showAlert(t('message.operationSuccess'), 'success');
 	
 				onSubmit?.(jsonData);
 	        } else {

@@ -20,7 +20,9 @@ import {
     MenuItem,
     Tooltip,
     Button,
-    Popover
+    Popover,
+    Tabs,
+    Tab
 } from '@mui/material';
 
 import Table from '@mui/material/Table';
@@ -35,6 +37,7 @@ import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { Add, Edit, Delete, ExpandMore, ExpandLess, FilterList, Category, Bolt, Link, CloudUpload, SettingsCellRounded, DeleteSweep, } from '@mui/icons-material';
 
 import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/zh-cn'; // 加载中文日历语言包
 import { grey } from '@mui/material/colors';
 
 import axios from 'axios';
@@ -48,6 +51,7 @@ import PriceImportDialog from '../../../components/FormDialogSoloPage.tsx';
 import Parameterization from '../../../components/RenderComponent.tsx';
 import { useBreadcrumbs } from '../../../context/BreadcrumbContext.tsx';
 import FileComparisonPreview from '../../../components/FileComparisonPreview.tsx';
+import { useTranslation } from 'react-i18next';
 
 const monthMap: Record<string, string> = {
     '1月': '01', '2月': '02', '3月': '03', '4月': '04', '5月': '05', '6月': '06',
@@ -101,6 +105,7 @@ interface RegularPricingListProps {
     searchConditions: Record<string, string>;
     selectedDate: Dayjs | null;           // 新增
     markMonthsWithData: Record<string, number>; // 新增
+    foreignKey: number;                          // 省市（area 查询参数）
 }
 
 interface SourceFileItemProps {
@@ -111,22 +116,20 @@ interface SourceFileItemProps {
     selectedDate: Dayjs | null;           // 新增
     markData: Record<string, number>; // 新增
     setMarkData: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+    clueId: number;                          // 省市（area 查询参数）
 }
 
 
-const SourceFileItems = ({ searchNormalPricingConditions, searchCalculationFormulaConditions, search1d5PricingConditions, searchConditions, selectedDate, markData, setMarkData }: SourceFileItemProps) => {
+const SourceFileItems = ({ searchNormalPricingConditions, searchCalculationFormulaConditions, search1d5PricingConditions, searchConditions, selectedDate, markData, setMarkData, clueId }: SourceFileItemProps) => {
     const { showAlert } = useAlert();
     const { token } = useSession();
     const { confirm } = useConfirm();
 
-    const [priceImportDialogOpen, setPriceImportDialogOpen] = useState<boolean>(false);
-    const [priceImportTitle, setPriceImportDialogTitle] = useState<string>('');
     const [agentPriceClue, setAgentPriceClue] = useState<AgentPriceClueProps | null>(null);
 
     const fetchClue = async () => {
         axios.post(import.meta.env.VITE_JET_ASP_BPC_API + '/apprice/clue', {
-            startDate: searchConditions.cdtylzeq,
-            endDate: searchConditions.dmnbozws,
+            pkId: clueId,
         }, {
             headers: {
                 'Content-Type': 'application/json',
@@ -157,7 +160,7 @@ const SourceFileItems = ({ searchNormalPricingConditions, searchCalculationFormu
         } else {
             setAgentPriceClue(null);
         }
-    }, [searchConditions, markData]);
+    }, [searchConditions, markData, clueId]);
 
     const  handleCleanUp = async () => {
         const confirmed = await confirm({
@@ -169,10 +172,8 @@ const SourceFileItems = ({ searchNormalPricingConditions, searchCalculationFormu
         });
 
         if (confirmed) {
-            axios.post(import.meta.env.VITE_JET_ASP_BPC_API + '/apprice/cleanup', { 
-                startDate: searchConditions.cdtylzeq,   
-                endDate: searchConditions.dmnbozws, 
-
+            axios.post(import.meta.env.VITE_JET_ASP_BPC_API + '/apprice/cleanup', {
+                pkId: clueId,
             }, {
                 headers: {
                     'Content-Type': 'application/json', 
@@ -210,19 +211,34 @@ const SourceFileItems = ({ searchNormalPricingConditions, searchCalculationFormu
 
     return (
         <>
+            {/* 有数据时显示文件对比预览，无数据来源时显示占位提示 */}
             {agentPriceClue ? (
-                <React.Fragment>
-                    <FileComparisonPreview
-                        fileUrl={agentPriceClue.fileUrl}
-                        title={`代理购电工商业用户电价表（执行时间：${dayjs(agentPriceClue.startDate).format(displayDateFormat)} - ${dayjs(agentPriceClue.endDate).format(displayDateFormat)}）`}
-                    >
-                        {/* 右侧：三个上下排列的列表 */}
-                        <div className="flex flex-col h-full overflow-hidden gap-2">
-                            <RegularPricingList title="电价表" color="primary" isEditable={false} defaultOpen={true} searchConditions={searchNormalPricingConditions} selectedDate={selectedDate} markMonthsWithData={markData} />
-                            <CalculationFormulaList title="计算公式表" color="warning" isEditable={false} defaultOpen={false} searchConditions={searchCalculationFormulaConditions} selectedDate={selectedDate} markMonthsWithData={markData} />
-                            <RegularPricingList title="1.5倍电价表" color="secondary" isEditable={false} defaultOpen={false} searchConditions={search1d5PricingConditions} selectedDate={selectedDate} markMonthsWithData={markData} />
-                        </div>
-                    </FileComparisonPreview>
+                <FileComparisonPreview
+                    fileUrl={agentPriceClue.fileUrl}
+                    title={`代理购电工商业用户电价表（执行时间：${dayjs(agentPriceClue.startDate).format(displayDateFormat)} - ${dayjs(agentPriceClue.endDate).format(displayDateFormat)}）`}
+                >
+                    {/* 右侧：三个上下排列的列表 */}
+                    <div className="flex flex-col h-full overflow-hidden gap-2">
+                        <RegularPricingList title="电价表" color="primary" isEditable={false} defaultOpen={true} searchConditions={searchNormalPricingConditions} selectedDate={selectedDate} markMonthsWithData={markData} foreignKey={clueId} />
+                        <CalculationFormulaList title="计算公式表" color="warning" isEditable={false} defaultOpen={false} searchConditions={searchCalculationFormulaConditions} selectedDate={selectedDate} markMonthsWithData={markData} foreignKey={clueId} />
+                        <RegularPricingList title="1.5倍电价表" color="secondary" isEditable={false} defaultOpen={false} searchConditions={search1d5PricingConditions} selectedDate={selectedDate} markMonthsWithData={markData} foreignKey={clueId} />
+                    </div>
+                </FileComparisonPreview>
+            ) : (
+                <Box
+                    sx={{
+                        py: 1,
+                        textAlign: 'center',
+                        color: 'text.disabled',
+                    }}
+                >
+                    <Typography variant="body2" className="text-xs">无电价数据</Typography>
+                </Box>
+            )}
+
+            {/* 操作区：有数据时显示清除数据（文件上传已移动到页面右上角） */}
+            {agentPriceClue && (
+                <div className="flex items-center gap-2">
                     <Button
                         variant="text"
                         startIcon={<DeleteSweep />}
@@ -247,62 +263,15 @@ const SourceFileItems = ({ searchNormalPricingConditions, searchCalculationFormu
                     >
                         清除数据
                     </Button>
-                </React.Fragment>
-            ) : (
-                <React.Fragment>
-                    {/* 文件上传按钮 - 使用 Input 模拟上传或直接用 Button */}
-                    <Button
-                        variant="text" // 或者使用 "outlined" / "contained" 
-                        startIcon={<CloudUpload />}
-                        onClick={(e) => {
-                            setPriceImportDialogOpen(true);
-                            setPriceImportDialogTitle('上传价格表');
-                        }}
-                        sx={{
-                            textTransform: 'none', // 防止字母自动大写
-                            fontSize: '0.875rem',  // 对应 text-sm
-                            color: 'text.secondary', // 对应 text-slate-600
-                            fontWeight: 500,       // 对应 font-medium
-                            padding: '4px 8px',
-                            '&:hover': {
-                                color: 'primary.main', // 对应 hover:text-blue-600
-                                backgroundColor: 'transparent', // 如果是 text 模式不想背景变色
-                            },
-                            '& .MuiButton-startIcon': {
-                                marginRight: '4px', // 对应 gap-1
-                                '& svg': { fontSize: 14 } // 图标大小
-                            }
-                        }}
-                    >
-                        文件上传
-                    </Button>
-                </React.Fragment>
+                </div>
             )}
-
-            <PriceImportDialog
-                title={priceImportTitle}
-                dialogSize={'sm'}
-                open={priceImportDialogOpen}
-                onClose={() => {
-                    setPriceImportDialogOpen(false);
-                }}
-                children={WrapSoloFormNode(Parameterization('ViewTbDhnkqhqgNmiwkj', {
-                    initialData: {},
-                    onCancel: (formData: any) => {
-                        setPriceImportDialogOpen(false);
-                    },
-                    onSubmit: (formData: any) => {
-                        setPriceImportDialogOpen(false);
-                    },
-                }))}
-            />
         </>
 
     );
 
 }
 
-const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchConditions, selectedDate, markMonthsWithData }: RegularPricingListProps) => {
+const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchConditions, selectedDate, markMonthsWithData, foreignKey }: RegularPricingListProps) => {
     const { showAlert } = useAlert();
     const { confirm } = useConfirm();
     const { token } = useSession();
@@ -395,7 +364,8 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
     const queryParams = {
         ...searchConditions, ...{
             page: page + 1,
-            limit: pageSize
+            limit: pageSize,
+            foreignKey: foreignKey,
         }
     };
 
@@ -457,7 +427,7 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
 
             setFilterOptions(categories);
         }
-    }, [searchConditions, markMonthsWithData]);
+    }, [searchConditions, markMonthsWithData, foreignKey]);
 
 
     const PricingItem = ({ item }: { item: PricingData }) => {
@@ -757,7 +727,7 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
 
     return (<>
         <Paper elevation={0} className='rounded-md border'
-            variant="outlined" sx={{ borderColor: `${color}.main` }}>
+            variant="outlined" sx={{ borderColor: 'divider' }}>
             <div className="px-4 py-2 flex justify-between items-center">
                 <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flexGrow: 1, cursor: 'pointer', }}
                     onClick={() => setOpen(!open)}
@@ -793,6 +763,7 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
                     >
                         {totalRows} 条数据
                     </Button>
+                    {/* 新增按钮暂时不用，先注释掉
                     {isEditable && (
                         <Button
                             size="small"
@@ -812,6 +783,7 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
                             增加
                         </Button>
                     )}
+                    */}
 
                 </Stack>
             </div>
@@ -821,7 +793,7 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
                     <Box display="flex" justifyContent="center" p={4}><CircularProgress size={24} /></Box>
                 ) : (
                     <List disablePadding sx={{
-                        maxHeight: '400px',        // 固定高度，也可以用 maxHeight
+                        maxHeight: 'calc(100vh - 340px)', // 自适应视口高度，列表内部滚动，避免浏览器出现滚动条
                         overflowY: 'auto',      // 纵向溢出时显示滚动条
                         width: '100%',
                         padding: 2,
@@ -842,7 +814,7 @@ const RegularPricingList = ({ title, color, isEditable, defaultOpen, searchCondi
 
                         {items.length === 0 && (
                             <Box sx={{ py: 2, textAlign: 'center', color: 'text.secondary' }}>
-                                <Typography variant="body2" className='font-sm'>尚未上传电价表数据</Typography>
+                                <Typography variant="body2" className='text-xs'>无数据</Typography>
                             </Box>
                         )}
                     </List>
@@ -964,9 +936,10 @@ interface CalculationFormulaProps {
     searchConditions: Record<string, string>;
     selectedDate: Dayjs | null;           // 新增
     markMonthsWithData: Record<string, number>; // 新增
+    foreignKey: number;                          // 省市（area 查询参数）
 }
 
-const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchConditions, selectedDate, markMonthsWithData }: CalculationFormulaProps) => {
+const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchConditions, selectedDate, markMonthsWithData, foreignKey }: CalculationFormulaProps) => {
     const { showAlert } = useAlert();
     const { confirm } = useConfirm();
     const { token } = useSession();
@@ -996,7 +969,8 @@ const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchC
     const queryParams = {
         ...searchConditions, ...{
             page: page + 1,
-            limit: pageSize
+            limit: pageSize,
+            foreignKey: foreignKey
         }
     };
 
@@ -1039,7 +1013,7 @@ const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchC
             // 可选：如果没有数据，是否需要清空当前列表？
             setTableData([]);
         }
-    }, [searchConditions, markMonthsWithData]);
+    }, [searchConditions, markMonthsWithData, foreignKey]);
 
     const [formulaNewDialogOpen, setFormulaNewDialogOpen] = useState<boolean>(false);
     const [formulaDialogTitle, setFormulaNewDialogTitle] = useState<string>('');
@@ -1095,7 +1069,7 @@ const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchC
         <Paper
             elevation={0}
             variant="outlined"
-            sx={{ borderColor: `${color}.main` }}
+            sx={{ borderColor: 'divider' }}
             className="rounded-md border"
         >
             <div className="px-4 py-3 flex justify-between items-center bg-slate-50/50 border-b border-slate-100">
@@ -1127,6 +1101,7 @@ const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchC
                         sx={{ fontSize: '12px', height: '20px', bgcolor: 'white' }}
                         variant="outlined"
                     />
+                    {/* 新增按钮暂时不用，先注释掉
                     {isEditable && (
                         <Button
                             size="small"
@@ -1144,6 +1119,7 @@ const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchC
                             增加
                         </Button>
                     )}
+                    */}
                 </Stack>
             </div>
             <Collapse in={open} timeout="auto" unmountOnExit>
@@ -1151,7 +1127,7 @@ const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchC
                     <Box display="flex" justifyContent="center" p={4}><CircularProgress size={24} /></Box>
                 ) : (
                     <List className="overflow-y-auto" sx={{
-                        maxHeight: '400px',        // 固定高度，也可以用 maxHeight
+                        maxHeight: 'calc(100vh - 340px)', // 自适应视口高度，列表内部滚动，避免浏览器出现滚动条
                         overflowY: 'auto',      // 纵向溢出时显示滚动条
                         width: '100%',
                         padding: 2,
@@ -1166,7 +1142,7 @@ const CalculationFormulaList = ({ title, color, isEditable, defaultOpen, searchC
 
                         {tableData.length === 0 ? (
                             <Box sx={{ py: 2, textAlign: 'center', color: 'text.secondary' }}>
-                                <Typography variant="body2" className='font-sm'>尚未上传电价表数据</Typography>
+                                <Typography variant="body2" className='text-xs'>无数据</Typography>
                             </Box>
                         ) : (
                             <>
@@ -1262,21 +1238,40 @@ const AgentPurchasePricingForm = () => {
     const { showAlert } = useAlert();
     const { token } = useSession();
     const { setBreadcrumbs } = useBreadcrumbs();
+    const { i18n } = useTranslation();
+
+    // 日历语言跟随系统国际化设置：中文用 zh-cn，其它用 en
+    const adapterLocale = i18n.language?.startsWith('zh') ? 'zh-cn' : 'en';
 
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
 
+    // 省市选择（默认上海市），作为 area 参数随查询下发
+    const [area, setArea] = useState<string>('Shanghai');
+
+    const [foreignKey, setForeignKey] = useState<number>(0); // 省市对应的外键 ID，初始为 0 或者 null，根据实际情况调整
+
     const [markMonthsWithData, setMarkMonthsWithData] = useState<Record<string, number>>({});
+
+    // 右侧三个列表的 tab 切换（0:电价表 1:计算公式表 2:1.5倍电价表）
+    const [activeTab, setActiveTab] = useState<number>(0);
+
+    // 文件上传弹窗（移动到页面右上角，随时可点击）
+    const [priceImportDialogOpen, setPriceImportDialogOpen] = useState<boolean>(false);
+    const [priceImportTitle, setPriceImportDialogTitle] = useState<string>('');
 
     useEffect(() => {
         setBreadcrumbs([{
-            name: '代理购电工商业用户电价管理',
+            name: '电价管理',
+            url: '/main/trays'
+        },{
+            name: '代购电价导入',
             url: '/main/trays'
         }]);
     }, []);
 
 
     const fetchmMarkData = async (currentDate: Dayjs) => {
-        axios.post(import.meta.env.VITE_JET_ASP_BPC_API + `/apprice/normal/mark/${currentDate.year()}`, {}, {
+        axios.post(import.meta.env.VITE_JET_ASP_BPC_API + `/apprice/normal/mark/${area}/${currentDate.year()}`, {}, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'grooveToken': token
@@ -1284,6 +1279,7 @@ const AgentPurchasePricingForm = () => {
         }).then(response => {
             if (response.data) {
                 setMarkMonthsWithData(response.data);
+                setForeignKey(response.data[currentDate.format('YYYY-MM')] ?? 0); // 假设接口返回的结构中包含 foreignKey 字段
             }
         }).catch(err => {
             showAlert('Query data exception: ' + err.message, 'error');
@@ -1293,7 +1289,8 @@ const AgentPurchasePricingForm = () => {
 
     useEffect(() => {
         fetchmMarkData(selectedDate ?? dayjs());
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [area]);
 
     const [searchClueConditions, setSearchClueConditions] = useState<Record<string, string>>({
         startDate: dayjs().startOf('month').format(queryDateFormat) + ' 00:00:00', // Start date
@@ -1332,9 +1329,12 @@ const AgentPurchasePricingForm = () => {
         const prevYear = prevDateRef.current?.year();
         const currentYear = newDate.year();
 
-        // 判断逻辑：只有年份真正改变时，才调用 fetchmMarkData
+        // 判断逻辑：只有年份真正改变时，才调用 fetchmMarkData（其内部会基于最新返回设置 foreignKey）
         if (prevYear !== currentYear) {
             fetchmMarkData(newDate);
+        } else {
+            // 同年内仅切换月份：markMonthsWithData 已是最新，直接根据所选年月更新外键
+            setForeignKey(markMonthsWithData[newDate.format('YYYY-MM')] ?? 0);
         }
 
         // 更新状态和 Ref
@@ -1364,16 +1364,59 @@ const AgentPurchasePricingForm = () => {
     };
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={adapterLocale}>
             <Box className="flex flex-col p-5 gap-6">
                 {/* 第一行：全宽标题行 */}
                 <Box className="w-full flex justify-between items-center px-1">
-                    <Typography variant="h6" className="text-base font-semibold">
-                        国网上海市电力公司代理购电工商业用户电价表
+                    <Typography variant="h6" className="text-base font-semibold" component="div" sx={{ display: 'flex', alignItems: 'center' }}>
+                        国网
+                        <Select
+                            variant="standard"
+                            value={area}
+                            onChange={(e) => setArea(e.target.value)}
+                            disableUnderline
+                            sx={{
+                                mx: 0.5,
+                                fontSize: 'inherit',
+                                fontWeight: 'inherit',
+                                color: 'primary.main',
+                                '& .MuiSelect-select': { py: 0, pr: '20px !important' },
+                            }}
+                        >
+                            <MenuItem value="Shanghai">上海市</MenuItem>
+                            <MenuItem value="Jiangsu">江苏省</MenuItem>
+                            <MenuItem value="Zhejiang">浙江省</MenuItem>
+                            <MenuItem value="Guangdong">广东省</MenuItem>
+                            <MenuItem value="Jiangxi">江西省</MenuItem>
+                        </Select>
+                        电力公司代理购电工商业用户电价表
                     </Typography>
-                    <Typography variant="caption" sx={{}} className="px-2 py-1 rounded-md">
-                        <Box component="span" sx={{ fontWeight: 600 }}>执行时间：</Box>{selectedDate?.startOf('month').format(displayDateFormat)} — {selectedDate?.endOf('month').format(displayDateFormat)}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="caption" sx={{}} className="px-2 py-1 rounded-md">
+                            <Box component="span" sx={{ fontWeight: 600 }}>执行时间：</Box>{selectedDate?.startOf('month').format(displayDateFormat)} — {selectedDate?.endOf('month').format(displayDateFormat)}
+                        </Typography>
+                        {/* 文件上传按钮：右上角，随时可点击，不受是否有数据控制 */}
+                        <Button
+                            variant="text"
+                            size="small"
+                            startIcon={<CloudUpload />}
+                            onClick={() => {
+                                setPriceImportDialogOpen(true);
+                                setPriceImportDialogTitle('上传价格表');
+                            }}
+                            sx={{
+                                textTransform: 'none',
+                                fontSize: '0.875rem',
+                                fontWeight: 500,
+                                '& .MuiButton-startIcon': {
+                                    marginRight: '4px',
+                                    '& svg': { fontSize: 16 }
+                                }
+                            }}
+                        >
+                            文件上传
+                        </Button>
+                    </Box>
                 </Box>
 
                 {/* 第二行：左右排列的容器 */}
@@ -1567,6 +1610,7 @@ const AgentPurchasePricingForm = () => {
                                             selectedDate={selectedDate}
                                             markData={markMonthsWithData}
                                             setMarkData={setMarkMonthsWithData}
+                                            clueId={foreignKey}
                                             ></SourceFileItems>
                                     </div>
                                 </div>
@@ -1574,17 +1618,53 @@ const AgentPurchasePricingForm = () => {
                         </Paper>
                     </div>
 
-                    {/* --- 右侧：三段式列表区域 --- */}
+                    {/* --- 右侧：Tab 切换的三段式列表区域 --- */}
                     <div className="flex-1 flex flex-col gap-5">
-                        <Stack spacing={3}>
-                            <RegularPricingList title="电价表" color="primary" isEditable={true} defaultOpen={true} searchConditions={searchNormalPricingConditions} selectedDate={selectedDate} markMonthsWithData={markMonthsWithData} />
-                            <CalculationFormulaList title="计算公式表" color="warning" isEditable={true} defaultOpen={true} searchConditions={searchCalculationFormulaConditions} selectedDate={selectedDate} markMonthsWithData={markMonthsWithData} />
-                            <RegularPricingList title="1.5倍电价表" color="secondary" isEditable={true} defaultOpen={true} searchConditions={search1d5PricingConditions} selectedDate={selectedDate} markMonthsWithData={markMonthsWithData} />
-                        </Stack>
+                        <Tabs
+                            value={activeTab}
+                            onChange={(_, v) => setActiveTab(v)}
+                            sx={{ minHeight: 40, '& .MuiTab-root': { minHeight: 40, textTransform: 'none', fontWeight: 600 } }}
+                        >
+                            <Tab label="电价表" />
+                            <Tab label="计算公式表" />
+                            <Tab label="1.5倍电价表" />
+                        </Tabs>
+
+                        {/* 三个列表均保持挂载，仅切换可见性，以保留各自的数据与过滤状态 */}
+                        <Box sx={{ display: activeTab === 0 ? 'block' : 'none' }}>
+                            <RegularPricingList title="电价表" color="primary" isEditable={true} defaultOpen={true} searchConditions={searchNormalPricingConditions} selectedDate={selectedDate} markMonthsWithData={markMonthsWithData} foreignKey={foreignKey} />
+                        </Box>
+                        <Box sx={{ display: activeTab === 1 ? 'block' : 'none' }}>
+                            <CalculationFormulaList title="计算公式表" color="warning" isEditable={true} defaultOpen={true} searchConditions={searchCalculationFormulaConditions} selectedDate={selectedDate} markMonthsWithData={markMonthsWithData} foreignKey={foreignKey} />
+                        </Box>
+                        <Box sx={{ display: activeTab === 2 ? 'block' : 'none' }}>
+                            <RegularPricingList title="1.5倍电价表" color="secondary" isEditable={true} defaultOpen={true} searchConditions={search1d5PricingConditions} selectedDate={selectedDate} markMonthsWithData={markMonthsWithData} foreignKey={foreignKey} />
+                        </Box>
                     </div>
 
                 </Box>
             </Box >
+
+            {/* 文件上传弹窗（右上角按钮触发） */}
+            <PriceImportDialog
+                title={priceImportTitle}
+                dialogSize={'sm'}
+                open={priceImportDialogOpen}
+                onClose={() => {
+                    setPriceImportDialogOpen(false);
+                }}
+                children={WrapSoloFormNode(Parameterization('ViewTbDhnkqhqgNmiwkj', {
+                    initialData: {},
+                    onCancel: () => {
+                        setPriceImportDialogOpen(false);
+                    },
+                    onSubmit: () => {
+                        setPriceImportDialogOpen(false);
+                        // 上传完成后刷新当前年份的数据标记
+                        fetchmMarkData(selectedDate ?? dayjs());
+                    },
+                }))}
+            />
         </LocalizationProvider >
     );
 };

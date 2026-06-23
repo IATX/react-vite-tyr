@@ -1,6 +1,4 @@
-import { useContext, useEffect } from 'react';
-
-import { useBreadcrumbs } from '../context/BreadcrumbContext';
+import { useContext } from 'react';
 
 import { ThemeProvider } from "@emotion/react";
 import theme from "../theme/tyr";
@@ -12,16 +10,18 @@ import { WrapRouteFormNode, WrapRouteTableNode, WrapRouteOtherNode, WrapRouteHub
 
 type ContentType = 'view' | 'query' | 'hub' | 'other' | 'blank';
 
+// elem 可能是组件引用（LazyExoticComponent）或已渲染的 JSX element（来自 Parameterization）
+type BayElem = React.ReactNode | React.LazyExoticComponent<React.ComponentType<any>> | null;
+
 export interface BayContentProp {
   title: string,
   subheader: string,
-  elem: React.ReactNode | null
+  elem: BayElem
   type: ContentType
 }
 
-// elem 可能是组件引用（LazyExoticComponent）或已渲染的 JSX element（来自 Parameterization）
 // WrapNode 函数只接受组件引用，需要区分两种情况
-function renderBayContent(elem: React.ReactNode | null, type: ContentType): React.ReactNode {
+function renderBayContent(elem: BayElem, type: ContentType): React.ReactNode {
   if (!elem || type === 'blank') return null;
 
   if (React.isValidElement(elem)) {
@@ -39,7 +39,7 @@ function renderBayContent(elem: React.ReactNode | null, type: ContentType): Reac
   }
 
   // 组件引用，交给 WrapNode 包裹 Suspense 后渲染
-  const Comp = elem as React.ComponentType<any>;
+  const Comp = elem as unknown as React.ComponentType<any>;
   switch (type) {
     case 'query': return WrapRouteTableNode(Comp);
     case 'view': return WrapRouteFormNode(Comp);
@@ -50,13 +50,7 @@ function renderBayContent(elem: React.ReactNode | null, type: ContentType): Reac
 }
 
 export default function AppTrayPage() {
-  const { setDefaultActiveItemId } = useBreadcrumbs();
-
   const { currentBayContent } = useContext(AppContext);
-
-  useEffect(() => {
-    setDefaultActiveItemId('');
-  }, []);
 
   return (
     <>

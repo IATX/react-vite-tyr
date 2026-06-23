@@ -168,6 +168,16 @@ const componentMap: IComponentMap = {
     type: 'view',
     path: 'app/ilzpxj/view/ViewTbCuqscwaiClbnay',
   },
+  'ViewTbCuqscwaiDncdtj': {
+    elem: React.lazy(() => import('../app/ilzpxj/view/ViewTbCuqscwaiDncdtj')),
+    type: 'view',
+    path: 'app/ilzpxj/view/ViewTbCuqscwaiDncdtj',
+  },
+  'ViewTbExswzlwtLqufqi': {
+    elem: React.lazy(() => import('../app/ilzpxj/view/ViewTbExswzlwtLqufqi')),
+    type: 'view',
+    path: 'app/ilzpxj/view/ViewTbExswzlwtLqufqi',
+  },
   'ViewTbDailyLogsFjsjve': {
     elem: React.lazy(() => import('../app/ilzpxj/view/ViewTbDailyLogsFjsjve')),
     type: 'view',
@@ -188,10 +198,20 @@ const componentMap: IComponentMap = {
     type: 'view',
     path: 'app/ilzpxj/view/ViewTbEnpqommqStpinc',
   },
+  'ViewTbExswzlwtKcdgmf': {
+			'elem': React.lazy(() => import('../app/ilzpxj/view/ViewTbExswzlwtKcdgmf')),
+			'type': 'view',
+			'path': 'app/ilzpxj/view/ViewTbExswzlwtKcdgmf',
+	},
   'ViewTbGvfrokeqSfidnf': {
     elem: React.lazy(() => import('../app/ilzpxj/view/ViewTbGvfrokeqSfidnf')),
     type: 'view',
     path: 'app/ilzpxj/view/ViewTbGvfrokeqSfidnf',
+  },
+  'ViewTbGvfrokeqZlvans': {
+    elem: React.lazy(() => import('../app/ilzpxj/view/ViewTbGvfrokeqZlvans')),
+    type: 'view',
+    path: 'app/ilzpxj/view/ViewTbGvfrokeqZlvans',
   },
   'ViewTbIfsxuxeiLiyiee': {
     elem: React.lazy(() => import('../app/ilzpxj/view/ViewTbIfsxuxeiLiyiee')),
@@ -375,12 +395,12 @@ const componentMap: IComponentMap = {
   },
   'Agentpurchasepricing': {
     elem: React.lazy(() => import('../app/ilzpxj/hub/Agentpurchasepricing')),
-    type: 'hub',
+    type: 'other',
     path: 'app/ilzpxj/hub/Agentpurchasepricing',
   },
   'Mchelecprice': {
     elem: React.lazy(() => import('../app/ilzpxj/hub/Mchelecprice')),
-    type: 'hub',
+    type: 'other',
     path: 'app/ilzpxj/hub/Mchelecprice',
   },
   'Billcenter': {
@@ -391,7 +411,17 @@ const componentMap: IComponentMap = {
   'Fixedpricebillsettlement': {
     elem: React.lazy(() => import('./ilzpxj/dev/FixedPriceBillSettlement')),
     type: 'other',
-    path: 'app/ilzpxj/dev/FixedPriceBIllSettlement',
+    path: 'app/ilzpxj/dev/FixedPriceBillSettlement',
+  },
+  'Electricitybillmanagement': {
+    elem: React.lazy(() => import('../app/ilzpxj/hub/Electricitybillmanagement')),
+    type: 'hub',
+    path: 'app/ilzpxj/hub/Electricitybillmanagement',
+  },
+  'Electricityoperamanagement': {
+    elem: React.lazy(() => import('../app/ilzpxj/hub/Electricityoperamanagement')),
+    type: 'hub',
+    path: 'app/ilzpxj/hub/Electricityoperamanagement',
   },
 };
 

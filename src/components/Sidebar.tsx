@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState } from 'react';
-import { List, ListItem, ListItemIcon, ListItemAvatar, ListItemText, Typography, Avatar, Link, Collapse, ListItemButton, Popover, Box, Divider, Grid, styled, Paper, ListSubheader, MenuList, Tooltip, IconButton } from '@mui/material';
+import { List, ListItem, ListItemIcon, ListItemAvatar, ListItemText, Typography, Avatar, Link, Collapse, ListItemButton, Popover, Box, Divider, Tooltip, IconButton } from '@mui/material';
 import {
     ExpandMore as ExpandMoreIcon,
     KeyboardArrowRight as KeyboardArrowRightIcon,
@@ -7,7 +7,6 @@ import {
     SmartToy as SmartToyIcon,
     KeyboardArrowUp as KeyboardArrowUpIcon,
     KeyboardArrowDown as KeyboardArrowDownIcon,
-    BorderColor,
 } from '@mui/icons-material';
 
 import RivetSvg from "./RivetSvg";
@@ -24,7 +23,7 @@ import componentMap, { type IComponentItem, type IComponentMap } from '../app/Co
 
 import { useTranslation } from 'react-i18next';
 import { RichTreeView } from '@mui/x-tree-view';
-import { blue, blueGrey, grey } from '@mui/material/colors';
+import { blue, blueGrey } from '@mui/material/colors';
 
 interface SidebarProps {
     activeItemId: string;
@@ -84,6 +83,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                 navigate(menu.url);
             } else {
                 const componentItem = findComponentItemByPath(componentMap, menu.url);
+
+                if(!componentItem) {
+                    console.log('Not found component for path:', menu.url);
+                }
 
                 if (componentItem && componentItem.elem) {
                     setCurrentBayContent({
@@ -180,9 +183,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
     return (
         <Box className={`w-64 p-4 flex flex-col justify-between border-r
                 transition-all duration-300 ease-in-out overflow-hidden`} style={{ width: `${width}px` }} sx={{borderColor: blueGrey[50]}}>
-            {/* Logo */}
+            {/* Logo：点击跳转至系统首页 */}
             <div className={`flex items-center mb-8 transition-all duration-300 ${!open ? 'justify-center' : ''}`}>
-                <div className="transition-opacity duration-300 ease-in-out">
+                <div
+                    className="transition-opacity duration-300 ease-in-out cursor-pointer"
+                    onClick={() => navigate('/')}
+                >
                     {open ? <RivetSvg /> : <RivetMiniSvg />}
                 </div>
             </div>
@@ -191,10 +197,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                 <div className='p-1'>
                     {/** Mainspace */}
                     {open && (
-                        <p className="text-sm font-semibold mb-2">{t('system.mainspace')}</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">{t('system.mainspace')}</p>
                     )}
                     <List sx={{ width: '100%', maxWidth: 320, py: 0 }}>
-                        {appHubs && appHubs.map((item) => (
+                        {appHubs && appHubs.map((item) => {
+                            const isSelected = item.id === activeItemId;
+                            return (
                             <ListItem
                                 key={item.id}
                                 disablePadding
@@ -202,17 +210,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                     minHeight: 75,
                                     borderRadius: '8px',
                                     mb: 1,
-                                    backgroundColor: open ? 'rgba(0, 0, 0, 0.02)' : 'transparent',
-                                    border: open ? '1px solid' : '1px solid transparent',
-                                    borderColor: open ? '#eceff1' : 'transparent',
+                                    backgroundColor: isSelected ? 'rgba(5, 150, 105, 0.08)' : (open ? 'rgba(0, 0, 0, 0.02)' : 'transparent'),
+                                    border: (open || isSelected) ? '1px solid' : '1px solid transparent',
+                                    borderColor: isSelected ? '#10b981' : (open ? '#eceff1' : 'transparent'),
                                     transition: 'all 0.3s ease',
                                     '&:hover': {
-                                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                                        borderColor: '#cfd8dc',
+                                        backgroundColor: isSelected ? 'rgba(5, 150, 105, 0.12)' : 'rgba(0, 0, 0, 0.02)',
+                                        borderColor: isSelected ? '#10b981' : '#cfd8dc',
                                         '& .MuiAvatar-root': {
                                             transform: !open ? 'scale(1.1)' : 'scale(1.05)',
-                                            color: 'primary.main',
-                                            borderColor: 'primary.main',
+                                            color: '#059669',
+                                            borderColor: '#10b981',
                                         }
                                     },
                                 }}
@@ -229,8 +237,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                 >
                                     <ListItemButton
                                         onClick={() => {
+                                            // 标记当前选中节点（与菜单导航共用 activeItemId，自动清除上一个选中态）
+                                            handleItemClick(item.id);
+
                                             // 安全获取组件，防止 .elem 报错
-                                            const componentItem = findComponentItemByPath(componentMap, item.url);    
+                                            const componentItem = findComponentItemByPath(componentMap, item.url);
 
                                             setCurrentBayContent({
                                                 title: item.label,
@@ -268,10 +279,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                                 sx={{
                                                     width: open ? 34 : 30,
                                                     height: open ? 34 : 30,
-                                                    bgcolor: '#f8fafc',
-                                                    color: 'primary.main',
+                                                    bgcolor: '#ecfdf5',
+                                                    color: '#059669',
                                                     border: '1.5px solid',
-                                                    borderColor: 'primary.main',
+                                                    borderColor: '#a7f3d0',
                                                     transition: 'all 0.3s ease',
                                                     '& .MuiSvgIcon-root': {
                                                         fontSize: open ? 18 : 22,
@@ -313,7 +324,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                     </ListItemButton>
                                 </Tooltip>
                             </ListItem>
-                        ))}
+                            );
+                        })}
                     </List>
                 </div>
 
@@ -329,7 +341,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                 {/* Navigation */}
                 {open && (
                     <>
-                        <p className="text-sm font-semibold mt-4 mb-2">{t('system.navigation')}</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-600 mt-4 mb-2">{t('system.navigation')}</p>
                     </>
                 )}
                 {appMenus && appMenus.map((item) => (
@@ -361,7 +373,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                 key={item.id}
                                 className={`
                                             rounded-md transition-all duration-200
-                                            ${item.id === activeItemId ? 'text-blue-500' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100'} 
+                                            ${item.id === activeItemId ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-blue-600 hover:bg-slate-50'}
                                             ${!open ? 'flex-col justify-center py-2 px-0' : 'flex-row justify-start py-[2px] px-2'}
                                             `}
                                 sx={{ cursor: 'pointer', position: 'relative' }}
@@ -370,7 +382,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                 <ListItemIcon
                                     className={`
                                                 min-w-0 transition-all
-                                                ${item.id === activeItemId ? 'text-blue-500' : 'text-gray-500'}
+                                                ${item.id === activeItemId ? 'text-blue-600' : 'text-gray-500'}
                                                 ${!open ? 'mb-1' : 'mr-0'}
                                             `}
                                     sx={{ justifyContent: 'center' }}
@@ -414,9 +426,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                         }}
                                     >
                                         {!collapseSubmenus[item.id] || !open ? (
-                                            <KeyboardArrowRightIcon sx={{ fontSize: '0.9rem', color: grey[900] }} />
+                                            <KeyboardArrowRightIcon sx={{ fontSize: '0.9rem', color: blue[600] }} />
                                         ) : (
-                                            <ExpandMoreIcon sx={{ fontSize: '0.9rem' }} />
+                                            <ExpandMoreIcon sx={{ fontSize: '0.9rem', color: blue[600] }} />
                                         )}
                                     </Box>
                                 )}
@@ -437,9 +449,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                             name: t(subItem.label),
                                             url: subItem.url
                                         }], subItem.children)}
-                                        className={`p-[2px] ml-[10px] rounded-md ${subItem.id === activeItemId ? 'text-blue-500 cursor-pointer' : 'text-gray-600 hover:text-blue-500 hover:bg-gray-100 cursor-pointer'}`}
+                                        className={`p-[2px] ml-[10px] rounded-md ${subItem.id === activeItemId ? 'text-blue-600 bg-blue-50 cursor-pointer' : 'text-gray-600 hover:text-blue-600 hover:bg-slate-50 cursor-pointer'}`}
                                     >
-                                        <ListItemIcon className={`min-w-0 ${subItem.id === activeItemId ? 'text-blue-500' : 'text-gray-500'}`}>
+                                        <ListItemIcon className={`min-w-0 ml-2 ${subItem.id === activeItemId ? 'text-blue-600' : 'text-gray-500'}`}>
                                             {subItem.icon && <subItem.icon sx={{ width: '1rem', height: '1rem' }} />}
                                         </ListItemIcon>
                                         <ListItemText
@@ -544,7 +556,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
                             <SmartToyIcon
                                 sx={{
-                                    color: 'primary.main',
+                                    color: '#059669',
                                     fontSize: '1.6rem', // 图标加大，视觉冲击力更强
                                     cursor: 'pointer',
                                     // 增加一点呼吸动效，让它看起来更“智能”

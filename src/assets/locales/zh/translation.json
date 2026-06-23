@@ -40,6 +40,7 @@
     },
     "page": {
         "confirm": "确定",
+        "info": "提示",
         "cancel": "取消",
         "submit": "提交",
         "save": "保存",
@@ -68,10 +69,26 @@
         "drapdrop": "拖拽文件",
         "upload": "选择文件",
         "files": "个文件",
+        "confirmdeletefile": "确定删除该文件？",
         "invalidation": {
             "required": "请选择文件",
             "filesizelimit": "已超过文件大小限制",
             "filequartityimit": "已超过文件数量限制"
+        },
+        "status": {
+            "failed": "上传失败",
+            "stopped": "上传已停止"
+        },
+        "msg": {
+            "cancelled": "文件上传已取消。",
+            "failed": "文件上传失败。",
+            "totalsizelimit": "文件总大小不能超过 {{size}}MB！",
+            "countlimit": "最多只能上传 {{count}} 个文件。",
+            "stopbeforedelete": "正在上传中，请先停止上传再删除！",
+            "deletefilefailed": "删除文件失败，请重试！",
+            "deleteannexfailed": "删除附件失败，请重试！",
+            "networkerror": "网络服务异常。",
+            "nopreview": "没有预览地址。"
         }
     },
     "prefab": {
@@ -84,10 +101,17 @@
         "log": {}
     },
      "validation" : {
+        "required": "此项为必填项。",
+        "fileRequired": "请上传文件。",
+        "dateRange": "请选择 2022 年第一季度的日期",
+        "dateInvalid": "日期格式不正确",
         "signin" : {
             "accounterror" : "请输入账号",
             "pwderror" : "请输入密码",
             "codeerror" : "请输入验证码"
         }
+    },
+    "message" : {
+        "operationSuccess": "操作成功。"
     }
 }

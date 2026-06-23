@@ -33,7 +33,7 @@ const NavBreadcrumb: React.FC<NavBreadcrumbProps> = ({ navItems }) => {
                     const isLast = index === navItems.length - 1;
                     
                     return isLast ? (
-                        <Typography key={item.name} className='text-sm text-blue-500'>
+                        <Typography key={item.name} className='text-sm font-medium text-blue-500'>
                             {item.name}
                         </Typography>
                     ) : (

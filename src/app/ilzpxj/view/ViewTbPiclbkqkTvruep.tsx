@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import FileUploader, { type FileUploaderHandles } from '../../../components/FileUploader';
 import { FetchPreloadPkId } from '../../../components/FilePreloadPkId';
+import { useTranslation } from 'react-i18next';
 import { useAlert } from '../../../components/AlertContext';
 import { useSession } from '../../../authority/SessionContext';
 import SimpleConfirmDialog from '../../../components/SimpleConfirmDialog';
@@ -54,7 +55,8 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const from = state?.from;
 	const fromData = state?.initialData;
 
-	const { showAlert } = useAlert();
+	const { t } = useTranslation();
+	 const { showAlert } = useAlert();
 	const { token, isAuthenticated } = useSession();
 	const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
 	const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
@@ -156,14 +158,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
 			}
 
 			default: {
@@ -429,7 +431,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 				const jsonData = { ...formData };
 
-				showAlert('Operation successfully.', 'success');
+				showAlert(t('message.operationSuccess'), 'success');
 
 				onSubmit?.(jsonData);
 			} else {

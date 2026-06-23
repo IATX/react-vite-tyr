@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // src/context/AppContext.tsx
-import React, { createContext, useState, useEffect, type ReactNode, type SetStateAction, type Dispatch, useRef } from 'react';
+import React, { createContext, useState, useEffect, useCallback, type ReactNode, type SetStateAction, type Dispatch, useRef } from 'react';
 
 import { generateRoutes, type IRouteConfig, type IRouteData, type IMenu, type IHub } from '../utils/generateRoutes';
 import { useSession } from '../authority/SessionContext';
@@ -155,8 +155,6 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     type: 'blank'
   });
 
-  const appRouteArr: IRouteData[] = [];
-
   const defaultRoutes: IRouteConfig[] = [
     { path: '/', element: <HomePage /> },
     { path: '/login', element: <LoginPage /> },
@@ -175,33 +173,29 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     { path: '*', element: <NotFoundPage /> },
   ];
 
-  Object.keys(componentMap).forEach(key => {
-    const comp = componentMap[key];
-    if (comp.path) {
-      appRouteArr.push({
-        name: key, path: comp.path, component: key
-      });
-    }
-  });
-
   const [appRoutes, setAppRoutes] = useState<IRouteConfig[]>(defaultRoutes);
   const [appMenus, setAppMenus] = useState<IMenu[] | null>(null);
   const [appHubs, setAppHubs] = useState<IHub[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchDynamicRoutes = async (str: string) => {
-    if (processingTokenRef.current === str) return;
+  const processingTokenRef = useRef<string | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchDynamicRoutes = useCallback(async (str: string) => {
     const menuArr: IMenu[] = [];
     const hubArr: IHub[] = [];
 
-    // menuArr.push(getTranslatedDashboardModule());
+    // Build the base routes from the static component map fresh on every call,
+    // so repeated calls can never accumulate duplicate route entries.
+    const appRouteArr: IRouteData[] = [];
+    Object.keys(componentMap).forEach(key => {
+      const comp = componentMap[key];
+      if (comp.path) {
+        appRouteArr.push({ name: key, path: comp.path, component: key });
+      }
+    });
 
     try {
-      processingTokenRef.current = str; // 立即上锁
-
-      // setLoading(true);
       const cfg = requesterConfig(str);
       cfg.useJson();
       const client = axiosRequester(cfg);
@@ -322,22 +316,28 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const processingTokenRef = useRef<string | null>(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accApiUrl]);
 
   // 2. 监听 Token
+  // The dedup lock and the loading flag are both driven here (single source of
+  // truth), set synchronously before the async call. This guarantees that once
+  // we start loading we always reach setLoading(false) in the finally block —
+  // so the "Initializing..." screen can never get stranded if this effect runs
+  // twice (React StrictMode) or a re-render happens while the request is in flight.
   useEffect(() => {
-    if (token) {
-      // 只有当 token 真的变了（不仅仅是引用变了，而是字符串值变了），才执行
-      if (processingTokenRef.current !== token) {
-        fetchDynamicRoutes(token);
-      }
-    } else {
-      // 处理没 token 的逻辑...
+    if (!token) {
       processingTokenRef.current = null;
       setLoading(false);
+      return;
     }
+
+    // 只有当 token 真的变了（字符串值变了）才重新拉取
+    if (processingTokenRef.current === token) return;
+
+    processingTokenRef.current = token;
+    setLoading(true);
+    fetchDynamicRoutes(token);
   }, [token, fetchDynamicRoutes]);
 
   return (

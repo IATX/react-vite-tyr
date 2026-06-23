@@ -133,9 +133,9 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 						...response.data.data
 					}));
 
-					setDisplayPriceDetails(response.data.data.fpllerek === 'P0001');
+					setDisplayPriceDetails(response.data.data.fpllerek === 'P0001' || response.data.data.fpllerek === 'P0004');
 
-					setDisplayPrice(response.data.data.fpllerek === 'P0003' || response.data.data.fpllereklue === 'P0004');
+					setDisplayPrice(response.data.data.fpllerek === 'P0003');
 				} else {
 					showAlert('Server returned invalid data.', 'error');
 				}
@@ -160,14 +160,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
 			}
 
 			default: {
@@ -233,9 +233,9 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 				setFormData((prevData: any) => ({ ...prevData, [targetItemName]: selectedOption.name }));
 			}
 
-			setDisplayPriceDetails(value === 'P0001');
+			setDisplayPriceDetails(value === 'P0001' || value === 'P0004');
 
-			setDisplayPrice(value === 'P0003' || value === 'P0004');
+			setDisplayPrice(value === 'P0003');
 		}
 
 	};
@@ -392,7 +392,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 	const validationRules = {
 		"fpllerek": (value: any) => {
-			if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
 
 			return '';
 		},
@@ -447,7 +447,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 				const jsonData = { ...formData };
 
-				showAlert('Operation successfully.', 'success');
+				showAlert(t('message.operationSuccess'), 'success');
 
 				onSubmit?.(jsonData);
 			} else if (response.data && !response.data.success) {
@@ -610,12 +610,12 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 													aria-labelledby="fpllerek-row-radio-buttons-group-label"
 													name="fpllerek"
 													value={formData.fpllerek}
-													onChange={(e) => { handleRadioChange(e, [{ 'id': 'P0001', 'name': '代理购电工商业用户电价表' }, { 'id': 'P0002', 'name': '电费单电价' }, { 'id': 'P0003', 'name': '固定电价' }, { 'id': 'P0004', 'name': '消纳比电价' }], 'xjegvvik') }}
+													onChange={(e) => { handleRadioChange(e, [{ 'id': 'P0001', 'name': '代理购电工商业用户电价表' }, { 'id': 'P0002', 'name': '电费单电价' }, { 'id': 'P0003', 'name': '固定电价' }, { 'id': 'P0004', 'name': '消纳比' }], 'xjegvvik') }}
 												>
 													<FormControlLabel value="P0001" control={<Radio />} label="代理购电工商业用户电价表" />
 													<FormControlLabel value="P0002" control={<Radio />} label="电费单电价" />
 													<FormControlLabel value="P0003" control={<Radio />} label="固定电价" />
-													<FormControlLabel value="P0004" control={<Radio />} label="消纳比电价" />
+													<FormControlLabel value="P0004" control={<Radio />} label="消纳比" />
 												</RadioGroup>
 												<FormHelperText>{errors['fpllerek']}</FormHelperText>
 											</FormControl>

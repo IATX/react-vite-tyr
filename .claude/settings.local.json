@@ -3,7 +3,13 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"D:\\\\vscode-workspace\\\\dmaxi-epbp-tyr\" -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
-      "Bash(Sort-Object Name)"
+      "Bash(Sort-Object Name)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsc *)",
+      "Bash(git restore *)",
+      "Bash(node *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

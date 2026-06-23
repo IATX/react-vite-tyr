@@ -171,14 +171,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
    const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
 			}
 
 			default: {
@@ -395,7 +395,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const validationRules = {
 			    "avsbghww": () => {
 			      const isFileUploaderValid = avsbghww_fileUploaderRef.current?.validate();
-			      if (!isFileUploaderValid)  return "File is required.";
+			      if (!isFileUploaderValid)  return t('validation.fileRequired');
 			
 			      return '';
 			    },
@@ -450,7 +450,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	    	
 	      		const jsonData = { ...formData };
 	
-				showAlert('Operation successfully.', 'success');
+				showAlert(t('message.operationSuccess'), 'success');
 	
 				onSubmit?.(jsonData);
 	        } else if(response.data && !response.data.success) {

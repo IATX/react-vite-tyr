@@ -155,14 +155,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
    const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
 			}
 
 			default: {
@@ -379,7 +379,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 	const validationRules = {
 			    "kptvdssb": () => {
 			      const isFileUploaderValid = kptvdssb_fileUploaderRef.current?.validate();
-			      if (!isFileUploaderValid)  return "File is required.";
+			      if (!isFileUploaderValid)  return t('validation.fileRequired');
 			
 			      return '';
 			    },

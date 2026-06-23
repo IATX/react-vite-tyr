@@ -27,11 +27,11 @@ export default function SignInSide(props: { disableCustomTheme?: boolean }) {
               zIndex: -1,
               inset: 0,
               backgroundImage:
-                'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
+                'radial-gradient(ellipse 80% 60% at 20% 20%, hsl(210, 100%, 96%), transparent), radial-gradient(ellipse 70% 60% at 90% 90%, hsl(152, 76%, 94%), hsl(0, 0%, 100%))',
               backgroundRepeat: 'no-repeat',
               ...theme.applyStyles('dark', {
                 backgroundImage:
-                  'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
+                  'radial-gradient(ellipse 80% 60% at 20% 20%, hsla(210, 100%, 16%, 0.55), transparent), radial-gradient(ellipse 70% 60% at 90% 90%, hsla(152, 60%, 20%, 0.4), hsl(220, 30%, 5%))',
               }),
             },
           }),

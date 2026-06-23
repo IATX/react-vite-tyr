@@ -44,7 +44,7 @@ import { RowInputRenderer, type ColumnConfig } from '../../../components/RowInpu
 
 // Update your component props type to use this interface.
 interface ViewPageProps<T> {
-	readOnly?: boolean;
+	readOnly?:boolean;
 	initialData?: T;
 	onSave?: (data: any) => void;
 	onSubmit?: (data: any) => void;
@@ -54,11 +54,11 @@ interface ViewPageProps<T> {
 export default function ViewPage<T extends object = { [key: string]: any }>({ readOnly, initialData, onSave, onSubmit, onCancel }: ViewPageProps<T>) {
 	const { t } = useTranslation();
 	const location = useLocation();
-	const { state } = location;
+  	const { state } = location; 
 	const navigate = useNavigate();
-
+	
 	const isViewReadOnly = readOnly ?? false;
-	const from = state?.from ?? '/main';
+	const from =  state?.from;
 	const fromData = state?.initialData;
 
 	const { showAlert } = useAlert();
@@ -88,32 +88,32 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const errorStyle = "mt-2 text-sm text-red-600";
 	const submitStyle = "rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
 	const cancelStyle = "rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold shadow-xs hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600";
-
-
+		
+  		
 	// Managing form data and validation errors with useState
 	const [formData, setFormData] = useState(() => {
 		const defaultData = {
-			mbnwpthn: '',
-			muswisjh: '',
-			omtwplej: '',
-			listYfvuhw: [],
-			pkCuqscwai: '',
-			tableViewOPTMode: 'submit',
-			formDataBin: {}
-		}
-
-		// Merge the incoming data with the default data
-		return { ...defaultData, ...initialData, ...fromData };
-	});
-
-	const [focusedlistYfvuhwRowId, setFocusedlistYfvuhwRowId] = useState<string | null>(null);
-	const [editinglistYfvuhwRowId, setEditinglistYfvuhwRowId] = useState<string | null>(null);
-	const [isConfirmDeletionlistYfvuhwRowOpen, setIsConfirmDeletionlistYfvuhwRowOpen] = useState(false);
-
-	const [errors, setErrors] = useState<{ [key: string]: string }>({});
-	const fieldRefs = useRef<Record<string, HTMLElement>>({});
-
-	useEffect(() => {
+			        		mbnwpthn: '',
+			        		muswisjh: '',
+			        		omtwplej: '',
+					listYfvuhw: [],
+	    	pkCuqscwai: '',
+	    	tableViewOPTMode: 'submit',
+	    	formDataBin:{}
+    	}
+    	
+    	// Merge the incoming data with the default data
+		return { ...defaultData, ...initialData, ...fromData};
+    });
+    
+    	const [focusedlistYfvuhwRowId, setFocusedlistYfvuhwRowId] = useState<string | null>(null);
+		const [editinglistYfvuhwRowId, setEditinglistYfvuhwRowId] = useState<string | null>(null);
+		const [isConfirmDeletionlistYfvuhwRowOpen, setIsConfirmDeletionlistYfvuhwRowOpen] = useState(false);	
+    
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const fieldRefs = useRef<Record<string, HTMLElement>>({});
+    
+    useEffect(() => {
 		// This effect will run whenever initialData changes
 		if (formData.pkCuqscwai !== '') {
 			axios.post(bpcApiUrl + '/tableview/queryformdata/view_tb_cuqscwai_clbnay/' + formData.pkCuqscwai, {}, {
@@ -145,10 +145,10 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 			});
 		}
-
-	}, []);
-
-	const handleDateError = (itemName: string, dateError: DateValidationError) => {
+		
+	}, []);    
+    
+   const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
 				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
@@ -192,7 +192,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 			return newErrors;
 		});
-
+		
 		if (targetItemName) {
 			const selectedOption = options.find(option => option.id === value);
 
@@ -221,7 +221,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		}
 
 	};
-
+	
 	// Unified tree input processing function
 	const handleTreeInputChange = (e: any) => {
 		const { idName, idValue } = e.idsTarget;
@@ -240,7 +240,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			const { [nameName]: nameValue, ...newErrors } = prevErrors;
 
 			return newErrors;
-		});
+		});	
 	};
 
 	const handleListInputChange = (e: any) => {
@@ -260,7 +260,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			const { [nameName]: nameValue, ...newErrors } = prevErrors;
 
 			return newErrors;
-		});
+		});	
 	};
 
 	/**
@@ -307,7 +307,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		const { name, checked } = e.target;
 
 		if (checked) {
-			let formDataVal = formData[name as keyof typeof formData].trim();
+			let formDataVal = formData[name as keyof typeof formData]?.trim();
 
 			if (!hasValue(formDataVal, checkedObj.id)) {
 				setFormData((prevData: any) => ({ ...prevData, [name]: (formDataVal === '' ? checkedObj.id : (formDataVal + ',' + checkedObj.id)) }));
@@ -339,24 +339,24 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	};
 
 	const isEmpty = (value: any, zeroIsEmpty: boolean): boolean => {
-		if (value === null || value === undefined) {
-			return true;
-		}
+		  if (value === null || value === undefined) {
+		    return true;
+		  }
+		  
+		  // If it is an empty string.
+		  if (typeof value === 'string' && value.trim() === '') {
+		    return true;
+		  }
+		  
+		  // If the value is 0 and can be considered empty, return true.
+		  if (typeof value === 'number' && value === 0 && zeroIsEmpty) {
+		    return true;
+		  }
 
-		// If it is an empty string.
-		if (typeof value === 'string' && value.trim() === '') {
-			return true;
-		}
-
-		// If the value is 0 and can be considered empty, return true.
-		if (typeof value === 'number' && value === 0 && zeroIsEmpty) {
-			return true;
-		}
-
-		return false;
+		  return false;
 	};
-
-
+	
+	
 	const handleDateChange = (name: string, value: any) => {
 		const newTimestamp = value.valueOf();
 
@@ -371,20 +371,20 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			return newErrors;
 		});
 	}
-
+	
 	const validationRules = {
-		"mbnwpthn": (value: any) => {
-			if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
-
-			return '';
-		},
+		    	"mbnwpthn": (value: any) => {
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
+			
+			      return '';
+			    },
 	}
-
+	
 	/**
-	  * Recursively iterate over an object or array and trim all string property values.
-	  * @param obj The object or array to trim.
-	  * @returns A new object with all string attributes trimmed.
-	  */
+ 	* Recursively iterate over an object or array and trim all string property values.
+ 	* @param obj The object or array to trim.
+ 	* @returns A new object with all string attributes trimmed.
+ 	*/
 	const trimObjectValues = (obj: any): any => {
 		if (obj === null || typeof obj !== 'object') {
 			return obj;
@@ -410,35 +410,35 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 		return trimmedObj;
 	};
-
+	
 	const [isLoading, setIsLoading] = useState(false);
 	const submitFormData = () => {
 		setDisabledAction(true);
 		setIsLoading(true);
-
-		axios.post(bpcApiUrl + '/tableview/remixjsondata/view_tb_cuqscwai_clbnay', trimObjectValues(formData), {
-			headers: {
-				'grooveToken': token
-			}
-		}).then(response => {
-			if (response.data && response.data.success) {
-				setFormData((prevData: any) => ({
+		
+	      axios.post(bpcApiUrl + '/tableview/remixjsondata/view_tb_cuqscwai_clbnay', trimObjectValues(formData), {
+	        headers: {
+	          'grooveToken': token
+	        }
+	      }).then(response => {
+	    	if (response.data && response.data.success) {
+	    		setFormData((prevData: any) => ({
 					...prevData,
 					pkCuqscwai: response.data.data.pkCuqscwai,
 				}));
-
-				const jsonData = { ...formData };
-
+	    	
+	      		const jsonData = { ...formData };
+	
 				showAlert('Operation successfully.', 'success');
-
+	
 				onSubmit?.(jsonData);
-			} else if (response.data && !response.data.success) {
+	        } else if(response.data && !response.data.success) {
 				showAlert(response.data.message, 'error');
 			} else {
 				showAlert('Server returned invalid data.', 'error');
 			}
-		}).catch(error => {
-			if (error instanceof Error) {
+	      }).catch(error => {
+	        if (error instanceof Error) {
 				const wrapError = error as { response?: { status: number, data: any } };
 				if (wrapError.response?.status == 400) {
 					showAlert('Bad format request', 'error');
@@ -448,34 +448,34 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 					showAlert('Submit operation exception.', 'error');
 				}
 			}
-		}).finally(() => {
-			setDisabledAction(false);
-			setIsLoading(false);
-		});
+	      }).finally(() => {
+				setDisabledAction(false);
+				setIsLoading(false);
+	      });
 	};
-
+	
 	// Submit processing function
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		
+        const newErrors: { [key: string]: string } = {};
+        
+					    	if (validationRules["mbnwpthn"]) {
+						    	const errorMsg = validationRules["mbnwpthn"](formData.mbnwpthn);
+						
+								if (errorMsg != '') {
+						    		newErrors["mbnwpthn"] = errorMsg;
+						    	}
+						    }
+    	
+        // update error state
+        setErrors(newErrors);
 
-		const newErrors: { [key: string]: string } = {};
-
-		if (validationRules["mbnwpthn"]) {
-			const errorMsg = validationRules["mbnwpthn"](formData.mbnwpthn);
-
-			if (errorMsg != '') {
-				newErrors["mbnwpthn"] = errorMsg;
-			}
-		}
-
-		// update error state
-		setErrors(newErrors);
-
-		// If there is no error, execute the submission logic
-		if (Object.keys(newErrors).length === 0) {
-			setIsConfirmOpen(true);
-		} else {
-			const firstError = Object.keys(newErrors).find((key) => newErrors[key]);
+        // If there is no error, execute the submission logic
+        if (Object.keys(newErrors).length === 0) {
+            setIsConfirmOpen(true);
+        } else {
+        	const firstError = Object.keys(newErrors).find((key) => newErrors[key]);
 
 			if (firstError) {
 				const errorElement = fieldRefs.current[firstError];
@@ -489,1065 +489,1089 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 					// errorElement.focus();
 				}
 			}
-		}
+        }
 	}
-
-
-
-	return (
-		<>
-			{/* Main Content */}
-			<ThemeProvider theme={theme}>
-				<form id="form_view_tb_cuqscwai_clbnay" onSubmit={handleSubmit}>
-					<div className="space-y-12">
-						<div className={`{groupCardStyle} hidden`}>
-							<h2 className={groupTitleStyle}>结算单</h2>
-							<p className={groupDescriptionStyle}>
-
-							</p>
-							<div className={groupContentStyle + ` sm:grid-cols-1`}>
-								<div className={oneColumnStyle}>
-									<label htmlFor="tb_cuqscwai_mbnwpthn" className={labelStyle}>
-										商户
-									</label>
-									<div className="mt-2">
-										{isViewReadOnly ? (
-											<Typography variant="body2" gutterBottom>{formData.mbnwpthn || ''}</Typography>
-										) : (
-											<FormControl fullWidth ref={(el) => {
-												if (el) fieldRefs.current['mbnwpthn'] = el;
-											}}>
-												<TextField
-													id="tb_cuqscwai_mbnwpthn"
-													name="mbnwpthn"
-													value={formData.mbnwpthn || ''}
-													onChange={handleInputChange}
-													size="small"
+	
+	
+	
+    return (
+        <>
+            {/* Main Content */}
+            <ThemeProvider theme={theme}>
+                 <form id="form_view_tb_cuqscwai_clbnay" onSubmit={handleSubmit}>
+                    <div className="space-y-12">
+      					    	<div className={groupCardStyle}>
+		                            <h2 className={groupTitleStyle}>结算单</h2>
+		                            <p className={groupDescriptionStyle}>
+		                                
+		                            </p>
+		                            <div className={groupContentStyle + ` sm:grid-cols-1`}>
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_cuqscwai_mbnwpthn" className={labelStyle}>
+	                商户
+	            </label>
+	            <div className="mt-2">
+	            {isViewReadOnly ? (
+	            	<Typography variant="body2" gutterBottom>{formData.mbnwpthn || ''}</Typography>
+	            ) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['mbnwpthn'] = el;
+												}}>
+		              <TextField
+		                    id="tb_cuqscwai_mbnwpthn"
+		                    name="mbnwpthn"
+		                    value={formData.mbnwpthn || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    variant="outlined"
+		                    error={errors.mbnwpthn ? true : false}
+		                    helperText={errors.mbnwpthn}
+		                    slotProps={{
+					            input: {
+					                
+					              startAdornment: <InputAdornment position="start">
+					              <TextIcon className='text-base'/>
+					              </InputAdornment>
+					            },
+					          }}
+		                  />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_cuqscwai_muswisjh" className={labelStyle}>
+	                发电户号
+	            </label>
+	            <div className="mt-2">
+	            {isViewReadOnly ? (
+	            	<Typography variant="body2" gutterBottom>{formData.muswisjh || ''}</Typography>
+	            ) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['muswisjh'] = el;
+												}}>
+		              <TextField
+		                    id="tb_cuqscwai_muswisjh"
+		                    name="muswisjh"
+		                    value={formData.muswisjh || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    variant="outlined"
+		                    error={errors.muswisjh ? true : false}
+		                    helperText={errors.muswisjh}
+		                    slotProps={{
+					            input: {
+					                
+					              startAdornment: <InputAdornment position="start">
+					              <TextIcon className='text-base'/>
+					              </InputAdornment>
+					            },
+					          }}
+		                  />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_cuqscwai_omtwplej" className={labelStyle}>
+	                结算年
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{new Date(formData.omtwplej).toLocaleDateString() || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['omtwplej'] = el;
+												}}>
+		               <DatePicker
+                          name="omtwplej"
+                          format="YYYY-MM-DD"
+                          value={formData.omtwplej ? dayjs(formData.omtwplej) : null}
+                          views={['year', 'month', 'day']}
+                          onChange={(newValue: Dayjs | null)=> handleDateChange('omtwplej', newValue)}
+                          sx={{
+                            '.Mui-focused': {
+                               borderColor: 'oklch(54.6% 0.245 262.881) !important',
+                            },
+                            '& .Mui-focused .MuiPickersOutlinedInput-notchedOutline': {
+                              borderColor: 'oklch(54.6% 0.245 262.881) !important',
+                            },
+                            '& .MuiPickersOutlinedInput-notchedOutline': {
+                              borderRadius: '.375rem',
+                              borderColor: 'oklch(87.2% 0.01 258.338)'
+                            },
+                            '&:hover .MuiPickersOutlinedInput-notchedOutline': {
+                              borderColor: 'oklch(70.7% 0.022 261.325) !important',
+                            },
+                            '& .MuiPickersSectionList-root': {
+                              padding: '8px 0',
+                              height: '35px'
+                            },
+                            '& .MuiSvgIcon-root': {
+                              height: '18px',
+                              width: '18px'
+                            }
+                          }}
+                          onError={(newError) => handleDateError('transactionDate', newError)}
+                          slotProps={{
+                            popper: {
+                              sx: {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                boxShadow: 'unset !important',
+                                marginTop: '5px !important',
+                                '& .MuiPaper-root': {
+                                  boxShadow: 'unset !important',
+                                  border: '1px solid oklch(87.2% 0.01 258.338)'
+                                },
+                              },
+                            },
+                            textField: {
+                              id: 'tb_cuqscwai_omtwplej',
+                              error: !!errors['omtwplej'],
+                              helperText: errors['omtwplej'],
+                            },
+                          }}
+                       />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>       
+								    </div>
+						        </div>
+      					    	<div className={listFitCardStyle}>	
+	      					    	<table className={tableStyle}>
+	      					    		<caption className={tableCaptionStyle}>
+	      					    		<div className="flex justify-between items-center w-full">
+	      					    			<h2 className={groupTitleStyle}>详情</h2>
+	      					    			
+		      					    		{!!!isViewReadOnly && (
+												<Button
 													variant="outlined"
-													error={errors.mbnwpthn ? true : false}
-													helperText={errors.mbnwpthn}
-													slotProps={{
-														input: {
-
-															startAdornment: <InputAdornment position="start">
-																<TextIcon className='text-base' />
-															</InputAdornment>
-														},
-													}}
-												/>
-											</FormControl>
-										)}
-									</div>
-								</div>
-								<div className={oneColumnStyle}>
-									<label htmlFor="tb_cuqscwai_muswisjh" className={labelStyle}>
-										发电户号
-									</label>
-									<div className="mt-2">
-										{isViewReadOnly ? (
-											<Typography variant="body2" gutterBottom>{formData.muswisjh || ''}</Typography>
-										) : (
-											<FormControl fullWidth ref={(el) => {
-												if (el) fieldRefs.current['muswisjh'] = el;
-											}}>
-												<TextField
-													id="tb_cuqscwai_muswisjh"
-													name="muswisjh"
-													value={formData.muswisjh || ''}
-													onChange={handleInputChange}
 													size="small"
-													variant="outlined"
-													error={errors.muswisjh ? true : false}
-													helperText={errors.muswisjh}
-													slotProps={{
-														input: {
-
-															startAdornment: <InputAdornment position="start">
-																<TextIcon className='text-base' />
-															</InputAdornment>
-														},
+													color="primary"
+													startIcon={<AddIcon />}
+													onClick={(e) => {
+														setFocusedlistYfvuhwRowId(null);
+														setEditinglistYfvuhwRowId(null);
+	
+														const newRow: any = {
+	
+														};
+	
+														setFormData((prevFormData: { listYfvuhw: any; }) => ({
+															...prevFormData,
+															listYfvuhw: [
+																...prevFormData.listYfvuhw,
+																newRow,
+															],
+														}));
 													}}
-												/>
-											</FormControl>
-										)}
-									</div>
-								</div>
-								<div className={oneColumnStyle}>
-									<label htmlFor="tb_cuqscwai_omtwplej" className={labelStyle}>
-										结算年
-									</label>
-									<div className="mt-2">
-										{isViewReadOnly ? (
-											<Typography variant="body2" gutterBottom>{new Date(formData.omtwplej).toLocaleDateString() || ''}</Typography>
-										) : (
-											<FormControl fullWidth ref={(el) => {
-												if (el) fieldRefs.current['omtwplej'] = el;
-											}}>
-												<DatePicker
-													name="omtwplej"
-													format="YYYY-MM-DD"
-													value={formData.omtwplej ? dayjs(formData.omtwplej) : null}
-													views={['year', 'month', 'day']}
-													onChange={(newValue: Dayjs | null) => handleDateChange('omtwplej', newValue)}
-													sx={{
-														'.Mui-focused': {
-															borderColor: 'oklch(54.6% 0.245 262.881) !important',
-														},
-														'& .Mui-focused .MuiPickersOutlinedInput-notchedOutline': {
-															borderColor: 'oklch(54.6% 0.245 262.881) !important',
-														},
-														'& .MuiPickersOutlinedInput-notchedOutline': {
-															borderRadius: '.375rem',
-															borderColor: 'oklch(87.2% 0.01 258.338)'
-														},
-														'&:hover .MuiPickersOutlinedInput-notchedOutline': {
-															borderColor: 'oklch(70.7% 0.022 261.325) !important',
-														},
-														'& .MuiPickersSectionList-root': {
-															padding: '8px 0',
-															height: '35px'
-														},
-														'& .MuiSvgIcon-root': {
-															height: '18px',
-															width: '18px'
+												>
+													{t('page.addnew')}
+												</Button>
+											)}
+										</div>
+	      					    		</caption>
+	      					    		<thead>
+	      					    			<tr>
+	      					    				<th className={tableThStyle}>所属期</th>
+	      					    				<th className={tableThStyle}>总发电量</th>
+	      					    				<th className={tableThStyle}>余电上网电量</th>
+	      					    				<th className={tableThStyle}>自发自用用电量</th>
+	      					    				<th className={tableThStyle}>结算电价（含税）（合计）</th>
+	      					    				<th className={tableThStyle}>结算电费（合计）</th>
+	      					    				<th className={tableThStyle}>结算收入（合计）</th>
+	      					    				<th className={tableThStyle}>销项税额（合计）</th>
+	      					    				<th className={tableThStyle}>结算电价（含税）（余电上网部分）</th>
+	      					    				<th className={tableThStyle}>结算电费（余电上网部分）</th>
+	      					    				<th className={tableThStyle}>补贴金额</th>
+	      					    				<th className={tableThStyle}>结算收入（余电上网部分）</th>
+	      					    				<th className={tableThStyle}>销项税额（余电上网部分）</th>
+	      					    				<th className={tableThStyle}>结算电价（含税）（自发自用部分）</th>
+	      					    				<th className={tableThStyle}>结算电费（自发自用部分）</th>
+	      					    				<th className={tableThStyle}>营业收入（自发自用部分）</th>
+	      					    				<th className={tableThStyle}>销项税额（自发自用部分）</th>
+	      					    			 </tr>
+	      					    		</thead>
+	      					    		<tbody className={tableTbodyStyle}>
+											{formData.listYfvuhw.map((item: any, index: number) => {
+												const rowIndex = 'row_' + index;
+												
+												const isFocused = rowIndex === focusedlistYfvuhwRowId && !isViewReadOnly;
+												const isEditing = rowIndex === editinglistYfvuhwRowId && !isViewReadOnly;
+												
+												return (
+													<tr 
+													key={rowIndex}
+													onClick={() => {
+														if (!focusedlistYfvuhwRowId || editinglistYfvuhwRowId !== rowIndex) {
+															setFocusedlistYfvuhwRowId(rowIndex);
+															setEditinglistYfvuhwRowId(null);
 														}
 													}}
-													onError={(newError) => handleDateError('transactionDate', newError)}
-													slotProps={{
-														popper: {
-															sx: {
-																backgroundColor: 'rgba(255, 255, 255, 0.9)',
-																boxShadow: 'unset !important',
-																marginTop: '5px !important',
-																'& .MuiPaper-root': {
-																	boxShadow: 'unset !important',
-																	border: '1px solid oklch(87.2% 0.01 258.338)'
-																},
-															},
-														},
-														textField: {
-															id: 'tb_cuqscwai_omtwplej',
-															error: !!errors['omtwplej'],
-															helperText: errors['omtwplej'],
-														},
-													}}
-												/>
-											</FormControl>
-										)}
-									</div>
-								</div>
-							</div>
-						</div>
-						<div className={listFitCardStyle}>
-							<table className={tableStyle}>
-								<caption className={tableCaptionStyle}>
-									<div className="flex justify-between items-center w-full">
-										<h2 className={groupTitleStyle}>结算单</h2>
+													className={[
+														'cursor-pointer',
+														'transition-colors',
+														'relative',
+														isFocused ? 'bg-blue-50' : 'hover:bg-gray-50',
+													].join(' ')}>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'qrfxwkpy',
+																	'header': '所属期',
+																	'type': 'date'
+																}}
+																value={item.qrfxwkpy}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-										{!!!isViewReadOnly && (
-											<Button
-												variant="outlined"
-												size="small"
-												color="primary"
-												startIcon={<AddIcon />}
-												onClick={(e) => {
-													setFocusedlistYfvuhwRowId(null);
-													setEditinglistYfvuhwRowId(null);
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['qrfxwkpy']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-													const newRow: any = {
-
-													};
-
-													setFormData((prevFormData: { listYfvuhw: any; }) => ({
-														...prevFormData,
-														listYfvuhw: [
-															...prevFormData.listYfvuhw,
-															newRow,
-														],
-													}));
-												}}
-											>
-												{t('page.addnew')}
-											</Button>
-										)}
-									</div>
-								</caption>
-								<thead>
-									{/* 第一行：主标题层级 */}
-									<tr>
-										<th className={tableThStyle} rowSpan={2}>所属期</th>
-										<th className={tableThStyle} rowSpan={2}>总上网电量</th>
-										<th className={tableThStyle} rowSpan={2}>余电上网电量</th>
-										<th className={tableThStyle} rowSpan={2}>自发自用用电量</th>
-										<th className={tableThStyle} colSpan={4} style={{ textAlign: 'center' }}>合计</th>
-										<th className={tableThStyle} colSpan={4} style={{ textAlign: 'center' }}>余电上网部分</th>
-										<th className={tableThStyle} colSpan={4} style={{ textAlign: 'center' }}>自发自用部分</th>
-									</tr>
-
-									{/* 第二行：子标题层级 */}
-									<tr>
-										{/* 合计的子项 */}
-										<th className={tableThStyle}>结算电价（含税）</th>
-										<th className={tableThStyle}>结算电费</th>
-										<th className={tableThStyle}>结算收入</th>
-										<th className={tableThStyle}>销项税额</th>
-
-										{/* 余电上网部分的子项 */}
-										<th className={tableThStyle}>结算电价（含税）</th>
-										<th className={tableThStyle}>结算电费</th>
-										<th className={tableThStyle}>结算收入</th>
-										<th className={tableThStyle}>销项税额</th>
-
-										{/* 自发自用部分的子项 */}
-										<th className={tableThStyle}>结算电价（含税）</th>
-										<th className={tableThStyle}>结算电费</th>
-										<th className={tableThStyle}>营业收入</th>
-										<th className={tableThStyle}>销项税额</th>
-									</tr>
-								</thead>
-								<tbody className={tableTbodyStyle}>
-									{formData.listYfvuhw.map((item: any, index: number) => {
-										const rowIndex = 'row_' + index;
-
-										const isFocused = rowIndex === focusedlistYfvuhwRowId && !isViewReadOnly;
-										const isEditing = rowIndex === editinglistYfvuhwRowId && !isViewReadOnly;
-
-										return (
-											<tr
-												key={rowIndex}
-												onClick={() => {
-													if (!focusedlistYfvuhwRowId || editinglistYfvuhwRowId !== rowIndex) {
-														setFocusedlistYfvuhwRowId(rowIndex);
-														setEditinglistYfvuhwRowId(null);
-													}
-												}}
-												className={[
-													'cursor-pointer',
-													'transition-colors',
-													'relative',
-													isFocused ? 'bg-blue-50' : 'hover:bg-gray-50',
-												].join(' ')}>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'qrfxwkpy',
-																'header': '所属期',
-																'type': 'date'
-															}}
-															value={item.qrfxwkpy}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['qrfxwkpy']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.qrfxwkpy}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'umakupcb',
+																	'header': '总发电量',
+																	'type': 'number'
+																}}
+																value={item.umakupcb}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.qrfxwkpy}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['umakupcb']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'umakupcb',
-																'header': '总发电量',
-																'type': 'number'
-															}}
-															value={item.umakupcb}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['umakupcb']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.umakupcb}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'ovehnwzi',
+																	'header': '余电上网电量',
+																	'type': 'number'
+																}}
+																value={item.ovehnwzi}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.umakupcb}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['ovehnwzi']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'ovehnwzi',
-																'header': '余电上网电量',
-																'type': 'number'
-															}}
-															value={item.ovehnwzi}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['ovehnwzi']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.ovehnwzi}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'kdaiahlw',
+																	'header': '自发自用用电量',
+																	'type': 'number'
+																}}
+																value={item.kdaiahlw}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.ovehnwzi}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['kdaiahlw']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'kdaiahlw',
-																'header': '自发自用用电量',
-																'type': 'number'
-															}}
-															value={item.kdaiahlw}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['kdaiahlw']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.kdaiahlw}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'fgtqnhyn',
+																	'header': '结算电价（含税）（合计）',
+																	'type': 'money'
+																}}
+																value={item.fgtqnhyn}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.kdaiahlw}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['fgtqnhyn']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'fgtqnhyn',
-																'header': '结算电价（含税）（合计）',
-																'type': 'money'
-															}}
-															value={item.fgtqnhyn}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['fgtqnhyn']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.fgtqnhyn}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'nwcjwyrf',
+																	'header': '结算电费（合计）',
+																	'type': 'money'
+																}}
+																value={item.nwcjwyrf}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.fgtqnhyn}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['nwcjwyrf']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'nwcjwyrf',
-																'header': '结算电费（合计）',
-																'type': 'money'
-															}}
-															value={item.nwcjwyrf}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['nwcjwyrf']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.nwcjwyrf}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'mrseixpo',
+																	'header': '结算收入（合计）',
+																	'type': 'money'
+																}}
+																value={item.mrseixpo}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.nwcjwyrf}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['mrseixpo']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'mrseixpo',
-																'header': '结算收入（合计）',
-																'type': 'money'
-															}}
-															value={item.mrseixpo}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['mrseixpo']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.mrseixpo}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'kdzxnwil',
+																	'header': '销项税额（合计）',
+																	'type': 'money'
+																}}
+																value={item.kdzxnwil}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.mrseixpo}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['kdzxnwil']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'kdzxnwil',
-																'header': '销项税额（合计）',
-																'type': 'money'
-															}}
-															value={item.kdzxnwil}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['kdzxnwil']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.kdzxnwil}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'qgwvxncr',
+																	'header': '结算电价（含税）（余电上网部分）',
+																	'type': 'money'
+																}}
+																value={item.qgwvxncr}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.kdzxnwil}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['qgwvxncr']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'qgwvxncr',
-																'header': '结算电价（含税）（余电上网部分）',
-																'type': 'money'
-															}}
-															value={item.qgwvxncr}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['qgwvxncr']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.qgwvxncr}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'jshfcttg',
+																	'header': '结算电费（余电上网部分）',
+																	'type': 'money'
+																}}
+																value={item.jshfcttg}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.qgwvxncr}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['jshfcttg']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'jshfcttg',
-																'header': '结算电费（余电上网部分）',
-																'type': 'money'
-															}}
-															value={item.jshfcttg}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['jshfcttg']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.jshfcttg}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'colTgqbxp',
+																	'header': '补贴金额',
+																	'type': 'money'
+																}}
+																value={item.colTgqbxp}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.jshfcttg}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['colTgqbxp']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'tpjmbqpf',
-																'header': '结算收入（余电上网部分）',
-																'type': 'money'
-															}}
-															value={item.tpjmbqpf}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['tpjmbqpf']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.colTgqbxp}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'tpjmbqpf',
+																	'header': '结算收入（余电上网部分）',
+																	'type': 'money'
+																}}
+																value={item.tpjmbqpf}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.tpjmbqpf}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['tpjmbqpf']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'rxnrcarc',
-																'header': '销项税额（余电上网部分）',
-																'type': 'money'
-															}}
-															value={item.rxnrcarc}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['rxnrcarc']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.tpjmbqpf}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'rxnrcarc',
+																	'header': '销项税额（余电上网部分）',
+																	'type': 'money'
+																}}
+																value={item.rxnrcarc}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.rxnrcarc}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['rxnrcarc']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'afnfufjj',
-																'header': '结算电价（含税）（自发自用部分）',
-																'type': 'money'
-															}}
-															value={item.afnfufjj}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['afnfufjj']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.rxnrcarc}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'afnfufjj',
+																	'header': '结算电价（含税）（自发自用部分）',
+																	'type': 'money'
+																}}
+																value={item.afnfufjj}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.afnfufjj}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['afnfufjj']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'szimebex',
-																'header': '结算电费（自发自用部分）',
-																'type': 'money'
-															}}
-															value={item.szimebex}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['szimebex']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.afnfufjj}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'szimebex',
+																	'header': '结算电费（自发自用部分）',
+																	'type': 'money'
+																}}
+																value={item.szimebex}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.szimebex}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['szimebex']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'nughvqbr',
-																'header': '营业收入（自发自用部分）',
-																'type': 'money'
-															}}
-															value={item.nughvqbr}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['nughvqbr']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.szimebex}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'nughvqbr',
+																	'header': '营业收入（自发自用部分）',
+																	'type': 'money'
+																}}
+																value={item.nughvqbr}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.nughvqbr}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['nughvqbr']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-
-												</td>
-												<td className={tableTdStyle + ' '}>
-													{isEditing ? (
-														<RowInputRenderer
-															column={{
-																'key': 'huscgxas',
-																'header': '销项税额（自发自用部分）',
-																'type': 'money'
-															}}
-															value={item.huscgxas}
-															onChange={(newValue) => {
-																const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
-																	const rindex = 'row_' + idx;
-
-																	if (rindex === rowIndex) {
+																	setFormData((prevData: any) => {
 																		return {
-																			...row,
-																			['huscgxas']: newValue,
+																			...prevData,
+																			listYfvuhw: updatedList,
 																		};
-																	}
-																	return row;
-																});
+																	});
+																}}
+															/>
+														) : (
+															<>{item.nughvqbr}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle + ' '}>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'huscgxas',
+																	'header': '销项税额（自发自用部分）',
+																	'type': 'money'
+																}}
+																value={item.huscgxas}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
 
-																setFormData((prevData: any) => {
-																	return {
-																		...prevData,
-																		listYfvuhw: updatedList,
-																	};
-																});
-															}}
-														/>
-													) : (
-														<>{item.huscgxas}</>
-													)}
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['huscgxas']: newValue,
+																			};
+																		}
+																		return row;
+																	});
 
-													{isFocused && (
-														<div
-															className="absolute left-1/2 top-[110%] -translate-x-1/2 z-[999] w-64 bg-white/90 border border-gray-200 shadow-xl rounded-lg p-2
+																	setFormData((prevData: any) => {
+																		return {
+																			...prevData,
+																			listYfvuhw: updatedList,
+																		};
+																	});
+																}}
+															/>
+														) : (
+															<>{item.huscgxas}</>
+														)}
+														
+													        {isFocused && (
+																<div
+																	className="absolute left-1/2 top-[110%] -translate-x-1/2 z-[999] w-64 bg-white/90 border border-gray-200 shadow-xl rounded-lg p-2
 																	before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 
              														before:border-[8px] before:border-transparent before:border-b-gray-300"
-														>
-															<ButtonGroup size="small" color="primary" orientation="vertical" sx={{
-																display: 'grid',
-																gridTemplateColumns: 'repeat(2, 1fr)',
-																width: '100%',
-																'& .MuiButton-root': {
-																	backgroundColor: 'none',
-																	border: '1px solid #fff !important',
-																	borderRadius: '4px',
-																	margin: '2px'
-																}
-															}}>
-																<Button startIcon={<InsertBeforeIcon />}
-																	size="small"
-																	onClick={(e) => {
-																		e.stopPropagation();
-
-																		const currentList = formData.listYfvuhw || [];
-
-																		const newRow: any = {
-																		};
-
-																		let insertIndex = currentList.findIndex((row: any, idx: number) => ('row_' + idx) === focusedlistYfvuhwRowId);
-
-																		if (insertIndex === -1) {
-																			insertIndex = currentList.length;
-																		}
-
-
-																		const updatedList = [
-																			...currentList.slice(0, insertIndex),
-																			newRow,
-																			...currentList.slice(insertIndex),
-																		];
-
-																		setFormData((prevFormData: any) => ({
-																			...prevFormData,
-																			listYfvuhw: updatedList,
-																		}));
-
-																		setFocusedlistYfvuhwRowId(null);
-																		setEditinglistYfvuhwRowId(null);
-																	}}
-																	sx={{
-																		justifyContent: 'flex-start'
-																	}}
 																>
-																	{t('page.insertbefore')}
-																</Button>
-																<Button startIcon={<InsertNextIcon />}
-																	size="small"
-																	onClick={(e) => {
-																		e.stopPropagation();
-
-																		const currentList = formData.listYfvuhw || [];
-
-																		const newRow: any = {
-																		};
-
-																		let focusedIndex = currentList.findIndex((row: any, idx: number) => ('row_' + idx) === focusedlistYfvuhwRowId);
-
-																		let insertIndex;
-
-																		if (focusedIndex >= 0) {
-																			insertIndex = focusedIndex + 1;
-																		} else {
-																			insertIndex = currentList.length;
-																		}
-
-																		const updatedList = [
-																			...currentList.slice(0, insertIndex),
-																			newRow,
-																			...currentList.slice(insertIndex),
-																		];
-
-																		setFormData((prevFormData: any) => ({
-																			...prevFormData,
-																			listYfvuhw: updatedList,
-																		}));
-
-																		setFocusedlistYfvuhwRowId(null);
-																		setEditinglistYfvuhwRowId(null);
-																	}}
-																	sx={{
-																		justifyContent: 'flex-start',
-																	}}
-																>
-																	{t('page.insertnext')}
-																</Button>
-																<Button startIcon={<EditIcon />}
-																	size="small"
-																	onClick={(e) => {
-																		e.stopPropagation();
-
-																		setEditinglistYfvuhwRowId(rowIndex);
-																	}}
-																	sx={{
-																		justifyContent: 'flex-start'
-																	}}
-																>
-																	{t('page.edit')}
-																</Button>
-																<Button startIcon={<DeleteIcon />}
-																	size="small"
-																	onClick={(e) => {
-																		e.stopPropagation();
-
-																		setEditinglistYfvuhwRowId(null);
-																		setIsConfirmDeletionlistYfvuhwRowOpen(true);
-																	}}
-																	sx={{
-																		justifyContent: 'flex-start'
-																	}}
-																>
-																	{t('page.delete')}
-																</Button>
-																<Button startIcon={<CancelIcon />}
-																	size="small"
-																	onClick={(e) => {
-																		e.stopPropagation();
-
-																		setFocusedlistYfvuhwRowId(null);
-																		setEditinglistYfvuhwRowId(null);
-																	}}
-																	sx={{
-																		justifyContent: 'flex-start'
-																	}}
-																>
-																	{t('page.close')}
-																</Button>
-															</ButtonGroup>
-														</div>
-													)}
-
-												</td>
-											</tr>
-										)
-									})}
-								</tbody>
-							</table>
-							<SimpleConfirmDialog
-								open={isConfirmDeletionlistYfvuhwRowOpen}
-								onConfirm={() => {
-									setIsConfirmDeletionlistYfvuhwRowOpen(false);
-
-									// 1. Find the focused element outside of setFormData.
-									const foundElement = formData.listYfvuhw.find((row: any, idx: number) => {
-										const rindex = 'row_' + idx;
-
-										return rindex == focusedlistYfvuhwRowId;
-									});
-
-									// 2. Use setFormData uniformly for all immutable state updates.
-									setFormData((prevData: any) => {
-										// 2a. Filter the new data list array (remove the focused row).
-										const newList = prevData.listYfvuhw.filter((row: any, idx: number) => {
-											const rindex = 'row_' + idx;
-											return rindex !== focusedlistYfvuhwRowId;
-										});
-
-										// 2b. Initialize a new formDataBin structure.
-										// Ensure that the old listId array is obtained from prevData; if it does not exist, use an empty array [].
-										let discardedDataList = [...(prevData.formDataBin?.listYfvuhw || [])];
-
-										// 2c. Handle primary key insertion logic.
-										if (foundElement && foundElement['pkExswzlwt'] !== null) {
-											// The primary key value of the deleted row is added to a new copy of the discardedDataList array.
-											discardedDataList.push(foundElement);
+																	<ButtonGroup size="small" color="primary" orientation="vertical" sx={{ 
+																					display: 'grid', 
+																					gridTemplateColumns: 'repeat(2, 1fr)', 
+																					width: '100%',
+																					'& .MuiButton-root': {
+																					backgroundColor: 'none',
+																					border: '1px solid #fff !important',
+																					borderRadius: '4px', 
+																					margin: '2px'
+																					}
+																				}}>
+																		<Button startIcon={<InsertBeforeIcon />}
+																			size="small"
+																			onClick={(e) => {
+																				e.stopPropagation();
+		
+																				const currentList = formData.listYfvuhw || [];
+		
+																				const newRow: any = {
+																				};
+		
+																				let insertIndex = currentList.findIndex((row: any, idx: number) => ('row_' + idx) === focusedlistYfvuhwRowId);
+		
+																				if (insertIndex === -1) {
+																					insertIndex = currentList.length;
+																				}
+		
+		
+																				const updatedList = [
+																					...currentList.slice(0, insertIndex),
+																					newRow,
+																					...currentList.slice(insertIndex),
+																				];
+		
+																				setFormData((prevFormData: any) => ({
+																					...prevFormData,
+																					listYfvuhw: updatedList,
+																				}));
+		
+																				setFocusedlistYfvuhwRowId(null);
+																				setEditinglistYfvuhwRowId(null);
+																			}}
+																			sx={{
+																				justifyContent: 'flex-start'
+																			}}
+																		>
+																			{t('page.insertbefore')}
+																		</Button>
+																		<Button startIcon={<InsertNextIcon />}
+																			size="small"
+																			onClick={(e) => {
+																				e.stopPropagation();
+		
+																				const currentList = formData.listYfvuhw || [];
+		
+																				const newRow: any = {
+																				};
+		
+																				let focusedIndex = currentList.findIndex((row: any, idx: number) => ('row_' + idx) === focusedlistYfvuhwRowId);
+		
+																				let insertIndex;
+		
+																				if (focusedIndex >= 0) {
+																					insertIndex = focusedIndex + 1;
+																				} else {
+																					insertIndex = currentList.length;
+																				}
+		
+																				const updatedList = [
+																					...currentList.slice(0, insertIndex),
+																					newRow,
+																					...currentList.slice(insertIndex),
+																				];
+		
+																				setFormData((prevFormData: any) => ({
+																					...prevFormData,
+																					listYfvuhw: updatedList,
+																				}));
+		
+																				setFocusedlistYfvuhwRowId(null);
+																				setEditinglistYfvuhwRowId(null);
+																			}}
+																			sx={{
+																				justifyContent: 'flex-start',
+																			}}
+																		>
+																			{t('page.insertnext')}
+																		</Button>
+																		<Button startIcon={<EditIcon />}
+																			size="small"
+																			onClick={(e) => {
+																				e.stopPropagation();
+																				
+																				setEditinglistYfvuhwRowId(rowIndex);
+																			}}
+																			sx={{
+																				justifyContent: 'flex-start'
+																			}}
+																		>
+																			{t('page.edit')}
+																		</Button>
+																		<Button startIcon={<DeleteIcon />}
+																			size="small"
+																			onClick={(e) => {
+																				e.stopPropagation();
+	
+																				setEditinglistYfvuhwRowId(null);
+																				setIsConfirmDeletionlistYfvuhwRowOpen(true);
+																			}}
+																			sx={{
+																				justifyContent: 'flex-start'
+																			}}
+																		>
+																			{t('page.delete')}
+																		</Button>
+																		<Button startIcon={<CancelIcon />}
+																			size="small"
+																			onClick={(e) => {
+																				e.stopPropagation();
+																				
+																				setFocusedlistYfvuhwRowId(null);
+																				setEditinglistYfvuhwRowId(null);
+																			}}
+																			sx={{
+																				justifyContent: 'flex-start'
+																			}}
+																		>
+																			{t('page.close')}
+																		</Button>
+																	</ButtonGroup>
+																</div>
+															)}
+														
+			      					    				</td>
+													</tr>
+												)
+											})}
+										</tbody>
+	      					    	</table>
+	      					    	<SimpleConfirmDialog
+										open={isConfirmDeletionlistYfvuhwRowOpen}
+										onConfirm={() => {
+											setIsConfirmDeletionlistYfvuhwRowOpen(false);
+		
+											// 1. Find the focused element outside of setFormData.
+											const foundElement = formData.listYfvuhw.find((row: any, idx: number) => {
+												const rindex = 'row_' + idx;
+		
+												return rindex == focusedlistYfvuhwRowId;
+											});
+		
+											// 2. Use setFormData uniformly for all immutable state updates.
+											setFormData((prevData: any) => {
+												// 2a. Filter the new data list array (remove the focused row).
+												const newList = prevData.listYfvuhw.filter((row: any, idx: number) => {
+													const rindex = 'row_' + idx;
+													return rindex !== focusedlistYfvuhwRowId;
+												});
+		
+												// 2b. Initialize a new formDataBin structure.
+												// Ensure that the old listId array is obtained from prevData; if it does not exist, use an empty array [].
+												let discardedDataList = [...(prevData.formDataBin?.listYfvuhw || [])];
+		
+												// 2c. Handle primary key insertion logic.
+												if (foundElement && foundElement['pkExswzlwt'] !== null) {
+													// The primary key value of the deleted row is added to a new copy of the discardedDataList array.
+													discardedDataList.push(foundElement);
+												}
+		
+												// 2d. Returns a completely new state object.
+												return {
+													...prevData,
+													['listYfvuhw']: newList, // Update data list
+													formDataBin: {
+														...prevData.formDataBin, // Preserve other possible key-value pairs in formDataBin
+														listYfvuhw: discardedDataList,       // Update the data List array in formDataBin
+													},
+												};
+											});
+											
+											setFocusedlistYfvuhwRowId(null);
 										}
-
-										// 2d. Returns a completely new state object.
-										return {
-											...prevData,
-											['listYfvuhw']: newList, // Update data list
-											formDataBin: {
-												...prevData.formDataBin, // Preserve other possible key-value pairs in formDataBin
-												listYfvuhw: discardedDataList,       // Update the data List array in formDataBin
-											},
-										};
-									});
-
-									setFocusedlistYfvuhwRowId(null);
-								}
-								}
-								onCancel={() => {
-									setIsConfirmDeletionlistYfvuhwRowOpen(false);
-								}}>
-								{t('page.confirmdelete')}
-							</SimpleConfirmDialog>
-						</div>
-					</div>
+										}
+										onCancel={() => {
+											setIsConfirmDeletionlistYfvuhwRowOpen(false);
+										}}>
+										{t('page.confirmdelete')}
+									</SimpleConfirmDialog>
+      					    	</div>
+                    </div>	
 					<div className="mt-6 flex items-center justify-end gap-x-6">
-						{isViewReadOnly ? (
+                        {isViewReadOnly ? (
 							<button type="button" disabled={disabledAction} className={cancelStyle}
-								onClick={() => {
-									if (from) {
+	                        onClick={() => {
+									if(from) {
 										navigate(from);
 									} else {
 										const jsonData = { ...formData };
-
+	
 										onCancel?.(jsonData);
 									}
 								}}
-							>
-								{t('page.back')}
-							</button>
+	                        >
+	                        {t('page.back')}
+	                        </button>
 						) : (
-							<>
-								<button type="button" disabled={disabledAction} className={cancelStyle}
-									onClick={() => {
-										if (from) {
+						<>
+	                        <button type="button" disabled={disabledAction} className={cancelStyle}
+		                        onClick={() => {
+										if(from) {
 											navigate(from);
 										} else {
 											const jsonData = { ...formData };
-
+		
 											onCancel?.(jsonData);
 										}
 									}}
-								>
-									{t('page.cancel')}
-								</button>
-								<button
-									disabled={disabledAction}
-									type="submit"
-									className={submitStyle}>
-									{t('page.submit')}
-								</button>
-							</>
+		                        >
+		                        {t('page.cancel')}
+	                        </button>
+	                        <button
+		                        disabled={disabledAction}
+		                        type="submit"
+		                        className={submitStyle}>
+		                        {t('page.submit')}
+	                        </button>
+						</>
 						)}
-					</div>
-					{isLoading && (
-						<Box
+                    </div>
+                    {isLoading && (
+						<Box 
 							className="absolute inset-0 flex justify-center items-center bg-black/50 z-20 rounded-xl"
 						>
 							<CircularProgress disableShrink color="inherit" />
 						</Box>
 					)}
 				</form>
-				<SimpleConfirmDialog open={isConfirmOpen} onConfirm={() => { submitFormData(); setIsConfirmOpen(false); }} onCancel={() => { setIsConfirmOpen(false) }}>
+				<SimpleConfirmDialog open={isConfirmOpen} onConfirm={() => {submitFormData();setIsConfirmOpen(false);}} onCancel={() => {setIsConfirmOpen(false)}}>
 					{t('page.confirmsubmit')}
 				</SimpleConfirmDialog>
-			</ThemeProvider>
-		</>
-	)
+             </ThemeProvider>
+        </>
+    )
 }

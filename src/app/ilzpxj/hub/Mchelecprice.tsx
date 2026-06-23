@@ -1,18 +1,18 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
-    Box, Card, CardContent, Typography, Button, IconButton,
-    Drawer, Divider,
-    RadioGroup,
-    Radio,
-    FormControlLabel,
+    Box, Button, IconButton,
+    Drawer,
     FormControl,
     InputLabel,
     Select,
-    MenuItem
+    MenuItem,
+    TextField,
+    InputAdornment
 } from '@mui/material';
 import {
     Business, ArrowForwardIos, Add, Close,
-    InfoOutlined, FilterList
+    InfoOutlined, FilterList,
+    KeyboardArrowUp, KeyboardArrowDown, KeyboardArrowLeft
 } from '@mui/icons-material';
 
 import axios from 'axios';
@@ -104,8 +104,11 @@ const MerchantElectricityManager: React.FC = () => {
     const [tableData, setTableData] = useState<Data[]>([]);
     const [totalRows, setTotalRows] = useState(0);
     const [page, setPage] = useState(0);
-    const [pageSize, setPageSize] = useState(15);
+    const [pageSize, setPageSize] = useState(12);
     const [searchConditions, setSearchConditions] = useState<SearchConditions>(INITIAL_SEARCH_CONDITIONS);
+
+    // 总页数（服务端分页，page 从 0 开始）
+    const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
 
     // 用 useCallback 避免每次渲染都生成新函数引用
     const fetchData = useCallback(async () => {
@@ -148,7 +151,7 @@ const MerchantElectricityManager: React.FC = () => {
     const refreshTable = fetchData;
 
     useEffect(() => {
-        setBreadcrumbs([{ name: '商户电价管理', url: '/main/trays' }]);
+        setBreadcrumbs([{ name: '电价管理', url: '/main/trays' }, { name: '商户电价设置', url: '/main/trays' }]);
     }, []); // 面包屑只需设置一次，从 fetchData 的依赖中分离出去
 
     useEffect(() => {
@@ -169,14 +172,104 @@ const MerchantElectricityManager: React.FC = () => {
 
     const [filterId, setFilterId] = React.useState('');
 
+    // 发电户号查询输入框（受控），失去焦点时自动提交查询
+    const [bwblkhayInput, setBwblkhayInput] = useState('');
+
+    // 提交查询条件并回到第一页（发电户号、电价筛选为两个独立条件）
+    const commitSearch = (next: Partial<SearchConditions>) => {
+        setPage(0);
+        setSearchConditions(prev => ({ ...prev, ...next }));
+    };
+
+    // 发电户号：失去焦点时触发查询
+    const handleBwblkhayBlur = () => {
+        const value = bwblkhayInput.trim();
+        if (value !== searchConditions.bwblkhay) {
+            commitSearch({ bwblkhay: value });
+        }
+    };
+
+    // 电价筛选：选择后触发查询
     const handleFilterChange = (newId: string) => {
         setFilterId(newId);
-        // 这里调用你原本用于查询列表的函数，传入新的 ID
-        // fetchList({ priceType: newId }); 
-        setSearchConditions(prev => ({
-            ...prev,       // 1. 保留现有的所有属性（如日期、关键词等）
-            'fpllerek': newId // 2. 增加或覆盖新的参数
-        }));
+        commitSearch({ fpllerek: newId });
+    };
+
+    // 单个商户条目（看板列与单列列表共用）
+    const renderMerchantItem = (m: Data, isSet: boolean) => {
+        const isSelected = selectedMchantPricing?.mchId == m.pkXbbyezwt;
+        const subParts: string[] = [];
+        if (m.bwblkhay) subParts.push(m.bwblkhay);
+        if (isSet) {
+            if (m.xjegvvik) subParts.push(m.xjegvvik);
+            if (m.pwayuydj === 'Yes') subParts.push('上网');
+        } else {
+            subParts.push('未配置电价');
+        }
+        const subtitle = subParts.join('  ·  ');
+
+        return (
+            <div
+                key={m.paginationNumber}
+                onClick={() => handleOpenEdit({
+                    id: m.pkWzghpmog,
+                    name: m.mrvqpphi,
+                    code: m.bwblkhay,
+                    mchId: m.pkXbbyezwt,
+                })}
+                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl border bg-white cursor-pointer transition-all duration-200 ${isSelected
+                    ? 'border-blue-500 ring-1 ring-blue-200'
+                    : `border-slate-100 hover:shadow-sm ${isSet ? 'hover:border-emerald-300' : 'hover:border-slate-300'}`
+                    }`}
+            >
+                <div className={`shrink-0 flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isSet ? 'bg-blue-50 text-blue-500' : 'bg-slate-50 text-slate-400'
+                    }`}>
+                    <Business style={{ fontSize: '1.2rem' }} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                    {/* 项目名称（可点击编辑项目详情，空值默认未命名项目）；悬浮时右侧出现提示 */}
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setMerchantNewDialogTitle('商户信息编辑');
+                            setMerchantNewDialogOpen(true);
+                            setMerchantPkId(m.pkXbbyezwt);
+                        }}
+                        className="group/name flex items-center gap-1.5 min-w-0"
+                    >
+                        <span className={`text-sm font-medium leading-tight truncate transition-colors group-hover/name:text-blue-600 ${isSet ? 'text-slate-800' : 'text-slate-400 italic'
+                            }`}>
+                            {m.gwsnkwpp || '未命名项目'}
+                        </span>
+                        <span className="shrink-0 flex items-center text-[10px] text-slate-600 whitespace-nowrap opacity-0 -translate-x-1 transition-all duration-200 group-hover/name:opacity-100 group-hover/name:translate-x-0">
+                            <KeyboardArrowLeft style={{ fontSize: '0.8rem' }} />
+                            编辑详情
+                        </span>
+                    </a>
+                    {/* 商户名称 */}
+                    <p className="mt-0.5 text-xs text-slate-600 truncate" title={m.mrvqpphi}>
+                        {m.mrvqpphi}
+                    </p>
+                    {/* 最下行：户号 · 依据 · 上网 */}
+                    <p className={`mt-0.5 text-xs truncate font-mono ${isSet ? 'text-slate-500' : 'text-slate-400'
+                        }`} title={subtitle}>
+                        {subtitle}
+                    </p>
+                </div>
+
+                {/* 右侧箭头；悬浮箭头区域时切换为左箭头并浮现提示 */}
+                <div className="group/arrow shrink-0 flex items-center text-slate-300 hover:text-blue-500 transition-colors">
+                    <ArrowForwardIos className="group-hover/arrow:hidden" style={{ fontSize: '0.8rem' }} />
+                    <KeyboardArrowLeft className="hidden group-hover/arrow:inline-block" style={{ fontSize: '0.9rem' }} />
+                    <span className="text-[10px] text-slate-600 whitespace-nowrap overflow-hidden max-w-0 opacity-0 transition-all duration-200 group-hover/arrow:max-w-[72px] group-hover/arrow:opacity-100 group-hover/arrow:ml-1">
+                        设置电价依据
+                    </span>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -193,6 +286,24 @@ const MerchantElectricityManager: React.FC = () => {
                         </p>
                     </div>
                     <div className="flex gap-3">
+                        {/* 发电户号查询：放在电价筛选左侧，点击搜索图标触发查询 */}
+                        <Box sx={{ minWidth: 200 }}>
+                            <TextField
+                                fullWidth
+                                size="small"
+                                label="发电户号"
+                                value={bwblkhayInput}
+                                onChange={(e) => setBwblkhayInput(e.target.value)}
+                                onBlur={handleBwblkhayBlur}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        (e.target as HTMLInputElement).blur();
+                                    }
+                                }}
+                                sx={{ '.MuiInputBase-input': { fontSize: '0.875rem' } }}
+                            />
+                        </Box>
                         <Box sx={{ minWidth: 200 }}>
                             <FormControl fullWidth size="small">
                                 {/* 使用 InputLabel 配合 Select 展示，比普通按钮更具引导性 */}
@@ -242,87 +353,71 @@ const MerchantElectricityManager: React.FC = () => {
                     </div>
                 </header>
 
-                {/* 响应式 Grid 布局 */}
-                <div className="grid grid-cols-4 gap-3">
-                    {tableData.map((m) => (
-                        <Card
-                            key={m.paginationNumber}
+                {searchConditions.fpllerek ? (
+                    /* 已选电价筛选：结果均为已设置，用单列列表更合理（避免空的「未设置」列） */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {tableData.length === 0 ? (
+                            <p className="text-xs text-slate-300 italic px-1 py-4">暂无匹配该电价的商户</p>
+                        ) : (
+                            tableData.map((m) => renderMerchantItem(m, m.pkWzghpmog > 0))
+                        )}
+                    </div>
+                ) : (
+                    /* 未筛选：按配置状态分两列看板 */
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        {[
+                            { key: 'set', title: '已设置', isSet: true, items: tableData.filter((m) => m.pkWzghpmog > 0) },
+                            { key: 'unset', title: '未设置', isSet: false, items: tableData.filter((m) => !(m.pkWzghpmog > 0)) },
+                        ].map((col) => (
+                            <section key={col.key} className="flex flex-col">
+                                {/* 列头 */}
+                                <div className={`flex items-center gap-2 px-1 pb-2.5 mb-3 border-b-2 ${col.isSet ? 'border-emerald-200' : 'border-slate-200'
+                                    }`}>
+                                    <span className={`w-2 h-2 rounded-full ${col.isSet ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                    <span className="text-sm font-semibold text-slate-700">{col.title}</span>
+                                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${col.isSet ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                                        }`}>
+                                        {col.items.length}
+                                    </span>
+                                </div>
 
-                            sx={{
-                                border: '1px solid',
-                                borderColor: '#f1f5f9',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.01)',
-                            }}
-                            className={`group relative transition-all duration-300 bg-white cursor-pointer rounded-lg ${selectedMchantPricing?.mchId == m.pkXbbyezwt
-                                ? 'border-2 border-blue-500'
-                                : 'border-2 border-gray-100 hover:border-blue-500'
-                                }`}
+                                {/* 列表条目 */}
+                                <div className="flex flex-col gap-2.5">
+                                    {col.items.length === 0 ? (
+                                        <p className="text-sm text-slate-300 italic px-1 py-4">本页暂无</p>
+                                    ) : (
+                                        col.items.map((m) => renderMerchantItem(m, col.isSet))
+                                    )}
+                                </div>
+                            </section>
+                        ))}
+                    </div>
+                )}
+
+                {/* 分页：极简上下箭头 */}
+                {totalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-center gap-3">
+                        <IconButton
+                            size="small"
+                            onClick={() => setPage((p) => Math.max(0, p - 1))}
+                            disabled={page <= 0 || loading}
+                            aria-label="上一页"
                         >
-                            <CardContent className="p-4" sx={{
-                                '&:last-child': {
-                                    paddingBottom: '16px' // 专门覆盖 MUI 默认的 last-child 样式
-                                }
-                            }}>
-                                <div className="flex justify-between items-center mb-5">
-                                    {/* 左侧：图标容器，保持固定宽高更精致 */}
-                                    <div className={`
-                                        flex items-center justify-center w-9 h-9 rounded-xl transition-colors
-                                        ${m.columnBirp === '已设置' ? 'bg-blue-50 text-blue-500' : 'bg-slate-50 text-slate-400'}
-                                    `}>
-                                        <Business style={{ fontSize: '1.2rem' }} />
-                                    </div>
-
-                                    {/* 右侧：文字置底，去掉多余行高 */}
-                                    <div className={`
-                                        text-xs leading-tight pb-1
-                                        flex flex-col gap-0.5  {/* 🌟 核心：设为 Flex 列布局，并加一点点间距 */}
-                                        ${m.columnBirp === '已设置' ? 'text-slate-900' : 'text-slate-400'}
-                                    `}>
-                                        <span className='font-medium'>{m.columnBirp === '已设置' ? '电价计算依据：' : '未设置'}</span>
-                                        <span className="text-blue-600/80">{m.xjegvvik}</span> {/* 🌟 第二行可以微调透明度增强层次感 */}
-                                    </div>
-                                </div>
-
-                                <Typography className={`text-base mt-1 mb-4 line-clamp-1 group-hover:text-blue-600 transition-colors ${m.gwsnkwpp ? 'text-slate-800' : 'text-slate-400 italic'}`}>
-                                    <a href={`#`} onClick={(e) => {
-                                        e.preventDefault();
-
-                                        setMerchantNewDialogTitle('商户信息编辑');
-                                        setMerchantNewDialogOpen(true);
-
-                                        setMerchantPkId(m.pkXbbyezwt);
-                                    }} >
-                                        {m.gwsnkwpp ?? '未命名项目'}
-                                    </a>
-                                </Typography>
-                                <Typography className="text-slate-800 text-sm flex items-center gap-1 font-mono">
-                                    {m.mrvqpphi}
-                                </Typography>
-                                <Typography className="text-slate-800 text-sm mt-1 flex items-center gap-1 font-mono">
-                                    {m.bwblkhay}
-                                </Typography>
-                                <Typography className={`text-sm mt-1 mb-4 flex items-center gap-1 font-mono ${m.deimigjs ? 'text-slate-800' : 'text-slate-400 italic'}`}>
-                                    {m.deimigjs ?? '-'}
-                                </Typography>
-
-                                <div className={`flex items-center gap-2 text-sm mb-4 ${m.deimigjs ? 'text-slate-800' : 'text-slate-400 italic'}`}>
-                                    <span className="truncate">{m.pwayuydj === 'Yes' ? '余电上网' : '-'}</span>
-                                </div>
-
-                                <Divider className="mb-4 opacity-50" />
-                                <div className="flex justify-between items-center" onClick={() => handleOpenEdit({
-                                    id: m.pkWzghpmog,
-                                    name: m.mrvqpphi,
-                                    code: m.bwblkhay,
-                                    mchId: m.pkXbbyezwt
-                                })}>
-                                    <span className="text-sm font-semibold">电价配置</span>
-                                    <ArrowForwardIos className="text-slate-600 text-xs" />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                            <KeyboardArrowUp fontSize="small" />
+                        </IconButton>
+                        <span className="text-sm tabular-nums text-slate-500">
+                            {page + 1} / {totalPages}
+                        </span>
+                        <IconButton
+                            size="small"
+                            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                            disabled={page >= totalPages - 1 || loading}
+                            aria-label="下一页"
+                        >
+                            <KeyboardArrowDown fontSize="small" />
+                        </IconButton>
+                    </div>
+                )}
             </main>
 
             {/* --- 右侧悬浮抽屉 (Overlay Drawer) --- */}

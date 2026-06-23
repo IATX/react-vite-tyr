@@ -19,7 +19,7 @@ const resources = {
 };
 
 const BASE_PATH = import.meta.env.VITE_JET_ASP_CONTEXT || '/';
-const localesLng = import.meta.env.VITE_JET_LOCALES_LNG || 'en';
+const localesLng = import.meta.env.VITE_JET_LOCALES_LNG || 'zh';
 
 i18n
   // 1. 挂载后端加载器
@@ -35,7 +35,7 @@ i18n
     resources,
     lng: localesLng,
     // 默认设置
-    fallbackLng: 'en',
+    fallbackLng: 'zh',
     debug: false,
     detection: {
       'load': 'languageOnly',

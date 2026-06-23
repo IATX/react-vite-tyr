@@ -157,14 +157,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
    const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
 			}
 
 			default: {
@@ -431,7 +431,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	    	
 	      		const jsonData = { ...formData };
 	
-				showAlert('Operation successfully.', 'success');
+				showAlert(t('message.operationSuccess'), 'success');
 	
 				onSubmit?.(jsonData);
 	        } else if(response.data && !response.data.success) {
@@ -1347,22 +1347,22 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			     </div>
 	        </div>
 			<div className={oneColumnStyle}>
-	            <label htmlFor="tb_lgtnnfgg_inmmjwmn" className={labelStyle}>
-	                结算日期
+	            <label htmlFor="tb_lgtnnfgg_odjdvwac" className={labelStyle}>
+	                结算月份
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{new Date(formData.inmmjwmn).toLocaleDateString() || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{new Date(formData.odjdvwac).toLocaleDateString() || ''}</Typography>
 	            	) : (
 	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['inmmjwmn'] = el;
+													if (el) fieldRefs.current['odjdvwac'] = el;
 												}}>
 		               <DatePicker
-                          name="inmmjwmn"
+                          name="odjdvwac"
                           format="YYYY-MM-DD"
-                          value={formData.inmmjwmn ? dayjs(formData.inmmjwmn) : null}
+                          value={formData.odjdvwac ? dayjs(formData.odjdvwac) : null}
                           views={['year', 'month', 'day']}
-                          onChange={(newValue: Dayjs | null)=> handleDateChange('inmmjwmn', newValue)}
+                          onChange={(newValue: Dayjs | null)=> handleDateChange('odjdvwac', newValue)}
                           sx={{
                             '.Mui-focused': {
                                borderColor: 'oklch(54.6% 0.245 262.881) !important',
@@ -1400,16 +1400,16 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
                               },
                             },
                             textField: {
-                              id: 'tb_lgtnnfgg_inmmjwmn',
-                              error: !!errors['inmmjwmn'],
-                              helperText: errors['inmmjwmn'],
+                              id: 'tb_lgtnnfgg_odjdvwac',
+                              error: !!errors['odjdvwac'],
+                              helperText: errors['odjdvwac'],
                             },
                           }}
                        />
 	              </FormControl>
 	              )}
 			     </div>
-	        </div>       
+	        </div>    
 			<div className={oneColumnStyle}>
 	            <label htmlFor="tb_lgtnnfgg_colVcuumj" className={labelStyle}>
 	                商户号
@@ -1477,22 +1477,55 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			     </div>
 	        </div>
 			<div className={oneColumnStyle}>
-	            <label htmlFor="tb_lgtnnfgg_odjdvwac" className={labelStyle}>
-	                结算月份
+	            <label htmlFor="tb_lgtnnfgg_xhxzrkaw" className={labelStyle}>
+	                用电类别
+	            </label>
+	            <div className="mt-2">
+	            {isViewReadOnly ? (
+	            	<Typography variant="body2" gutterBottom>{formData.xhxzrkaw || ''}</Typography>
+	            ) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['xhxzrkaw'] = el;
+												}}>
+		              <TextField
+		                    id="tb_lgtnnfgg_xhxzrkaw"
+		                    name="xhxzrkaw"
+		                    value={formData.xhxzrkaw || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    variant="outlined"
+		                    error={errors.xhxzrkaw ? true : false}
+		                    helperText={errors.xhxzrkaw}
+		                    slotProps={{
+					            input: {
+					                
+					              startAdornment: <InputAdornment position="start">
+					              <TextIcon className='text-base'/>
+					              </InputAdornment>
+					            },
+					          }}
+		                  />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div>
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_lgtnnfgg_inmmjwmn" className={labelStyle}>
+	                结算日期
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{new Date(formData.odjdvwac).toLocaleDateString() || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{new Date(formData.inmmjwmn).toLocaleDateString() || ''}</Typography>
 	            	) : (
 	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['odjdvwac'] = el;
+													if (el) fieldRefs.current['inmmjwmn'] = el;
 												}}>
 		               <DatePicker
-                          name="odjdvwac"
+                          name="inmmjwmn"
                           format="YYYY-MM-DD"
-                          value={formData.odjdvwac ? dayjs(formData.odjdvwac) : null}
+                          value={formData.inmmjwmn ? dayjs(formData.inmmjwmn) : null}
                           views={['year', 'month', 'day']}
-                          onChange={(newValue: Dayjs | null)=> handleDateChange('odjdvwac', newValue)}
+                          onChange={(newValue: Dayjs | null)=> handleDateChange('inmmjwmn', newValue)}
                           sx={{
                             '.Mui-focused': {
                                borderColor: 'oklch(54.6% 0.245 262.881) !important',
@@ -1530,50 +1563,18 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
                               },
                             },
                             textField: {
-                              id: 'tb_lgtnnfgg_odjdvwac',
-                              error: !!errors['odjdvwac'],
-                              helperText: errors['odjdvwac'],
+                              id: 'tb_lgtnnfgg_inmmjwmn',
+                              error: !!errors['inmmjwmn'],
+                              helperText: errors['inmmjwmn'],
                             },
                           }}
                        />
 	              </FormControl>
 	              )}
 			     </div>
-	        </div>       
+	        </div>          
 			<input type="hidden" name="jrtkulsl" placeholder="" value={formData.jrtkulsl || ''} />
-			<div className={oneColumnStyle}>
-	            <label htmlFor="tb_lgtnnfgg_xhxzrkaw" className={labelStyle}>
-	                用电类别
-	            </label>
-	            <div className="mt-2">
-	            {isViewReadOnly ? (
-	            	<Typography variant="body2" gutterBottom>{formData.xhxzrkaw || ''}</Typography>
-	            ) : (
-	              <FormControl fullWidth ref={(el) => {
-													if (el) fieldRefs.current['xhxzrkaw'] = el;
-												}}>
-		              <TextField
-		                    id="tb_lgtnnfgg_xhxzrkaw"
-		                    name="xhxzrkaw"
-		                    value={formData.xhxzrkaw || ''}
-		                    onChange={handleInputChange}
-		                    size="small"
-		                    variant="outlined"
-		                    error={errors.xhxzrkaw ? true : false}
-		                    helperText={errors.xhxzrkaw}
-		                    slotProps={{
-					            input: {
-					                
-					              startAdornment: <InputAdornment position="start">
-					              <TextIcon className='text-base'/>
-					              </InputAdornment>
-					            },
-					          }}
-		                  />
-	              </FormControl>
-	              )}
-			     </div>
-	        </div>
+			
 	    	<div className={oneRowStyle}>
 	            <label htmlFor="tb_iytnlwnu_imcdpdaa" className={labelStyle}>
 	                说明

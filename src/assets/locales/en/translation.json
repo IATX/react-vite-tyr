@@ -40,6 +40,7 @@
     },
     "page" : {
         "confirm": "Confirm",
+        "info": "Info",
         "cancel": "cancel",
         "submit": "Submit",
         "save": "Save",
@@ -67,7 +68,23 @@
         "upto" : "up to",
         "drapdrop" : "Drag and drop",
         "upload" : "Upload files",
-        "files" : "files"
+        "files" : "files",
+        "confirmdeletefile": "Confirm to delete the file?",
+        "status": {
+            "failed": "Upload failed",
+            "stopped": "Upload stopped"
+        },
+        "msg": {
+            "cancelled": "File upload cancelled.",
+            "failed": "File upload failed.",
+            "totalsizelimit": "The total file size cannot exceed {{size}}MB!",
+            "countlimit": "No more than {{count}} files can be uploaded.",
+            "stopbeforedelete": "Uploading in progress, please stop uploading before deleting!",
+            "deletefilefailed": "Failed to delete the file, please try again!",
+            "deleteannexfailed": "Failed to delete the annex, please try again!",
+            "networkerror": "Network service exception.",
+            "nopreview": "No preview url."
+        }
     },
     "prefab": {
         "user": {
@@ -79,10 +96,17 @@
         "log": {}
     },
     "validation" : {
+        "required": "Field is required.",
+        "fileRequired": "File is required.",
+        "dateRange": "Please select a date in the first quarter of 2022",
+        "dateInvalid": "Your date is not valid",
         "signin" : {
             "accounterror" : "Account is required",
             "pwderror" : "Password is required",
             "codeerror" : "Verification code is required"
         }
+    },
+    "message" : {
+        "operationSuccess": "Operation successfully."
     }
 }

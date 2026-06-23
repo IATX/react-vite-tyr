@@ -20,9 +20,11 @@ export default function Parameterization<T extends object>(
   }
 
   const Comp = componentInfo.elem;
+  // key 不能通过展开传入 JSX，需单独提取后直接作为 key 传递
+  const { key, ...restProps } = (props ?? {}) as any;
   return (
     <Suspense fallback={<InlineFallback />}>
-      <Comp {...(props as any)} />
+      <Comp key={key} {...restProps} />
     </Suspense>
   );
 }

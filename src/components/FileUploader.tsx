@@ -110,7 +110,7 @@ export interface FileUploaderHandles {
 const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
     id,
     name,
-    label = 'File upload',
+    label = '',
     maxFiles = 1,
     maxFileSizeMB = 10,
     readOnly = false,
@@ -155,7 +155,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
         // 非空校验：检查 files 数组是否为空
         if (selectedFiles.length === 0) {
             setHasError(true);
-            setHelperText('File is required.');
+            setHelperText(t('validation.fileRequired'));
             return false; // 校验失败
         }
         setHasError(false);
@@ -219,13 +219,13 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
         } catch (error) {
             if (axios.isCancel(error)) {
                 // console.log('上传已取消', error.message);
-                showAlert('File upload Cancelled.', 'info');
+                showAlert(t('uploader.msg.cancelled'), 'info');
 
                 setSelectedFiles(prev =>
                     prev.map(f => (f.id === file.id ? { ...f, status: 'stopped', progress: 0 } : f))
                 );
             } else {
-                showAlert('File upload failed.', 'error');
+                showAlert(t('uploader.msg.failed'), 'error');
 
                 setSelectedFiles(prev =>
                     prev.map(f => (f.id === file.id ? { ...f, status: 'failed' } : f))
@@ -243,7 +243,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
         const maxTotalSize = maxFileSizeMB * 1024 * 1024;
 
         if (totalCurrentSize + Array.from(files).reduce((sum, file) => sum + file.size, 0) > maxTotalSize) {
-            showAlert('The total file size cannot exceed ${maxFileSizeMB}MB!', 'error');
+            showAlert(t('uploader.msg.totalsizelimit', { size: maxFileSizeMB }), 'error');
             return;
         }
 
@@ -251,7 +251,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
 
         Array.from(files).forEach(file => {
             if (selectedFiles.length + newFiles.length >= maxFiles) {
-                showAlert('No more than ' + maxFiles + ' files can be uploaded.', 'error');
+                showAlert(t('uploader.msg.countlimit', { count: maxFiles }), 'error');
 
                 return;
             }
@@ -305,7 +305,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
         }
 
         if (fileToDelete.status === 'uploading') {
-            showAlert('Uploading in progress, please stop uploading before deleting!', 'warning');
+            showAlert(t('uploader.msg.stopbeforedelete'), 'warning');
             return;
         }
 
@@ -324,12 +324,12 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                             setSelectedFiles(updatedFiles);
                             if (onChange) onChange(updatedFiles);
                         } else {
-                            showAlert('Failed to delete the file, please try again!', 'error');
+                            showAlert(t('uploader.msg.deletefilefailed'), 'error');
                         }
 
                     }
                 }).catch((error) => {
-                    showAlert('Network service exception.', 'error');
+                    showAlert(t('uploader.msg.networkerror'), 'error');
                 });
         } else {
             const updatedFiles = selectedFiles.filter(file => file.id !== currentFile.id);
@@ -361,12 +361,12 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                                 return prevFiles.filter(file => file.id !== currentAnnex.id);
                             });
                         } else {
-                            showAlert('Failed to delete the annex, please try again!', 'error');
+                            showAlert(t('uploader.msg.deleteannexfailed'), 'error');
                         }
 
                     }
                 }).catch((error) => {
-                    showAlert('Network service exception.', 'error');
+                    showAlert(t('uploader.msg.networkerror'), 'error');
                 });
         }
 
@@ -388,7 +388,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
             setPreviewOpen(true);
             setIsPreviewImage(file.type.startsWith('image/'));
         } else {
-            showAlert('No preview url.', 'error');
+            showAlert(t('uploader.msg.nopreview'), 'error');
         }
     };
 
@@ -399,7 +399,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
             setPreviewOpen(true);
             setIsPreviewImage(file.type.startsWith('image/'));
         } else {
-            showAlert('No preview url.', 'error');
+            showAlert(t('uploader.msg.nopreview'), 'error');
         }
     };
 
@@ -454,7 +454,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                             <Typography variant="body1" className="text-sm text-gray-500 flex justify-center items-center gap-2">
                                 <span>{t('uploader.drapdrop')}</span>
                                 <span>{t('common.or')}</span> 
-                                <Tooltip title={label} arrow>
+                                <Tooltip title={label || t('uploader.upload')} arrow>
                                     <Button
                                         size="small"
                                         onClick={() => fileInputRef.current?.click()}
@@ -557,8 +557,8 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                                                 </IconButton>
                                             )}
                                             {file.status === 'completed' && <CheckCircleIcon className="text-lg text-green-500" />}
-                                            {file.status === 'failed' && <Tooltip title="Upload failed" placement="bottom"><ErrorIcon className="text-lg text-red-500" /></Tooltip>}
-                                            {file.status === 'stopped' && <Tooltip title="Upload stopped" placement="bottom"><ErrorIcon className="text-lg text-orange-500" /></Tooltip>}
+                                            {file.status === 'failed' && <Tooltip title={t('uploader.status.failed')} placement="bottom"><ErrorIcon className="text-lg text-red-500" /></Tooltip>}
+                                            {file.status === 'stopped' && <Tooltip title={t('uploader.status.stopped')} placement="bottom"><ErrorIcon className="text-lg text-orange-500" /></Tooltip>}
                                             {file.status !== 'uploading' && (
                                                 <IconButton edge="end" aria-label="delete" className='ml-1 mr-1' onClick={() => {
                                                     setDeleteFileConfirmOpen(true);
@@ -645,7 +645,7 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClosePreview} autoFocus>
-                        Close
+                        {t('page.close')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -675,20 +675,20 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                 maxWidth="xs"
                 keepMounted
             >
-                <DialogTitle id="confirm-dialog-title" className='font-semibold'>{'Info'}</DialogTitle>
+                <DialogTitle id="confirm-dialog-title" className='font-semibold'>{t('page.info')}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="confirm-dialog-description">
-                        {'Confirm to delete the file?'}
+                        {t('uploader.confirmdeletefile')}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => {
                         setDeleteFileConfirmOpen(false); setCurrentFile(null);
                     }} color="inherit">
-                        {'Cancel'}
+                        {t('page.cancel')}
                     </Button>
                     <Button onClick={handleDeleteFile} color="primary" autoFocus>
-                        {'Yes'}
+                        {t('page.confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -718,20 +718,20 @@ const FileUploader = forwardRef<FileUploaderHandles, FileUploaderProps>(({
                 maxWidth="xs"
                 keepMounted
             >
-                <DialogTitle id="confirm-dialog-title" className='font-semibold'>{'Info'}</DialogTitle>
+                <DialogTitle id="confirm-dialog-title" className='font-semibold'>{t('page.info')}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="confirm-dialog-description">
-                        {'Confirm to delete the file?'}
+                        {t('uploader.confirmdeletefile')}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => {
                         setDeleteAnnexConfirmOpen(false); setCurrentAnnex(null);
                     }} color="inherit">
-                        {'Cancel'}
+                        {t('page.cancel')}
                     </Button>
                     <Button onClick={handleDeleteAnnex} color="primary" autoFocus>
-                        {'Yes'}
+                        {t('page.confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>

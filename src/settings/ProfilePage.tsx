@@ -83,22 +83,22 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
         let isValid = true;
 
         if (!formData.oldPassword) {
-            newErrors.oldPassword = 'Field is required.';
+            newErrors.oldPassword = '此项为必填项。';
             isValid = false;
         } else if (!formData.newPassword) {
-            newErrors.newPassword = 'Field is required.';
+            newErrors.newPassword = '此项为必填项。';
             isValid = false;
         } else if (formData.oldPassword === formData.newPassword) {
-            newErrors.newPassword = 'Same as the old password.';
+            newErrors.newPassword = '不能与旧密码相同。';
             isValid = false;
         } else if (formData.newPassword && !validatePassword(formData.newPassword).isValid) {
-            newErrors.newPassword = 'Does not meet password strength rules.';
+            newErrors.newPassword = '不符合密码强度规则。';
             isValid = false;
         } else if (!formData.confirmPassword) {
-            newErrors.confirmPassword = 'Field is required.';
+            newErrors.confirmPassword = '此项为必填项。';
             isValid = false;
         } else if (formData.newPassword !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'The two new passwords entered are inconsistent.';
+            newErrors.confirmPassword = '两次输入的新密码不一致。';
             isValid = false;
         }
 
@@ -182,10 +182,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
                 if (res.data.data) {
                     onSubmit?.();
                 } else {
-                    showAlert('The old password is incorrect', 'warning');
+                    showAlert('旧密码不正确', 'warning');
                 }
             }).catch((error) => {
-                showAlert('Api service exception.', 'error');
+                showAlert('API 服务异常。', 'error');
             }).finally(() => {
                 setDisabledAction(false);
             });
@@ -199,7 +199,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
                         <div className={groupContentStyle}>
                             <div className={oneRowStyle}>
                                 <label htmlFor="oldPassword" className={labelStyle}>
-                                    Old password
+                                    旧密码
                                 </label>
                                 <div className="mt-2">
                                     <FormControl fullWidth>
@@ -218,8 +218,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
                             </div>
                             <div className={oneRowStyle}>
                                 <label htmlFor="newPassword" className={labelStyle}>
-                                    New password
-                                    <Tooltip title={'More than 8 characters, must contain numbers, uppercase and lowercase English letters and special characters'} arrow>
+                                    新密码
+                                    <Tooltip title={'长度需超过 8 位，且必须包含数字、大写字母、小写字母和特殊字符'} arrow>
                                         <InfoOutlinedIcon className='pl-1' sx={{ fontSize: '1.25rem' }}></InfoOutlinedIcon>
                                     </Tooltip>
                                 </label>
@@ -241,7 +241,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
                             <div className={oneRowStyle}>
                                 <div className={oneRowStyle}>
                                     <label htmlFor="confirmPassword" className={labelStyle}>
-                                        Confirm new password
+                                        确认新密码
                                     </label>
                                     <div className="mt-2">
                                         <FormControl fullWidth>
@@ -271,18 +271,18 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, onCancel }) => {
                             onCancel?.();
                         }}
                     >
-                        Cancel
+                        取消
                     </button>
                     <button
                         disabled={disabledAction}
                         type="submit"
                         className={submitStyle}>
-                        Update
+                        更新
                     </button>
                 </div>
             </form>
             <SimpleConfirmDialog open={isConfirmOpen} onConfirm={() => { handleUpdatePassword(); setIsConfirmOpen(false); }} onCancel={() => { setIsConfirmOpen(false) }}>
-                Confirm update the password?
+                确认修改密码？
             </SimpleConfirmDialog>
         </ThemeProvider>
     );
