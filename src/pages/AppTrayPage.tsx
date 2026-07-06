@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useRef } from 'react';
 
 import { ThemeProvider } from "@emotion/react";
 import theme from "../theme/tyr";
@@ -52,12 +52,26 @@ function renderBayContent(elem: BayElem, type: ContentType): React.ReactNode {
 export default function AppTrayPage() {
   const { currentBayContent } = useContext(AppContext);
 
+  // 每次 setCurrentBayContent 都会得到一个新的 currentBayContent 引用。
+  // hub 页（WrapRouteHubNode 的 <div><Suspense>…）与二级页（<div>{elem}</div>）渲染出的
+  // 顶层 div 处于 <Box> 的同一位置，React 会复用同一个 div 并只 diff 其子节点，
+  // 在「运维明细→账单→查询」这类切换序列下会复用到陈旧子树，导致后续导航无反应。
+  // 这里用一个随导航递增的 key 强制每次导航都重新挂载，彻底规避复用问题。
+  const navKeyRef = useRef(0);
+  const prevBayRef = useRef<BayContentProp | null | undefined>(undefined);
+  if (prevBayRef.current !== currentBayContent) {
+    prevBayRef.current = currentBayContent;
+    navKeyRef.current += 1;
+  }
+
   return (
     <>
       {/* Main Content */}
       <ThemeProvider theme={theme}>
         <Box>
-          {renderBayContent(currentBayContent?.elem ?? null, currentBayContent?.type ?? 'blank')}
+          <React.Fragment key={navKeyRef.current}>
+            {renderBayContent(currentBayContent?.elem ?? null, currentBayContent?.type ?? 'blank')}
+          </React.Fragment>
         </Box>
       </ThemeProvider>
     </>

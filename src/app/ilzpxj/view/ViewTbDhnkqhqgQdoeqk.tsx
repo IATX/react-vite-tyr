@@ -379,7 +379,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	
 	
 	const handleDateChange = (name: string, value: any) => {
-		const newTimestamp = value.valueOf();
+		const newTimestamp = value ? Date.UTC(value.year(), value.month(), value.date()) : null;
 
 		setFormData((prevData: any) => ({
 			...prevData,

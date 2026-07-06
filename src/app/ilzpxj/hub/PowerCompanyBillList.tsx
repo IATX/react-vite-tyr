@@ -232,7 +232,7 @@ const PowerCompanyBillList: React.FC<PowerCompanyBillListProps> = ({ projectName
             {loading ? (
                 <div className="p-20 text-center text-xs text-slate-600 animate-pulse tracking-widest">加载数据...</div>
             ) : (
-                <div className="max-w-7xl bg-white rounded-xl shadow-sm border border-slate-100 p-8">
+                <div className="w-full bg-white rounded-xl shadow-sm p-8">
                     {/* 头部 */}
                     <div className="flex justify-between items-start mb-8">
                         <div>

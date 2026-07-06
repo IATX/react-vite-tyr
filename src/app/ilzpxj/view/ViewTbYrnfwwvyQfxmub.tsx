@@ -95,6 +95,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const [formData, setFormData] = useState(() => {
 		const defaultData = {
 			        		qeyiqstx: '',
+							merchantId: '',
 	    	pkYrnfwwvy: '',
 		    		'TB_YRNFWWVY_org.limp.basework.impl.PreloadFakeId': '',
 	    	tableViewOPTMode: 'submit',
@@ -576,6 +577,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	                  />
                 </div>
 			</div>
+			<input type="hidden" name="merchantId" placeholder="" value={formData.merchantId || ''} />
 								    </div>
 						        </div>
                     </div>	

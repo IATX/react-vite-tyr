@@ -358,7 +358,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	
 	
 	const handleDateChange = (name: string, value: any) => {
-		const newTimestamp = value.valueOf();
+		const newTimestamp = value ? Date.UTC(value.year(), value.month(), value.date()) : null;
 
 		setFormData((prevData: any) => ({
 			...prevData,
@@ -678,6 +678,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	      					    				<th className={tableThStyle}>总发电量</th>
 	      					    				<th className={tableThStyle}>余电上网电量</th>
 	      					    				<th className={tableThStyle}>自发自用用电量</th>
+												<th className={tableThStyle}>补贴电量</th>
 	      					    				<th className={tableThStyle}>结算电价（含税）（合计）</th>
 	      					    				<th className={tableThStyle}>结算电费（合计）</th>
 	      					    				<th className={tableThStyle}>结算收入（合计）</th>
@@ -855,6 +856,42 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 															/>
 														) : (
 															<>{item.kdaiahlw}</>
+														)}
+														
+														
+			      					    				</td>
+														<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'colYwkcgr',
+																	'header': '补贴电量',
+																	'type': 'number'
+																}}
+																value={item.colYwkcgr}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
+
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['colYwkcgr']: newValue,
+																			};
+																		}
+																		return row;
+																	});
+
+																	setFormData((prevData: any) => {
+																		return {
+																			...prevData,
+																			listYfvuhw: updatedList,
+																		};
+																	});
+																}}
+															/>
+														) : (
+															<>{item.colYwkcgr}</>
 														)}
 														
 														

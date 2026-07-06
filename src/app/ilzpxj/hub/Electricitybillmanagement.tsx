@@ -8,6 +8,7 @@ import {
   KeyboardArrowUp,
   KeyboardArrowDown,
   VisibilityOutlined,
+  QueryStatsOutlined,
 } from '@mui/icons-material';
 
 import axios from 'axios';
@@ -23,6 +24,7 @@ import BillImportDialog from '../../../components/FormDialogSoloPage';
 import { WrapSoloFormNode } from '../../../components/WrapNode';
 import SelfUseBillList from './SelfUseBillList';
 import PowerCompanyBillList from './PowerCompanyBillList';
+import ConsumptionStatPriceList from './ConsumptionStatPriceList';
 
 // 账单类别：全额上网 / 自发自用 / 余电上网
 // 业务类型一：全额上网
@@ -72,6 +74,27 @@ const mapRowToProject = (row: ProjectRow): Project => ({
 
 const PAGE_SIZE = 6;
 
+// 列表页状态持久化：用于「查阅」跳转到详情页、再返回时恢复之前的页面状态
+// （搜索关键字、当前页、展开的卡片）。详情页返回时会重新挂载本组件，
+// 故用 sessionStorage 在挂载时读取、状态变化时写入。
+const LIST_STATE_KEY = 'ebm:list-state';
+
+interface PersistedListState {
+  keyword: string;
+  searchTerm: string;
+  page: number;
+  selectedId: number | null;
+}
+
+const loadListState = (): Partial<PersistedListState> => {
+  try {
+    const raw = sessionStorage.getItem(LIST_STATE_KEY);
+    return raw ? (JSON.parse(raw) as Partial<PersistedListState>) : {};
+  } catch {
+    return {};
+  }
+};
+
 const Electricitybillmanagement: React.FC = () => {
   const { showAlert } = useAlert();
   const { token } = useSession();
@@ -79,15 +102,18 @@ const Electricitybillmanagement: React.FC = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
 
-  const [keyword, setKeyword] = useState('');     // 输入框实时值
-  const [searchTerm, setSearchTerm] = useState(''); // 已提交的查询值（失焦时提交）
+  // 挂载时一次性读取上次的列表状态（从详情页返回时恢复）
+  const persisted = useState(loadListState)[0];
+
+  const [keyword, setKeyword] = useState(persisted.keyword ?? '');     // 输入框实时值
+  const [searchTerm, setSearchTerm] = useState(persisted.searchTerm ?? ''); // 已提交的查询值（失焦时提交）
 
   // 项目列表
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 分页（服务端分页，page 从 1 开始）
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(persisted.page ?? 1);
   const [totalPages, setTotalPages] = useState(1);
 
   // 拉取项目列表（参考 商户电价管理 Mchelecprice.tsx 的 fetchData）
@@ -97,6 +123,7 @@ const Electricitybillmanagement: React.FC = () => {
     const params = {
       page,
       limit: PAGE_SIZE,
+      gwsnkwpp: searchTerm, // 按项目名称查询
       mrvqpphi: searchTerm, // 按商户名称查询
       bwblkhay: searchTerm, // 按发电户号查询
       queryMode: 'or'
@@ -148,7 +175,17 @@ const Electricitybillmanagement: React.FC = () => {
   const [activeMode, setActiveMode] = useState<FeedMode | null>(null);
 
   // 当前展开（选中）的卡片，单选：选中一个会收起其它
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(persisted.selectedId ?? null);
+
+  // 状态变化时写入 sessionStorage，供从详情页返回时恢复
+  useEffect(() => {
+    const state: PersistedListState = { keyword, searchTerm, page, selectedId };
+    try {
+      sessionStorage.setItem(LIST_STATE_KEY, JSON.stringify(state));
+    } catch {
+      /* 忽略持久化失败（如隐私模式） */
+    }
+  }, [keyword, searchTerm, page, selectedId]);
 
   // “自发自用”账单导入弹窗（复用商户账单导入表单 ViewTbYrnfwwvyQfxmub）
   const [selfuseImportOpen, setSelfuseImportOpen] = useState(false);
@@ -171,16 +208,20 @@ const Electricitybillmanagement: React.FC = () => {
   const closeImport = () => setDialogOpen(false);
 
 
+  // 查阅时若发电户号为空，使用默认值「000」
+  const resolveAccount = (account: string) => account.trim() || '000';
+
   // “自发自用”查阅：整页切换到该项目的自发自用账单列表
   const openSelfuseList = (project: Project) => {
+    const generationAccount = resolveAccount(project.generationAccount);
     setBreadcrumbs([
       { name: '电费账单管理', url: '/main/trays' },
-      { name: `${project.projectName} · ${project.generationAccount}`, url: '/main/trays' },
+      { name: `${project.projectName} · ${generationAccount}`, url: '/main/trays' },
     ]);
     setCurrentBayContent({
       title: '自发自用账单',
       subheader: project.projectName,
-      elem: <SelfUseBillList projectName={project.projectName} generationAccount={project.generationAccount} merchant={project.merchant} />,
+      elem: <SelfUseBillList projectName={project.projectName} generationAccount={generationAccount} merchantId={project.id} merchant={project.merchant} />,
       type: 'hub',
     });
     navigate('/main/trays');
@@ -188,14 +229,31 @@ const Electricitybillmanagement: React.FC = () => {
 
   // “全额上网” / “余电上网”查阅：整页切换到该项目的电力公司账单列表
   const openPowerList = (project: Project, modeLabel: string) => {
+    const generationAccount = resolveAccount(project.generationAccount);
     setBreadcrumbs([
       { name: '电费账单管理', url: '/main/trays' },
-      { name: `${project.projectName} · ${project.generationAccount}`, url: '/main/trays' },
+      { name: `${project.projectName} · ${generationAccount}`, url: '/main/trays' },
     ]);
     setCurrentBayContent({
       title: `${modeLabel}账单`,
       subheader: project.projectName,
-      elem: <PowerCompanyBillList projectName={project.projectName} generationAccount={project.generationAccount} merchant={project.merchant} modeLabel={modeLabel} />,
+      elem: <PowerCompanyBillList projectName={project.projectName} generationAccount={generationAccount} merchant={project.merchant} modeLabel={modeLabel} />,
+      type: 'hub',
+    });
+    navigate('/main/trays');
+  };
+
+  // “电价设置”查阅：整页切换到该项目的用电量统计列表（逐条进入设置尖峰平谷电价）
+  const openPriceSettingList = (project: Project) => {
+    const generationAccount = resolveAccount(project.generationAccount);
+    setBreadcrumbs([
+      { name: '电费账单管理', url: '/main/trays' },
+      { name: `${project.projectName} · ${generationAccount}`, url: '/main/trays' },
+    ]);
+    setCurrentBayContent({
+      title: '用电量统计',
+      subheader: project.projectName,
+      elem: <ConsumptionStatPriceList projectName={project.projectName} generationAccount={generationAccount} merchant={project.merchant} merchantId={project.id} />,
       type: 'hub',
     });
     navigate('/main/trays');
@@ -300,12 +358,17 @@ const Electricitybillmanagement: React.FC = () => {
             <Paper
               key={project.id}
               elevation={0}
-              onClick={() => setSelectedId((prev) => (prev === project.id ? null : project.id))}
+              onClick={() => {
+                if (!project.generationAccount) return;
+                setSelectedId((prev) => (prev === project.id ? null : project.id));
+              }}
               className={
-                'relative flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all cursor-pointer hover:shadow-md ' +
-                (selectedId === project.id
-                  ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-md'
-                  : 'border-slate-200')
+                'relative flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all ' +
+                (!project.generationAccount
+                  ? 'border-dashed border-red-300 cursor-not-allowed opacity-60'
+                  : selectedId === project.id
+                  ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-md cursor-pointer hover:shadow-md'
+                  : 'border-slate-200 cursor-pointer hover:shadow-md')
               }
             >
               {/* 电价设置状态：右上角徽标 */}
@@ -330,8 +393,11 @@ const Electricitybillmanagement: React.FC = () => {
                     <h2 className="truncate text-base font-bold leading-tight text-slate-800">
                       {project.projectName}
                     </h2>
-                    <p className="mt-0.5 truncate font-mono text-xs text-slate-600">
-                      发电户号：{project.generationAccount}
+                    <p className={
+                      'mt-0.5 truncate font-mono text-xs ' +
+                      (project.generationAccount ? 'text-slate-600' : 'font-semibold text-red-500')
+                    }>
+                      发电户号：{project.generationAccount || '缺少户号'}
                     </p>
                   </div>
                 </div>
@@ -364,7 +430,7 @@ const Electricitybillmanagement: React.FC = () => {
                 )}
 
                 {/* 业务二：自发自用余电上网 */}
-                {project.zxfodonb === '01' && (
+                {project.generationAccount !== '' && project.zxfodonb === '01' && (
                   <div className="px-4 py-2.5">
                     <span className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
                       <SolarPower fontSize="small" />
@@ -390,6 +456,32 @@ const Electricitybillmanagement: React.FC = () => {
                           onUpload={() => openImport(project, 'surplus')}
                           onView={() => openPowerList(project, '余电上网')}
                         />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 用电量统计 */}
+                {project.generationAccount !== '' && project.zxfodonb === '01' && (
+                  <div className="px-4 py-2.5">
+                    <span className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-violet-600">
+                      <QueryStatsOutlined fontSize="small" />
+                      用电量统计
+                    </span>
+                    <div className="mt-1 pl-2">
+                      {/* 电价设置（树状末节点，连接线只到中部 └） */}
+                      <div className="relative flex items-center justify-between gap-2 py-1 pl-6
+                        before:absolute before:left-0 before:top-0 before:bottom-1/2 before:w-px before:bg-violet-200
+                        after:absolute after:left-0 after:top-1/2 after:h-px after:w-4 after:bg-violet-200">
+                        <span className="text-sm text-slate-600">电价设置</span>
+                        <Button
+                          size="small"
+                          startIcon={<VisibilityOutlined fontSize="small" />}
+                          onClick={() => openPriceSettingList(project)}
+                          sx={{ minWidth: 0, color: '#475569', '&:hover': { backgroundColor: '#f1f5f9' } }}
+                        >
+                          查询
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -449,7 +541,9 @@ const Electricitybillmanagement: React.FC = () => {
         open={selfuseImportOpen}
         onClose={() => setSelfuseImportOpen(false)}
         children={WrapSoloFormNode(Parameterization('ViewTbYrnfwwvyQfxmub', {
-          initialData: {},
+          initialData: {
+            merchantId: activeProject?.id
+          },
           onCancel: () => setSelfuseImportOpen(false),
           onSubmit: () => setSelfuseImportOpen(false),
         }))}

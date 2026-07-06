@@ -12,7 +12,7 @@ import theme from '../../../theme/tyr';
 
 import { ThemeProvider } from '@mui/material/styles';
 
-import { FormControl, FormControlLabel, FormHelperText, MenuItem, Radio, Checkbox, RadioGroup, Select, TextField, type SelectChangeEvent, FormGroup, InputAdornment, Typography, Box, CircularProgress, ButtonGroup, Button } from '@mui/material';
+import { FormControl, FormControlLabel, FormHelperText, MenuItem, Radio, Checkbox, RadioGroup, Select, TextField, type SelectChangeEvent, FormGroup, InputAdornment, Typography, Box, CircularProgress, Button } from '@mui/material';
 
 import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -20,12 +20,6 @@ import type { DateValidationError } from '@mui/x-date-pickers/models';
 
 import axios from 'axios';
 
-import InsertBeforeIcon from '@mui/icons-material/KeyboardArrowUpRounded';
-import InsertNextIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import AddIcon from '@mui/icons-material/AddCircleRounded';
-import EditIcon from '@mui/icons-material/EditRounded';
-import DeleteIcon from '@mui/icons-material/DeleteRounded';
-import CancelIcon from '@mui/icons-material/CancelRounded';
 import PhoneIcon from '@mui/icons-material/LocalPhoneRounded';
 import CurrencyPoundRounded from '@mui/icons-material/CurrencyPoundRounded';
 import CurrencyYenOutlinedIcon from '@mui/icons-material/CurrencyYenOutlined';
@@ -43,6 +37,14 @@ import InputWithList from '../../../components/QuerySelectInput';
 import { RowInputRenderer, type ColumnConfig } from '../../../components/RowInputRenderer';
 
 import { useInitialActions } from '../js/view_tb_gvfrokeq_zlvans';
+import ParsedMeterPanel from '../dev/ParsedMeterPanel';
+import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
+import ChevronLeftRounded from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
+
+// 原始数据浮窗宽度 / 与表单的间距（px）
+const COMPARE_PANEL_W = 440;
+const COMPARE_GAP = 24;
 
 // Update your component props type to use this interface.
 interface ViewPageProps<T> {
@@ -51,9 +53,10 @@ interface ViewPageProps<T> {
 	onSave?: (data: any) => void;
 	onSubmit?: (data: any) => void;
 	onCancel?: (data: any) => void;
+	showParsedCompare?: boolean;
 }
 
-export default function ViewPage<T extends object = { [key: string]: any }>({ readOnly, initialData, onSave, onSubmit, onCancel }: ViewPageProps<T>) {
+export default function ViewPage<T extends object = { [key: string]: any }>({ readOnly, initialData, onSave, onSubmit, onCancel, showParsedCompare }: ViewPageProps<T>) {
 	const { t } = useTranslation();
 	const location = useLocation();
   	const { state } = location; 
@@ -62,7 +65,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const { defaultInitialData } = useInitialActions();
 	
 	const isViewReadOnly = readOnly ?? false;
-	const from =  state?.from ?? '/main';
+	const from =  state?.from;
 	const fromData = state?.initialData;
 
 	const { showAlert } = useAlert();
@@ -71,6 +74,9 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const VITE_JET_CURRENCY_CODE = import.meta.env.VITE_JET_CURRENCY_CODE || 'GBP';
 	const [disabledAction, setDisabledAction] = useState(false);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+	// 原始数据浮窗开关（仅编辑页启用）
+	const [compareOpen, setCompareOpen] = useState(false);
+	const compareActive = !!showParsedCompare && compareOpen;
 
 	// Defines style constants for all form items
 	const inputStyle = "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border border-gray-300 placeholder:text-gray-400 focus:outline-blue-600 sm:text-sm/6 h-9";
@@ -78,7 +84,6 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const groupTitleStyle = "text-base/7 font-semibold text-gray-900";
 	const groupDescriptionStyle = "mt-1 text-sm/6 text-gray-600";
 	const groupContentStyle = "mt-6 grid grid-cols-1 gap-x-6 gap-y-8";
-	const listFitCardStyle = "border-b border-gray-900/10 pb-12 mx-auto w-fit";
 	const listCardStyle = "border-b border-gray-900/10 pb-12 mx-auto max-w-2xl";
 	const tableStyle = "w-full table-fixed border-collapse text-sm";
 	const tableCaptionStyle = "caption-top text-left pb-6 text-base/7 font-semibold text-gray-900";
@@ -114,9 +119,6 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		return { ...defaultData, ...initialData, ...fromData};
     });
     
-    	const [focusedlistKmddwuRowId, setFocusedlistKmddwuRowId] = useState<string | null>(null);
-		const [editinglistKmddwuRowId, setEditinglistKmddwuRowId] = useState<string | null>(null);
-		const [isConfirmDeletionlistKmddwuRowOpen, setIsConfirmDeletionlistKmddwuRowOpen] = useState(false);	
     
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const fieldRefs = useRef<Record<string, HTMLElement>>({});
@@ -371,7 +373,10 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	
 	
 	const handleDateChange = (name: string, value: any) => {
-		const newTimestamp = value.valueOf();
+		// DatePicker 选出的是「本地午夜」，直接 valueOf() 在东八区会落到前一天的 UTC，
+		// 存库（按 UTC 截断为日期）后日期会减一天。这里改成取所选「日历日期」的 UTC 零点，
+		// 确保存库后的日期与所选一致。
+		const newTimestamp = value ? Date.UTC(value.year(), value.month(), value.date()) : null;
 
 		setFormData((prevData: any) => ({
 			...prevData,
@@ -386,6 +391,11 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	}
 	
 	const validationRules = {
+		    	"tjmqxlms": (value: any) => {
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
+
+			      return '';
+			    },
 	}
 	
 	/**
@@ -467,8 +477,15 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		e.preventDefault();
 		
         const newErrors: { [key: string]: string } = {};
-        
-    	
+
+					    	if (validationRules["tjmqxlms"]) {
+						    	const errorMsg = validationRules["tjmqxlms"](formData.tjmqxlms);
+
+								if (errorMsg != '') {
+						    		newErrors["tjmqxlms"] = errorMsg;
+						    	}
+						    }
+
         // update error state
         setErrors(newErrors);
 
@@ -499,7 +516,12 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
         <>
             {/* Main Content */}
             <ThemeProvider theme={theme}>
-                 <form id="form_view_tb_gvfrokeq_zlvans" onSubmit={handleSubmit}>
+				
+                 <form
+                    id="form_view_tb_gvfrokeq_zlvans"
+                    onSubmit={handleSubmit}
+                    style={{ paddingLeft: compareActive ? COMPARE_PANEL_W + COMPARE_GAP : 0, transition: 'padding-left .3s ease' }}
+                 >
                     <div className="space-y-12">
       					    	<div className={groupCardStyle}>
 		                            <h2 className={groupTitleStyle}>电量统计表</h2>
@@ -586,10 +608,11 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 												}}>
 		               <DatePicker
                           name="tjmqxlms"
-                          format="YYYY-MM-DD"
+                          format="YYYY-MM"
                           value={formData.tjmqxlms ? dayjs(formData.tjmqxlms) : null}
-                          views={['year', 'month', 'day']}
-                          onChange={(newValue: Dayjs | null)=> handleDateChange('tjmqxlms', newValue)}
+                          views={['year', 'month']}
+                          openTo="month"
+                          onChange={(newValue: Dayjs | null)=> handleDateChange('tjmqxlms', newValue ? newValue.startOf('month') : null)}
                           sx={{
                             '.Mui-focused': {
                                borderColor: 'oklch(54.6% 0.245 262.881) !important',
@@ -740,77 +763,76 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			<input type="hidden" name="gfumgrlg" placeholder="" value={formData.gfumgrlg || ''} />
 								    </div>
 						        </div>
-      					    	<div className={listFitCardStyle}>	
+      					    	<div className={listCardStyle + ' relative'}>
+	{showParsedCompare && (
+		<div
+			className="absolute z-30 transition-all duration-300 ease-in-out"
+			style={{
+				right: '100%',
+				marginRight: COMPARE_GAP,
+				top: 0,
+				width: COMPARE_PANEL_W,
+				opacity: compareActive ? 1 : 0,
+				transform: compareActive ? 'translateX(0)' : 'translateX(12px)',
+				pointerEvents: compareActive ? 'auto' : 'none',
+			}}
+		>
+			<ParsedMeterPanel
+				accountNumber={formData.ynwjibye || undefined}
+				yearMonth={formData.tjmqxlms ? dayjs(formData.tjmqxlms).format('YYYY-MM') : undefined}
+				onClose={() => setCompareOpen(false)}
+			/>
+			{/* 指向「电量明细」的连接图标，体现关联关系 */}
+			<div
+				className="absolute top-1/2 z-40 pointer-events-none"
+				style={{ left: '100%', marginLeft: COMPARE_GAP / 2, transform: 'translate(-50%, -50%)' }}
+			>
+				<ChevronRightRounded sx={{ fontSize: 22, color: '#4f46e5' }} />
+			</div>
+		</div>
+	)}	
 	      					    	<table className={tableStyle}>
+	      					    		<colgroup>
+												<col style={{ width: '92px' }} />
+												<col />
+												<col style={{ width: '92px' }} />
+												<col />
+												<col />
+											</colgroup>
 	      					    		<caption className={tableCaptionStyle}>
 	      					    		<div className="flex justify-between items-center w-full">
 	      					    			<h2 className={groupTitleStyle}>电量明细</h2>
+{showParsedCompare && (
+	<button
+		type="button"
+		onClick={() => setCompareOpen((v) => !v)}
+		className={
+			'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs shadow-sm transition-colors ' +
+			(compareOpen
+				? 'text-slate-600 bg-slate-100 hover:bg-slate-200'
+				: 'text-blue-600 bg-blue-50 hover:bg-blue-100')
+		}
+	>
+		{compareOpen ? <ChevronLeftRounded sx={{ fontSize: 14 }} /> : <FactCheckOutlined sx={{ fontSize: 14 }} />}
+		{compareOpen ? '收起数据' : '对比数据'}
+	</button>
+)}
 	      					    			
-		      					    		{!!!isViewReadOnly && (
-												<Button
-													variant="outlined"
-													size="small"
-													color="primary"
-													startIcon={<AddIcon />}
-													onClick={(e) => {
-														setFocusedlistKmddwuRowId(null);
-														setEditinglistKmddwuRowId(null);
-	
-														const newRow: any = {
-	
-														};
-	
-														setFormData((prevFormData: { listKmddwu: any; }) => ({
-															...prevFormData,
-															listKmddwu: [
-																...prevFormData.listKmddwu,
-																newRow,
-															],
-														}));
-													}}
-												>
-													{t('page.addnew')}
-												</Button>
-											)}
+		      					    		
 										</div>
 	      					    		</caption>
 	      					    		<thead>
-	      					    			<tr>
-	      					    				<th className={tableThStyle}>发电量项目</th>
-	      					    				<th className={tableThStyle}>正向有功底码</th>
-	      					    				<th className={tableThStyle}>正向有功表数</th>
-	      					    				<th className={tableThStyle}>发电量</th>
-	      					    				<th className={tableThStyle}>上网电量项目</th>
-	      					    				<th className={tableThStyle}>反向有功底码</th>
-	      					    				<th className={tableThStyle}>反向有功表数</th>
-	      					    				<th className={tableThStyle}>上网电量</th>
-	      					    				<th className={tableThStyle}>售电量</th>
-	      					    			 </tr>
+	      					    			<tr><th className={tableThStyle}>发电量项目</th><th className={tableThStyle}>发电量</th><th className={tableThStyle}>上网电量项目</th><th className={tableThStyle}>上网电量</th><th className={tableThStyle}>售电量</th></tr>
 	      					    		</thead>
 	      					    		<tbody className={tableTbodyStyle}>
 											{formData.listKmddwu.map((item: any, index: number) => {
 												const rowIndex = 'row_' + index;
 												
-												const isFocused = rowIndex === focusedlistKmddwuRowId && !isViewReadOnly;
-												const isEditing = rowIndex === editinglistKmddwuRowId && !isViewReadOnly;
 												
 												return (
-													<tr 
-													key={rowIndex}
-													onClick={() => {
-														if (!focusedlistKmddwuRowId || editinglistKmddwuRowId !== rowIndex) {
-															setFocusedlistKmddwuRowId(rowIndex);
-															setEditinglistKmddwuRowId(null);
-														}
-													}}
-													className={[
-														'cursor-pointer',
-														'transition-colors',
-														'relative',
-														isFocused ? 'bg-blue-50' : 'hover:bg-gray-50',
-													].join(' ')}>
+													<tr key={rowIndex}>
 			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
+			      					    				{false ? (
 															<RowInputRenderer
 																column={{
 																	'key': 'uizewbux',
@@ -845,80 +867,10 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 														
 														
 			      					    				</td>
+			      					    				
+			      					    				
 			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
-															<RowInputRenderer
-																column={{
-																	'key': 'adguhuya',
-																	'header': '正向有功底码',
-																	'type': 'number'
-																}}
-																value={item.adguhuya}
-																onChange={(newValue) => {
-																	const updatedList = formData.listKmddwu.map((row: any, idx: number) => {
-																		const rindex = 'row_' + idx;
-
-																		if (rindex === rowIndex) {
-																			return {
-																				...row,
-																				['adguhuya']: newValue,
-																			};
-																		}
-																		return row;
-																	});
-
-																	setFormData((prevData: any) => {
-																		return {
-																			...prevData,
-																			listKmddwu: updatedList,
-																		};
-																	});
-																}}
-															/>
-														) : (
-															<>{item.adguhuya}</>
-														)}
-														
-														
-			      					    				</td>
-			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
-															<RowInputRenderer
-																column={{
-																	'key': 'jewccvah',
-																	'header': '正向有功表数',
-																	'type': 'number'
-																}}
-																value={item.jewccvah}
-																onChange={(newValue) => {
-																	const updatedList = formData.listKmddwu.map((row: any, idx: number) => {
-																		const rindex = 'row_' + idx;
-
-																		if (rindex === rowIndex) {
-																			return {
-																				...row,
-																				['jewccvah']: newValue,
-																			};
-																		}
-																		return row;
-																	});
-
-																	setFormData((prevData: any) => {
-																		return {
-																			...prevData,
-																			listKmddwu: updatedList,
-																		};
-																	});
-																}}
-															/>
-														) : (
-															<>{item.jewccvah}</>
-														)}
-														
-														
-			      					    				</td>
-			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
+			      					    				{!isViewReadOnly ? (
 															<RowInputRenderer
 																column={{
 																	'key': 'vcbnneyp',
@@ -931,10 +883,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 																		const rindex = 'row_' + idx;
 
 																		if (rindex === rowIndex) {
-																			return {
-																				...row,
-																				['vcbnneyp']: newValue,
-																			};
+																			const merged = { ...row, ['vcbnneyp']: newValue }; return { ...merged, dtuxsxpz: (merged.vcbnneyp !== '' && merged.vcbnneyp != null && merged.wumkmcly !== '' && merged.wumkmcly != null) ? (Number(merged.vcbnneyp) - Number(merged.wumkmcly)) : '' };
 																		}
 																		return row;
 																	});
@@ -954,7 +903,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 														
 			      					    				</td>
 			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
+			      					    				{false ? (
 															<RowInputRenderer
 																column={{
 																	'key': 'tqqnmhrl',
@@ -989,80 +938,10 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 														
 														
 			      					    				</td>
+			      					    				
+			      					    				
 			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
-															<RowInputRenderer
-																column={{
-																	'key': 'xglsayhb',
-																	'header': '反向有功底码',
-																	'type': 'number'
-																}}
-																value={item.xglsayhb}
-																onChange={(newValue) => {
-																	const updatedList = formData.listKmddwu.map((row: any, idx: number) => {
-																		const rindex = 'row_' + idx;
-
-																		if (rindex === rowIndex) {
-																			return {
-																				...row,
-																				['xglsayhb']: newValue,
-																			};
-																		}
-																		return row;
-																	});
-
-																	setFormData((prevData: any) => {
-																		return {
-																			...prevData,
-																			listKmddwu: updatedList,
-																		};
-																	});
-																}}
-															/>
-														) : (
-															<>{item.xglsayhb}</>
-														)}
-														
-														
-			      					    				</td>
-			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
-															<RowInputRenderer
-																column={{
-																	'key': 'pypzpeeb',
-																	'header': '反向有功表数',
-																	'type': 'number'
-																}}
-																value={item.pypzpeeb}
-																onChange={(newValue) => {
-																	const updatedList = formData.listKmddwu.map((row: any, idx: number) => {
-																		const rindex = 'row_' + idx;
-
-																		if (rindex === rowIndex) {
-																			return {
-																				...row,
-																				['pypzpeeb']: newValue,
-																			};
-																		}
-																		return row;
-																	});
-
-																	setFormData((prevData: any) => {
-																		return {
-																			...prevData,
-																			listKmddwu: updatedList,
-																		};
-																	});
-																}}
-															/>
-														) : (
-															<>{item.pypzpeeb}</>
-														)}
-														
-														
-			      					    				</td>
-			      					    				<td className={tableTdStyle }>
-			      					    				{isEditing ? (
+			      					    				{!isViewReadOnly ? (
 															<RowInputRenderer
 																column={{
 																	'key': 'wumkmcly',
@@ -1075,10 +954,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 																		const rindex = 'row_' + idx;
 
 																		if (rindex === rowIndex) {
-																			return {
-																				...row,
-																				['wumkmcly']: newValue,
-																			};
+																			const merged = { ...row, ['wumkmcly']: newValue }; return { ...merged, dtuxsxpz: (merged.vcbnneyp !== '' && merged.vcbnneyp != null && merged.wumkmcly !== '' && merged.wumkmcly != null) ? (Number(merged.vcbnneyp) - Number(merged.wumkmcly)) : '' };
 																		}
 																		return row;
 																	});
@@ -1098,7 +974,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 														
 			      					    				</td>
 			      					    				<td className={tableTdStyle + ' '}>
-			      					    				{isEditing ? (
+			      					    				{false ? (
 															<RowInputRenderer
 																column={{
 																	'key': 'dtuxsxpz',
@@ -1131,144 +1007,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 															<>{item.dtuxsxpz}</>
 														)}
 														
-													        {isFocused && (
-																<div
-																	className="absolute left-1/2 top-[110%] -translate-x-1/2 z-[999] w-64 bg-white/90 border border-gray-200 shadow-xl rounded-lg p-2
-																	before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 
-             														before:border-[8px] before:border-transparent before:border-b-gray-300"
-																>
-																	<ButtonGroup size="small" color="primary" orientation="vertical" sx={{ 
-																					display: 'grid', 
-																					gridTemplateColumns: 'repeat(2, 1fr)', 
-																					width: '100%',
-																					'& .MuiButton-root': {
-																					backgroundColor: 'none',
-																					border: '1px solid #fff !important',
-																					borderRadius: '4px', 
-																					margin: '2px'
-																					}
-																				}}>
-																		<Button startIcon={<InsertBeforeIcon />}
-																			size="small"
-																			onClick={(e) => {
-																				e.stopPropagation();
-		
-																				const currentList = formData.listKmddwu || [];
-		
-																				const newRow: any = {
-																				};
-		
-																				let insertIndex = currentList.findIndex((row: any, idx: number) => ('row_' + idx) === focusedlistKmddwuRowId);
-		
-																				if (insertIndex === -1) {
-																					insertIndex = currentList.length;
-																				}
-		
-		
-																				const updatedList = [
-																					...currentList.slice(0, insertIndex),
-																					newRow,
-																					...currentList.slice(insertIndex),
-																				];
-		
-																				setFormData((prevFormData: any) => ({
-																					...prevFormData,
-																					listKmddwu: updatedList,
-																				}));
-		
-																				setFocusedlistKmddwuRowId(null);
-																				setEditinglistKmddwuRowId(null);
-																			}}
-																			sx={{
-																				justifyContent: 'flex-start'
-																			}}
-																		>
-																			{t('page.insertbefore')}
-																		</Button>
-																		<Button startIcon={<InsertNextIcon />}
-																			size="small"
-																			onClick={(e) => {
-																				e.stopPropagation();
-		
-																				const currentList = formData.listKmddwu || [];
-		
-																				const newRow: any = {
-																				};
-		
-																				let focusedIndex = currentList.findIndex((row: any, idx: number) => ('row_' + idx) === focusedlistKmddwuRowId);
-		
-																				let insertIndex;
-		
-																				if (focusedIndex >= 0) {
-																					insertIndex = focusedIndex + 1;
-																				} else {
-																					insertIndex = currentList.length;
-																				}
-		
-																				const updatedList = [
-																					...currentList.slice(0, insertIndex),
-																					newRow,
-																					...currentList.slice(insertIndex),
-																				];
-		
-																				setFormData((prevFormData: any) => ({
-																					...prevFormData,
-																					listKmddwu: updatedList,
-																				}));
-		
-																				setFocusedlistKmddwuRowId(null);
-																				setEditinglistKmddwuRowId(null);
-																			}}
-																			sx={{
-																				justifyContent: 'flex-start',
-																			}}
-																		>
-																			{t('page.insertnext')}
-																		</Button>
-																		<Button startIcon={<EditIcon />}
-																			size="small"
-																			onClick={(e) => {
-																				e.stopPropagation();
-																				
-																				setEditinglistKmddwuRowId(rowIndex);
-																			}}
-																			sx={{
-																				justifyContent: 'flex-start'
-																			}}
-																		>
-																			{t('page.edit')}
-																		</Button>
-																		<Button startIcon={<DeleteIcon />}
-																			size="small"
-																			onClick={(e) => {
-																				e.stopPropagation();
-	
-																				setEditinglistKmddwuRowId(null);
-																				setIsConfirmDeletionlistKmddwuRowOpen(true);
-																			}}
-																			sx={{
-																				justifyContent: 'flex-start'
-																			}}
-																		>
-																			{t('page.delete')}
-																		</Button>
-																		<Button startIcon={<CancelIcon />}
-																			size="small"
-																			onClick={(e) => {
-																				e.stopPropagation();
-																				
-																				setFocusedlistKmddwuRowId(null);
-																				setEditinglistKmddwuRowId(null);
-																			}}
-																			sx={{
-																				justifyContent: 'flex-start'
-																			}}
-																		>
-																			{t('page.close')}
-																		</Button>
-																	</ButtonGroup>
-																</div>
-															)}
+													        
 														
 			      					    				</td>
 													</tr>
@@ -1276,55 +1015,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 											})}
 										</tbody>
 	      					    	</table>
-	      					    	<SimpleConfirmDialog
-										open={isConfirmDeletionlistKmddwuRowOpen}
-										onConfirm={() => {
-											setIsConfirmDeletionlistKmddwuRowOpen(false);
-		
-											// 1. Find the focused element outside of setFormData.
-											const foundElement = formData.listKmddwu.find((row: any, idx: number) => {
-												const rindex = 'row_' + idx;
-		
-												return rindex == focusedlistKmddwuRowId;
-											});
-		
-											// 2. Use setFormData uniformly for all immutable state updates.
-											setFormData((prevData: any) => {
-												// 2a. Filter the new data list array (remove the focused row).
-												const newList = prevData.listKmddwu.filter((row: any, idx: number) => {
-													const rindex = 'row_' + idx;
-													return rindex !== focusedlistKmddwuRowId;
-												});
-		
-												// 2b. Initialize a new formDataBin structure.
-												// Ensure that the old listId array is obtained from prevData; if it does not exist, use an empty array [].
-												let discardedDataList = [...(prevData.formDataBin?.listKmddwu || [])];
-		
-												// 2c. Handle primary key insertion logic.
-												if (foundElement && foundElement['pkWnoeallm'] !== null) {
-													// The primary key value of the deleted row is added to a new copy of the discardedDataList array.
-													discardedDataList.push(foundElement);
-												}
-		
-												// 2d. Returns a completely new state object.
-												return {
-													...prevData,
-													['listKmddwu']: newList, // Update data list
-													formDataBin: {
-														...prevData.formDataBin, // Preserve other possible key-value pairs in formDataBin
-														listKmddwu: discardedDataList,       // Update the data List array in formDataBin
-													},
-												};
-											});
-											
-											setFocusedlistKmddwuRowId(null);
-										}
-										}
-										onCancel={() => {
-											setIsConfirmDeletionlistKmddwuRowOpen(false);
-										}}>
-										{t('page.confirmdelete')}
-									</SimpleConfirmDialog>
+	      					    	
       					    	</div>
                     </div>	
 					<div className="mt-6 flex items-center justify-end gap-x-6">

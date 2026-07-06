@@ -7,18 +7,21 @@ import {
     Select,
     MenuItem,
     TextField,
-    InputAdornment
+    InputAdornment,
+    Tooltip
 } from '@mui/material';
 import {
     Business, ArrowForwardIos, Add, Close,
     InfoOutlined, FilterList,
-    KeyboardArrowUp, KeyboardArrowDown, KeyboardArrowLeft
+    KeyboardArrowUp, KeyboardArrowDown, KeyboardArrowLeft,
+    DeleteOutline
 } from '@mui/icons-material';
 
 import axios from 'axios';
 
 import { useAlert } from '../../../components/AlertContext.tsx';
 import { useSession } from '../../../authority/SessionContext.tsx';
+import { useConfirm } from '../../../components/useConfirmDialog';
 
 import Parameterization from '../../../components/RenderComponent.tsx';
 import { AppContext } from '../../../context/AppContext.tsx';
@@ -40,13 +43,13 @@ const filterOptions = [
     { id: 'P0001', name: '代理购电电价' }, // 简写名称以适应布局
     { id: 'P0002', name: '商户电费单' },
     { id: 'P0003', name: '固定电价' },
-    { id: 'P0004', name: '消纳比' }
 ];
 
 const MerchantElectricityManager: React.FC = () => {
     const { showAlert } = useAlert();
     const { token } = useSession();
     const { setBreadcrumbs } = useBreadcrumbs();
+    const { confirm } = useConfirm();
 
     // --- 3. 状态管理 ---
     const [selectedMchantPricing, setSelectedMchPricing] = useState<CurrentMchPricing | null>(null);
@@ -91,10 +94,11 @@ const MerchantElectricityManager: React.FC = () => {
     }
 
     // 搜索条件的 key 类型收窄，避免用宽泛的 string
-    type SearchConditionKey = 'mrvqpphi' | 'bwblkhay' | 'fpllerek';
+    type SearchConditionKey = 'gwsnkwpp' | 'mrvqpphi' | 'bwblkhay' | 'fpllerek';
     type SearchConditions = Record<SearchConditionKey, string>;
 
     const INITIAL_SEARCH_CONDITIONS: SearchConditions = {
+        gwsnkwpp: '',
         mrvqpphi: '',
         bwblkhay: '',
         fpllerek: '',
@@ -114,10 +118,13 @@ const MerchantElectricityManager: React.FC = () => {
     const fetchData = useCallback(async () => {
         setLoading(true);
 
+        // 关键字（项目名 / 商户名 / 发电户号）同时下发到 gwsnkwpp、mrvqpphi、bwblkhay，用 or 模式取并集
+        const hasKeyword = !!(searchConditions.gwsnkwpp || searchConditions.mrvqpphi || searchConditions.bwblkhay);
         const queryParams = {
             ...searchConditions,
             page: page + 1,
             limit: pageSize,
+            ...(hasKeyword ? { queryMode: 'or' } : {}),
         };
 
         try {
@@ -172,34 +179,64 @@ const MerchantElectricityManager: React.FC = () => {
 
     const [filterId, setFilterId] = React.useState('');
 
-    // 发电户号查询输入框（受控），失去焦点时自动提交查询
-    const [bwblkhayInput, setBwblkhayInput] = useState('');
+    // 关键字查询输入框（商户名 / 发电户号，受控），失去焦点时自动提交查询
+    const [keywordInput, setKeywordInput] = useState('');
 
-    // 提交查询条件并回到第一页（发电户号、电价筛选为两个独立条件）
+    // 提交查询条件并回到第一页（关键字、电价筛选为两个独立条件）
     const commitSearch = (next: Partial<SearchConditions>) => {
         setPage(0);
         setSearchConditions(prev => ({ ...prev, ...next }));
     };
 
-    // 发电户号：失去焦点时触发查询
-    const handleBwblkhayBlur = () => {
-        const value = bwblkhayInput.trim();
+    // 关键字：失去焦点时触发查询，同时按项目名(gwsnkwpp)、商户名(mrvqpphi)与发电户号(bwblkhay)查询
+    const handleKeywordBlur = () => {
+        const value = keywordInput.trim();
         if (value !== searchConditions.bwblkhay) {
-            commitSearch({ bwblkhay: value });
+            commitSearch({ gwsnkwpp: value, mrvqpphi: value, bwblkhay: value });
         }
     };
 
-    // 电价筛选：选择后触发查询
+    // 电价筛选：选择后触发查询，同时带上输入框里当前的关键字（项目名 / 商户名 / 发电户号）
     const handleFilterChange = (newId: string) => {
         setFilterId(newId);
-        commitSearch({ fpllerek: newId });
+        const value = keywordInput.trim();
+        commitSearch({ fpllerek: newId, gwsnkwpp: value, mrvqpphi: value, bwblkhay: value });
+    };
+
+    // 删除当前商户（确认后调用删除接口，成功后刷新列表）
+    const handleDeleteMerchant = async (m: Data) => {
+        const confirmed = await confirm({
+            title: '删除商户',
+            message: `确定删除商户「${m.mrvqpphi || m.gwsnkwpp || '该商户'}」吗？此操作不可恢复。`,
+            confirmText: '删除',
+            cancelText: '取消',
+        });
+        if (!confirmed) return;
+
+        const formData = new FormData();
+        formData.append('pkXbbyezwt', String(m.pkXbbyezwt));
+        axios
+            .post(
+                `${import.meta.env.VITE_JET_ASP_BPC_API}/tableview/deleteformdata/view_tb_xbbyezwt_kxchdy`,
+                formData,
+                { headers: { 'Content-Type': 'application/x-www-form-urlencoded', grooveToken: token } }
+            )
+            .then((res) => {
+                if (res.data?.success) {
+                    showAlert('删除成功', 'success');
+                    refreshTable();
+                } else {
+                    showAlert(res.data?.message ?? '删除失败', 'error');
+                }
+            })
+            .catch(() => showAlert('删除数据异常，请稍后重试', 'error'));
     };
 
     // 单个商户条目（看板列与单列列表共用）
     const renderMerchantItem = (m: Data, isSet: boolean) => {
         const isSelected = selectedMchantPricing?.mchId == m.pkXbbyezwt;
         const subParts: string[] = [];
-        if (m.bwblkhay) subParts.push(m.bwblkhay);
+        subParts.push(m.bwblkhay || '无发电户号');
         if (isSet) {
             if (m.xjegvvik) subParts.push(m.xjegvvik);
             if (m.pwayuydj === 'Yes') subParts.push('上网');
@@ -229,26 +266,43 @@ const MerchantElectricityManager: React.FC = () => {
 
                 <div className="min-w-0 flex-1">
                     {/* 项目名称（可点击编辑项目详情，空值默认未命名项目）；悬浮时右侧出现提示 */}
-                    <a
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setMerchantNewDialogTitle('商户信息编辑');
-                            setMerchantNewDialogOpen(true);
-                            setMerchantPkId(m.pkXbbyezwt);
-                        }}
-                        className="group/name flex items-center gap-1.5 min-w-0"
-                    >
-                        <span className={`text-sm font-medium leading-tight truncate transition-colors group-hover/name:text-blue-600 ${isSet ? 'text-slate-800' : 'text-slate-400 italic'
-                            }`}>
-                            {m.gwsnkwpp || '未命名项目'}
-                        </span>
-                        <span className="shrink-0 flex items-center text-[10px] text-slate-600 whitespace-nowrap opacity-0 -translate-x-1 transition-all duration-200 group-hover/name:opacity-100 group-hover/name:translate-x-0">
-                            <KeyboardArrowLeft style={{ fontSize: '0.8rem' }} />
-                            编辑详情
-                        </span>
-                    </a>
+                    <div className="flex items-center gap-1 min-w-0">
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setMerchantNewDialogTitle('商户信息编辑');
+                                setMerchantNewDialogOpen(true);
+                                setMerchantPkId(m.pkXbbyezwt);
+                            }}
+                            className="group/name flex items-center gap-1.5 min-w-0"
+                        >
+                            <span className={`text-sm font-medium leading-tight truncate transition-colors group-hover/name:text-blue-600 ${isSet ? 'text-slate-800' : 'text-slate-400 italic'
+                                }`}>
+                                {m.gwsnkwpp || '未命名项目'}
+                            </span>
+                            <span className="shrink-0 flex items-center text-[10px] text-slate-600 whitespace-nowrap opacity-0 -translate-x-1 transition-all duration-200 group-hover/name:opacity-100 group-hover/name:translate-x-0">
+                                <KeyboardArrowLeft style={{ fontSize: '0.8rem' }} />
+                                编辑详情
+                            </span>
+                        </a>
+                        {/* 删除商户：悬浮条目时浮现，点击确认后删除 */}
+                        <Tooltip title="删除商户" arrow>
+                            <button
+                                type="button"
+                                aria-label="删除商户"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDeleteMerchant(m);
+                                }}
+                                className="shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                            >
+                                <DeleteOutline style={{ fontSize: '0.95rem' }} />
+                            </button>
+                        </Tooltip>
+                    </div>
                     {/* 商户名称 */}
                     <p className="mt-0.5 text-xs text-slate-600 truncate" title={m.mrvqpphi}>
                         {m.mrvqpphi}
@@ -259,6 +313,13 @@ const MerchantElectricityManager: React.FC = () => {
                         {subtitle}
                     </p>
                 </div>
+
+                {/* 状态标签：单网格混排时用于一眼区分已设置 / 未设置 */}
+                <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${isSet ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isSet ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                    {isSet ? '已设置' : '未设置'}
+                </span>
 
                 {/* 右侧箭头；悬浮箭头区域时切换为左箭头并浮现提示 */}
                 <div className="group/arrow shrink-0 flex items-center text-slate-300 hover:text-blue-500 transition-colors">
@@ -286,15 +347,15 @@ const MerchantElectricityManager: React.FC = () => {
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        {/* 发电户号查询：放在电价筛选左侧，点击搜索图标触发查询 */}
-                        <Box sx={{ minWidth: 200 }}>
+                        {/* 关键字查询（商户名 / 发电户号）：放在电价筛选左侧，失焦时触发查询 */}
+                        <Box sx={{ minWidth: 220 }}>
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="发电户号"
-                                value={bwblkhayInput}
-                                onChange={(e) => setBwblkhayInput(e.target.value)}
-                                onBlur={handleBwblkhayBlur}
+                                label="项目名称 / 发电户号 / 商户名"
+                                value={keywordInput}
+                                onChange={(e) => setKeywordInput(e.target.value)}
+                                onBlur={handleKeywordBlur}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
@@ -353,46 +414,43 @@ const MerchantElectricityManager: React.FC = () => {
                     </div>
                 </header>
 
-                {searchConditions.fpllerek ? (
-                    /* 已选电价筛选：结果均为已设置，用单列列表更合理（避免空的「未设置」列） */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                        {tableData.length === 0 ? (
-                            <p className="text-xs text-slate-300 italic px-1 py-4">暂无匹配该电价的商户</p>
-                        ) : (
-                            tableData.map((m) => renderMerchantItem(m, m.pkWzghpmog > 0))
-                        )}
-                    </div>
-                ) : (
-                    /* 未筛选：按配置状态分两列看板 */
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                        {[
-                            { key: 'set', title: '已设置', isSet: true, items: tableData.filter((m) => m.pkWzghpmog > 0) },
-                            { key: 'unset', title: '未设置', isSet: false, items: tableData.filter((m) => !(m.pkWzghpmog > 0)) },
-                        ].map((col) => (
-                            <section key={col.key} className="flex flex-col">
-                                {/* 列头 */}
-                                <div className={`flex items-center gap-2 px-1 pb-2.5 mb-3 border-b-2 ${col.isSet ? 'border-emerald-200' : 'border-slate-200'
-                                    }`}>
-                                    <span className={`w-2 h-2 rounded-full ${col.isSet ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                                    <span className="text-sm font-semibold text-slate-700">{col.title}</span>
-                                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${col.isSet ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
-                                        }`}>
-                                        {col.items.length}
-                                    </span>
-                                </div>
+                {/* 统一为单个响应式网格：已设置在前、未设置在后，避免两列看板出现空列 */}
+                {(() => {
+                    // 已设置优先排序，方便扫读；状态由每个条目的徽标标识
+                    const sorted = [...tableData].sort(
+                        (a, b) => Number(b.pkWzghpmog > 0) - Number(a.pkWzghpmog > 0)
+                    );
+                    const setCount = tableData.filter((m) => m.pkWzghpmog > 0).length;
+                    const unsetCount = tableData.length - setCount;
 
-                                {/* 列表条目 */}
-                                <div className="flex flex-col gap-2.5">
-                                    {col.items.length === 0 ? (
-                                        <p className="text-sm text-slate-300 italic px-1 py-4">本页暂无</p>
-                                    ) : (
-                                        col.items.map((m) => renderMerchantItem(m, col.isSet))
-                                    )}
-                                </div>
-                            </section>
-                        ))}
-                    </div>
-                )}
+                    if (tableData.length === 0) {
+                        return (
+                            <p className="text-sm text-slate-300 italic px-1 py-4">
+                                {searchConditions.fpllerek ? '暂无匹配该电价的商户' : '暂无商户'}
+                            </p>
+                        );
+                    }
+
+                    return (
+                        <>
+                            {/* 数量概览：保留「已设置 / 未设置」的一眼信息 */}
+                            <div className="flex items-center gap-3 px-1 pb-3 mb-3 border-b border-slate-100 text-xs text-slate-500">
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                    已设置 <strong className="text-slate-700">{setCount}</strong>
+                                </span>
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-slate-400" />
+                                    未设置 <strong className="text-slate-700">{unsetCount}</strong>
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                {sorted.map((m) => renderMerchantItem(m, m.pkWzghpmog > 0))}
+                            </div>
+                        </>
+                    );
+                })()}
 
                 {/* 分页：极简上下箭头 */}
                 {totalPages > 1 && (
@@ -461,7 +519,7 @@ const MerchantElectricityManager: React.FC = () => {
                     {/* 状态标签区：更加小巧秀气 */}
                     <div className="px-4 py-3 flex gap-2 bg-white/50">
                         <div className="inline-flex items-center px-2 py-0.5 rounded text-sm bg-slate-100 border border-slate-200">
-                            发电户号: {selectedMchantPricing?.code}
+                            发电户号: {selectedMchantPricing?.code || '无发电户号'}
                         </div>
                         <div className={`inline-flex items-center px-2 py-0.5 rounded text-sm ${selectedMchantPricing && selectedMchantPricing.id > 0 ? 'bg-emerald-50 border border-emerald-100' : 'bg-slate-50 border border-slate-100'}`}>
                             <span className={`w-1 h-1 rounded-full ${selectedMchantPricing && selectedMchantPricing.id > 0 ? 'bg-emerald-500 mr-1.5' : 'bg-slate-400 mr-1.5'}`} />
@@ -471,19 +529,17 @@ const MerchantElectricityManager: React.FC = () => {
 
                     {/* 表单主体：增加呼吸感 */}
                     <div className="flex-1 p-4 overflow-y-auto">
-                        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
-                            {Parameterization('ViewTbWzghpmogVxpfmm', {
-                                key: 'ViewTbWzghpmogVxpfmm',
-                                initialData: getInitialData(selectedMchantPricing),
-                                onCancel: (formData: any) => {
-                                    handleClose();
-                                },
-                                onSubmit: () => {
-                                    refreshTable();
-                                    handleClose();
-                                }
-                            })}
-                        </div>
+                        {Parameterization('ViewTbWzghpmogVxpfmm', {
+                            key: 'ViewTbWzghpmogVxpfmm',
+                            initialData: getInitialData(selectedMchantPricing),
+                            onCancel: (formData: any) => {
+                                handleClose();
+                            },
+                            onSubmit: () => {
+                                refreshTable();
+                                handleClose();
+                            }
+                        })}
                     </div>
                 </div>
             </Drawer>

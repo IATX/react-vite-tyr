@@ -697,11 +697,11 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ in
 									handleTreeInputChange({
 										idsTarget: {
 											idName: 'groupIds',
-											idValue: keys
+											idValue: keys.join(',')
 										},
 										namesTarget: {
 											nameName: 'groupNames',
-											nameValue: values
+											nameValue: values.join(',')
 										}
 									})
 								}}

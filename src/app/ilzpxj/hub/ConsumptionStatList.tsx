@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { TablePagination } from '@mui/material';
-import { DonutLargeTwoTone } from '@mui/icons-material';
+import { TablePagination, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { DonutLargeTwoTone, KeyboardArrowDown, ReceiptLongOutlined, DescriptionOutlined } from '@mui/icons-material';
 import axios from 'axios';
 
 import { useAlert } from '../../../components/AlertContext';
@@ -10,6 +10,8 @@ import { AppContext } from '../../../context/AppContext';
 import { useBreadcrumbs } from '../../../context/BreadcrumbContext';
 import { useNavigate } from 'react-router-dom';
 import Parameterization from '../../../components/RenderComponent';
+import BillImportDialog from '../../../components/FormDialogSoloPage';
+import { WrapSoloFormNode } from '../../../components/WrapNode';
 
 // 用电量统计行（字段沿用 Billcenter 的 ConsumptionStatData / query_wnkrtk）
 interface ConsumptionStatData {
@@ -20,6 +22,7 @@ interface ConsumptionStatData {
     ybfzkzts: string;   // 抄表人
     dxxvlgqz: number;   // 上传日期
     vptylsiz: string;   // 确认人
+    columnLkps?: string; // 是否有明细数据（非空表示有明细，可导出）
 }
 
 interface ConsumptionStatListProps {
@@ -33,6 +36,17 @@ const formatDateCN = (ts: number) =>
     new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Shanghai' })
         .format(ts)
         .replace(/\//g, '-');
+
+// 结算日期仅显示到月（yyyy-MM）
+const formatMonthCN = (ts: number) =>
+    new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', timeZone: 'Asia/Shanghai' })
+        .format(ts)
+        .replace(/\//g, '-');
+
+// 结算月份格式化为 yyyy-MM（用 en-CA 保证连字符输出，避免 zh-CN 在部分环境输出「年/月」）
+const formatYearMonth = (ts: number) =>
+    new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', timeZone: 'Asia/Shanghai' })
+        .format(ts);
 
 const paginationSx = {
     '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': { fontSize: '0.875rem', color: '#64748b' },
@@ -55,6 +69,43 @@ const ConsumptionStatList: React.FC<ConsumptionStatListProps> = ({ projectName, 
     const [pageSize, setPageSize] = useState(10);
     const [tableData, setTableData] = useState<ConsumptionStatData[]>([]);
     const [totalRows, setTotalRows] = useState(0);
+    // 「导入」下拉子菜单锚点
+    const [importAnchorEl, setImportAnchorEl] = useState<null | HTMLElement>(null);
+    const importMenuOpen = Boolean(importAnchorEl);
+    const openImportMenu = (e: React.MouseEvent<HTMLButtonElement>) => setImportAnchorEl(e.currentTarget);
+    const closeImportMenu = () => setImportAnchorEl(null);
+    // 「电费账单」导入弹窗（复用电力公司账单导入表单 ViewTbStybmjgdRuiowc）
+    const [billImportOpen, setBillImportOpen] = useState(false);
+    const closeBillImport = () => setBillImportOpen(false);
+    const handleImportBill = () => { closeImportMenu(); setBillImportOpen(true); };
+    // Excel 导入：隐藏 file input，点击菜单项后触发文件选择
+    const excelInputRef = useRef<HTMLInputElement>(null);
+    const handleImportExcel = () => { closeImportMenu(); excelInputRef.current?.click(); };
+    const onExcelSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = ''; // 清空以允许重复选择同一文件
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            // 不手动设 Content-Type，交由 axios 自动带上含 boundary 的 multipart/form-data，
+            // 否则 Spring 端 @RequestParam MultipartFile 会因缺少 boundary 解析失败
+            const response = await axios.post(
+                import.meta.env.VITE_JET_ASP_BPC_API + '/surplustogrid/elecdetails/import',
+                formData,
+                { headers: { grooveToken: token } }
+            );
+            if (response.data?.success) {
+                showAlert('Excel导入成功', 'success');
+                setLoading(true);
+                loadData();
+            } else {
+                showAlert(response.data?.message ?? 'Excel导入失败', 'error');
+            }
+        } catch {
+            showAlert('Excel导入异常，请稍后重试。', 'error');
+        }
+    };
 
     const pageRef = useRef(page);
     const pageSizeRef = useRef(pageSize);
@@ -150,10 +201,39 @@ const ConsumptionStatList: React.FC<ConsumptionStatListProps> = ({ projectName, 
                 initialData: { pkGvfrokeq: data.pkGvfrokeq },
                 onCancel: backToList,
                 onSubmit: backToList,
+                showParsedCompare: true,
             }),
             type: 'view',
         });
         navigate('/main/trays');
+    };
+
+    // 导出该结算月份的用电量明细（xlsx，按 发电户号 + 结算月份 调后端导出接口）
+    const handleExport = async (data: ConsumptionStatData) => {
+        const yearMonth = formatYearMonth(data.tjmqxlms); // yyyy-MM
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_JET_ASP_BPC_API}/surplustogrid/exportelecdetails/${generationAccount}/${yearMonth}`,
+                {},
+                { headers: { grooveToken: token }, responseType: 'blob' }
+            );
+
+            // 文件名优先取后端 Content-Disposition，回退到默认命名
+            const disposition = response.headers['content-disposition'] as string | undefined;
+            const match = disposition?.match(/filename\*?=(?:utf-8'')?["']?([^"';]+)/i);
+            const filename = match ? decodeURIComponent(match[1]) : `用电量统计_${generationAccount}_${yearMonth}.xlsx`;
+
+            const url = window.URL.createObjectURL(response.data);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch {
+            showAlert('导出失败，请稍后重试。', 'error');
+        }
     };
 
     const handleDelete = async (data: ConsumptionStatData) => {
@@ -207,6 +287,67 @@ const ConsumptionStatList: React.FC<ConsumptionStatListProps> = ({ projectName, 
                                 返回
                             </button>
                             <button
+                                className="flex items-center gap-1 text-pink-600 bg-slate-100 hover:text-pink-500 hover:bg-slate-50 px-4 py-2 rounded-md text-sm font-semibold transition-colors shadow-sm"
+                                onClick={openImportMenu}
+                                aria-haspopup="true"
+                                aria-expanded={importMenuOpen ? 'true' : undefined}
+                            >
+                                导入
+                                <KeyboardArrowDown
+                                    sx={{ fontSize: 18, transition: 'transform .2s ease', transform: importMenuOpen ? 'rotate(180deg)' : 'none' }}
+                                />
+                            </button>
+                            <Menu
+                                anchorEl={importAnchorEl}
+                                open={importMenuOpen}
+                                onClose={closeImportMenu}
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                slotProps={{
+                                    paper: {
+                                        elevation: 0,
+                                        sx: {
+                                            mt: 1,
+                                            minWidth: 220,
+                                            borderRadius: 2.5,
+                                            border: '1px solid rgba(15,23,42,0.08)',
+                                            boxShadow: '0 12px 32px -12px rgba(15,23,42,0.28)',
+                                            overflow: 'hidden',
+                                            '& .MuiList-root': { py: 0.75 },
+                                            '& .MuiMenuItem-root': {
+                                                mx: 1,
+                                                my: 0.25,
+                                                px: 1.25,
+                                                py: 1,
+                                                borderRadius: 2,
+                                                alignItems: 'flex-start',
+                                                transition: 'background-color .15s ease',
+                                            },
+                                            '& .MuiMenuItem-root:hover': { backgroundColor: 'rgba(236,72,153,0.08)' },
+                                            '& .MuiListItemIcon-root': {
+                                                minWidth: 34,
+                                                mt: '2px',
+                                                color: '#db2777',
+                                            },
+                                            '& .MuiListItemText-primary': { fontSize: 14, fontWeight: 600, color: '#0f172a' },
+                                            '& .MuiListItemText-secondary': { fontSize: 12, color: '#94a3b8', mt: '1px' },
+                                        },
+                                    },
+                                }}
+                            >
+                                <div className="px-4 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    选择导入方式
+                                </div>
+                                <MenuItem onClick={handleImportBill}>
+                                    <ListItemIcon><ReceiptLongOutlined sx={{ fontSize: 20 }} /></ListItemIcon>
+                                    <ListItemText primary="电费账单" secondary="国网电费账单" />
+                                </MenuItem>
+                                <MenuItem onClick={handleImportExcel}>
+                                    <ListItemIcon><DescriptionOutlined sx={{ fontSize: 20 }} /></ListItemIcon>
+                                    <ListItemText primary="Excel文件" secondary="手工统计表格" />
+                                </MenuItem>
+                            </Menu>
+                            <button
                                 className="text-emerald-600 bg-emerald-50 hover:opacity-80 px-4 py-2 rounded-md text-sm font-semibold transition-colors shadow-sm"
                                 onClick={handleAdd}
                             >
@@ -232,7 +373,7 @@ const ConsumptionStatList: React.FC<ConsumptionStatListProps> = ({ projectName, 
                                     <th className={thStyle}>抄表人</th>
                                     <th className={thStyle}>上传日期</th>
                                     <th className={thStyle}>确认人</th>
-                                    <th className={`${thStyle} text-center`}>操作</th>
+                                    <th className={`${thStyle} text-right`}>运维操作</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -245,17 +386,26 @@ const ConsumptionStatList: React.FC<ConsumptionStatListProps> = ({ projectName, 
                                 ) : (
                                     tableData.map((data, index) => (
                                         <tr key={data.pkGvfrokeq ?? index} className="hover:bg-gray-50/50 transition-colors group">
-                                            <td className="py-5 px-2 text-sm text-gray-900 whitespace-nowrap">{formatDateCN(data.tjmqxlms)}</td>
+                                            <td className="py-5 px-2 text-sm text-gray-900 whitespace-nowrap">{formatMonthCN(data.tjmqxlms)}</td>
                                             <td className={tdStyle}>{data.ynwjibye}</td>
                                             <td className={tdStyle}>{data.tparorbm}</td>
                                             <td className={tdStyle}>{data.ybfzkzts}</td>
                                             <td className={tdStyle}>{formatDateCN(data.dxxvlgqz)}</td>
                                             <td className={tdStyle}>{data.vptylsiz}</td>
-                                            <td className="py-5 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <td className="py-5 px-2 text-right text-sm font-medium whitespace-nowrap">
+                                                {data.columnLkps && (
+                                                    <a
+                                                        href="#"
+                                                        onClick={(e) => { e.preventDefault(); handleExport(data); }}
+                                                        className="text-blue-600 hover:text-blue-500"
+                                                    >
+                                                        导出
+                                                    </a>
+                                                )}
                                                 <a
                                                     href="#"
                                                     onClick={(e) => { e.preventDefault(); handleEdit(data); }}
-                                                    className="text-blue-600 hover:text-blue-500"
+                                                    className="pl-2 text-blue-600 hover:text-blue-500"
                                                 >
                                                     编辑
                                                 </a>
@@ -290,6 +440,29 @@ const ConsumptionStatList: React.FC<ConsumptionStatListProps> = ({ projectName, 
                     </div>
                 </div>
             )}
+
+            {/* 「电费账单」导入弹窗：复用电力公司账单导入表单 ViewTbStybmjgdRuiowc */}
+            <BillImportDialog
+                title={projectName}
+                subtitle={`发电户号：${generationAccount}`}
+                dialogSize={'sm'}
+                open={billImportOpen}
+                onClose={closeBillImport}
+                children={WrapSoloFormNode(Parameterization('ViewTbStybmjgdRuiowc', {
+                    initialData: {},
+                    onCancel: closeBillImport,
+                    onSubmit: () => { closeBillImport(); loadData(); },
+                }))}
+            />
+
+            {/* Excel 导入：隐藏 file input，由「导入 → Excel文件」菜单项触发 */}
+            <input
+                ref={excelInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={onExcelSelected}
+            />
         </React.Fragment>
     );
 };

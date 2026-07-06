@@ -34,6 +34,7 @@ interface DataClue {
 interface SelfUseBillListProps {
     projectName: string;
     generationAccount: string; // 发电户号，用于过滤当前项目的账单
+    merchantId: number;
     merchant: string;          // 商户
 }
 
@@ -50,7 +51,7 @@ const paginationSx = {
 const thStyle = 'py-4 px-2 text-sm font-semibold text-gray-900';
 const tdStyle = 'py-5 px-2 text-sm text-gray-500 whitespace-nowrap';
 
-const SelfUseBillList: React.FC<SelfUseBillListProps> = ({ projectName, generationAccount, merchant }) => {
+const SelfUseBillList: React.FC<SelfUseBillListProps> = ({ projectName, generationAccount, merchantId, merchant }) => {
     const { token } = useSession();
     const { showAlert } = useAlert();
     const { confirm } = useConfirm();
@@ -80,7 +81,8 @@ const SelfUseBillList: React.FC<SelfUseBillListProps> = ({ projectName, generati
         const params = {
             page: pageRef.current + 1,
             limit: pageSizeRef.current,
-            btvttbdp: generationAccount, // 按当前项目发电户号过滤
+            // btvttbdp: generationAccount, // 按当前项目发电户号过滤
+            colDnfwuc: merchantId,
         };
         axios
             .post(import.meta.env.VITE_JET_ASP_BPC_API + '/tablequery/listreacttable/query_kaeany', params, {
@@ -112,7 +114,7 @@ const SelfUseBillList: React.FC<SelfUseBillListProps> = ({ projectName, generati
         setCurrentBayContent({
             title: '自发自用账单',
             subheader: projectName,
-            elem: <SelfUseBillList projectName={projectName} generationAccount={generationAccount} merchant={merchant} />,
+            elem: <SelfUseBillList projectName={projectName} generationAccount={generationAccount} merchantId={merchantId} merchant={merchant} />,
             type: 'hub',
         });
         navigate('/main/trays');
@@ -140,6 +142,7 @@ const SelfUseBillList: React.FC<SelfUseBillListProps> = ({ projectName, generati
                 initialData: {
                     'btvttbdp': generationAccount, // 发电户号
                     'snebfkdc': merchant, // 户名
+                    
                 },
                 onCancel: backToList,
                 onSubmit: backToList,
@@ -231,7 +234,7 @@ const SelfUseBillList: React.FC<SelfUseBillListProps> = ({ projectName, generati
             {loading ? (
                 <div className="p-20 text-center text-xs text-slate-600 animate-pulse tracking-widest">加载数据...</div>
             ) : (
-                <div className="max-w-7xl bg-white rounded-xl shadow-sm border border-slate-100 p-8">
+                <div className="w-full bg-white rounded-xl shadow-sm p-8">
                     {/* 头部 */}
                     <div className="flex justify-between items-start mb-8">
                         <div>
@@ -364,7 +367,9 @@ const SelfUseBillList: React.FC<SelfUseBillListProps> = ({ projectName, generati
                 onClose={() => setDialogOpen(false)}
                 children={WrapSoloFormNode(
                     Parameterization('ViewTbYrnfwwvyQfxmub', {
-                        initialData: {},
+                        initialData: {
+                            'merchantId': merchantId
+                        },
                         onCancel: () => setDialogOpen(false),
                         onSubmit: () => { setDialogOpen(false); setLoading(true); loadData(); },
                     })

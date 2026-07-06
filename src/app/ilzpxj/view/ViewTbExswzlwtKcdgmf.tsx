@@ -97,6 +97,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			        		umakupcb: '',
 			        		ovehnwzi: '',
 			        		kdaiahlw: '',
+							colYwkcgr: '',
 			        		fgtqnhyn: '',
 			        		nwcjwyrf: '',
 			        		mrseixpo: '',
@@ -368,7 +369,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	
 	
 	const handleDateChange = (name: string, value: any) => {
-		const newTimestamp = value.valueOf();
+		const newTimestamp = value ? Date.UTC(value.year(), value.month(), value.date()) : null;
 
 		setFormData((prevData: any) => ({
 			...prevData,
@@ -517,9 +518,10 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 												}}>
 		               <DatePicker
                           name="qrfxwkpy"
-                          format="YYYY-MM-DD"
+                          format="YYYY-MM"
                           value={formData.qrfxwkpy ? dayjs(formData.qrfxwkpy) : null}
-                          views={['year', 'month', 'day']}
+                          views={['year', 'month']}
+                          openTo="month"
                           onChange={(newValue: Dayjs | null)=> handleDateChange('qrfxwkpy', newValue)}
                           sx={{
                             '.Mui-focused': {
@@ -664,6 +666,39 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	              )}
 			     </div>
 	        </div> 
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_exswzlwt_colYwkcgr" className={labelStyle}>
+	                补贴电量
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.colYwkcgr || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['colYwkcgr'] = el;
+												}}>
+		              <TextField
+		                    type="number"
+		                    id="tb_exswzlwt_colYwkcgr"
+		                    name="colYwkcgr"
+		                    value={formData.colYwkcgr || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    variant="outlined"
+		                    error={errors.colYwkcgr ? true : false}
+		                    helperText={errors.colYwkcgr}
+		                    slotProps={{
+					            input: {
+					                 
+					              startAdornment: <InputAdornment position="start"><NumberIcon className='text-base'/></InputAdornment>
+					            },
+					          }}
+		                  />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div> 
+
 								    </div>
 						        </div>
       					    	<div className={groupCardStyle}>

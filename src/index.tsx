@@ -6,6 +6,8 @@ import { StyledEngineProvider } from '@mui/material/styles';
 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { zhCN } from '@mui/x-date-pickers/locales';
+import 'dayjs/locale/zh-cn';
 
 import { AlertProvider } from './components/AlertContext';
 import { ConfirmDialogProvider } from './components/useConfirmDialog';
@@ -22,7 +24,11 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <LocalizationProvider
+      dateAdapter={AdapterDayjs}
+      adapterLocale="zh-cn"
+      localeText={zhCN.components.MuiLocalizationProvider.defaultProps.localeText}
+    >
       <StyledEngineProvider injectFirst>
           <ConfirmDialogProvider>
             <AlertProvider>

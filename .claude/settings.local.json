@@ -9,7 +9,17 @@
       "Bash(git restore *)",
       "Bash(node *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(python -c \"import pptx; print\\('python-pptx', pptx.__version__\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import pptx; print\\('ok', pptx.__version__\\)\")",
+      "Bash(python build_pptx.py)",
+      "Bash(mkdir -p \"D:/vscode-workspace/dmaxi-epbp-tyr/docs\")",
+      "Bash(cp \"C:/Users/fengj/AppData/Local/Temp/claude/D--vscode-workspace-dmaxi-epbp-tyr/84791613-f6a7-4e16-94fa-8844eceab85d/scratchpad/新能源电量统计与电费结算-论坛演讲.pptx\" \"D:/vscode-workspace/dmaxi-epbp-tyr/docs/\")",
+      "Bash(cp \"C:/Users/fengj/AppData/Local/Temp/claude/D--vscode-workspace-dmaxi-epbp-tyr/84791613-f6a7-4e16-94fa-8844eceab85d/scratchpad/新能源电量统计与电费结算-论坛演讲.md\" \"D:/vscode-workspace/dmaxi-epbp-tyr/docs/\")",
+      "Bash(cp \"新能源电量统计与电费结算-论坛演讲.pptx\" \"D:/vscode-workspace/dmaxi-epbp-tyr/docs/\")",
+      "Bash(cp \"新能源电量统计与电费结算-论坛演讲.md\" \"D:/vscode-workspace/dmaxi-epbp-tyr/docs/\")",
+      "Bash(git check-ignore *)"
     ]
   }
 }

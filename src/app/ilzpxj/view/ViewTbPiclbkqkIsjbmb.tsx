@@ -58,7 +58,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	const navigate = useNavigate();
 	
 	const isViewReadOnly = readOnly ?? false;
-	const from = state?.from;
+	const from =  state?.from;
 	const fromData = state?.initialData;
 
 	const { showAlert } = useAlert();
@@ -104,8 +104,12 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			        		iuqbiaih: '',
 			        		okmaqgil: '',
 			        		irncwabt: '',
-			        		okfhbplj: '',
 			        		nitcgncr: '',
+			        		okfhbplj: '',
+			        		colOushrl: '',
+							colKjmsem: '',
+			        		colIkqdux: '',
+			        		colUpgpqe: '',
 			        		pmvemgus: '',
 			        		sojuccym: '',
 			        		gnosszbg: '',
@@ -169,14 +173,14 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
    const handleDateError = (itemName: string, dateError: DateValidationError) => {
 		switch (dateError) {
 			case 'maxDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
 			}
 			case 'minDate': {
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateRange') }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Please select a date in the first quarter of 2022' }));
 			}
 			case 'invalidDate': {
 
-				setErrors(prevErrors => ({ ...prevErrors, [itemName]: t('validation.dateInvalid') }));
+				setErrors(prevErrors => ({ ...prevErrors, [itemName]: 'Your date is not valid' }));
 			}
 
 			default: {
@@ -325,7 +329,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 		const { name, checked } = e.target;
 
 		if (checked) {
-			let formDataVal = formData[name as keyof typeof formData].trim();
+			let formDataVal = formData[name as keyof typeof formData]?.trim();
 
 			if (!hasValue(formDataVal, checkedObj.id)) {
 				setFormData((prevData: any) => ({ ...prevData, [name]: (formDataVal === '' ? checkedObj.id : (formDataVal + ',' + checkedObj.id)) }));
@@ -376,7 +380,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	
 	
 	const handleDateChange = (name: string, value: any) => {
-		const newTimestamp = value.valueOf();
+		const newTimestamp = value ? Date.UTC(value.year(), value.month(), value.date()) : null;
 
 		setFormData((prevData: any) => ({
 			...prevData,
@@ -392,32 +396,32 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	
 	const validationRules = {
 		    	"jchzjhug": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
 			
 			      return '';
 			    },
 		    	"dnsmnqeh": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
 			
 			      return '';
 			    },
 		    	"ythuiqfx": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
 			
 			      return '';
 			    },
 		    	"knhbvtpp": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
 			
 			      return '';
 			    },
 		    	"juwpzays": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
 			
 			      return '';
 			    },
 		    	"usmkjkme": (value: any) => {
-			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return t('validation.required');
+			      if (value === null || typeof value === 'undefined' || isEmpty(value, false)) return "Field is required.";
 			
 			      return '';
 			    },
@@ -473,7 +477,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	    	
 	      		const jsonData = { ...formData };
 	
-				showAlert(t('message.operationSuccess'), 'success');
+				showAlert('Operation successfully.', 'success');
 	
 				onSubmit?.(jsonData);
 	        } else if(response.data && !response.data.success) {
@@ -1011,6 +1015,50 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			     </div>
 	        </div> 
 			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_piclbkqk_nitcgncr" className={labelStyle}>
+	                结算金额
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.nitcgncr || ''}</Typography>
+	            	) : (
+		              <FormControl fullWidth ref={(el) => {
+														if (el) fieldRefs.current['nitcgncr'] = el;
+													}}>
+			              <TextField
+			                    type="number"
+			                    id="tb_piclbkqk_nitcgncr"
+			                    name="nitcgncr"
+			                    value={formData.nitcgncr || ''}
+			                    onChange={handleInputChange}
+			                    size="small"
+			                    variant="outlined"
+			                    error={errors.nitcgncr ? true : false}
+			                    helperText={errors.nitcgncr}
+			                    slotProps={{
+						            input: {
+						                 
+						              startAdornment: <InputAdornment position="start">
+						              	{
+											VITE_JET_CURRENCY_CODE === 'GBP' ? (
+												<CurrencyPoundRounded className='text-base'/>
+											) : VITE_JET_CURRENCY_CODE === 'CNY' ? (
+												<CurrencyYenOutlinedIcon className='text-base'/>	
+											) : VITE_JET_CURRENCY_CODE === 'USD' ? (
+												<AttachMoneyOutlinedIcon className='text-base'/>	
+											) : (
+												<CurrencyPoundRounded className='text-base'/>
+											)
+										}
+						              </InputAdornment>
+						            },
+						          }}
+			                  />
+		              </FormControl>
+	              	)}
+			     </div>
+	        </div>     
+			<div className={oneColumnStyle}>
 	            <label htmlFor="tb_piclbkqk_okfhbplj" className={labelStyle}>
 	                上网电量
 	            </label>
@@ -1043,26 +1091,146 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 			     </div>
 	        </div> 
 			<div className={oneColumnStyle}>
-	            <label htmlFor="tb_piclbkqk_nitcgncr" className={labelStyle}>
-	                结算金额
+	            <label htmlFor="tb_piclbkqk_colOushrl" className={labelStyle}>
+	                上网电费
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.nitcgncr || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formData.colOushrl || ''}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
-														if (el) fieldRefs.current['nitcgncr'] = el;
+														if (el) fieldRefs.current['colOushrl'] = el;
 													}}>
 			              <TextField
 			                    type="number"
-			                    id="tb_piclbkqk_nitcgncr"
-			                    name="nitcgncr"
-			                    value={formData.nitcgncr || ''}
+			                    id="tb_piclbkqk_colOushrl"
+			                    name="colOushrl"
+			                    value={formData.colOushrl || ''}
 			                    onChange={handleInputChange}
 			                    size="small"
 			                    variant="outlined"
-			                    error={errors.nitcgncr ? true : false}
-			                    helperText={errors.nitcgncr}
+			                    error={errors.colOushrl ? true : false}
+			                    helperText={errors.colOushrl}
+			                    slotProps={{
+						            input: {
+						                 
+						              startAdornment: <InputAdornment position="start">
+						              	{
+											VITE_JET_CURRENCY_CODE === 'GBP' ? (
+												<CurrencyPoundRounded className='text-base'/>
+											) : VITE_JET_CURRENCY_CODE === 'CNY' ? (
+												<CurrencyYenOutlinedIcon className='text-base'/>	
+											) : VITE_JET_CURRENCY_CODE === 'USD' ? (
+												<AttachMoneyOutlinedIcon className='text-base'/>	
+											) : (
+												<CurrencyPoundRounded className='text-base'/>
+											)
+										}
+						              </InputAdornment>
+						            },
+						          }}
+			                  />
+		              </FormControl>
+	              	)}
+			     </div>
+	        </div>     
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_piclbkqk_colKjmsem" className={labelStyle}>
+	                补贴电量
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.colKjmsem || ''}</Typography>
+	            	) : (
+	              <FormControl fullWidth ref={(el) => {
+													if (el) fieldRefs.current['colKjmsem'] = el;
+												}}>
+		              <TextField
+		                    type="number"
+		                    id="tb_piclbkqk_colKjmsem"
+		                    name="colKjmsem"
+		                    value={formData.colKjmsem || ''}
+		                    onChange={handleInputChange}
+		                    size="small"
+		                    variant="outlined"
+		                    error={errors.colKjmsem ? true : false}
+		                    helperText={errors.colKjmsem}
+		                    slotProps={{
+					            input: {
+					                 
+					              startAdornment: <InputAdornment position="start"><NumberIcon className='text-base'/></InputAdornment>
+					            },
+					          }}
+		                  />
+	              </FormControl>
+	              )}
+			     </div>
+	        </div> 
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_piclbkqk_colIkqdux" className={labelStyle}>
+	                补贴
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.colIkqdux || ''}</Typography>
+	            	) : (
+		              <FormControl fullWidth ref={(el) => {
+														if (el) fieldRefs.current['colIkqdux'] = el;
+													}}>
+			              <TextField
+			                    type="number"
+			                    id="tb_piclbkqk_colIkqdux"
+			                    name="colIkqdux"
+			                    value={formData.colIkqdux || ''}
+			                    onChange={handleInputChange}
+			                    size="small"
+			                    variant="outlined"
+			                    error={errors.colIkqdux ? true : false}
+			                    helperText={errors.colIkqdux}
+			                    slotProps={{
+						            input: {
+						                 
+						              startAdornment: <InputAdornment position="start">
+						              	{
+											VITE_JET_CURRENCY_CODE === 'GBP' ? (
+												<CurrencyPoundRounded className='text-base'/>
+											) : VITE_JET_CURRENCY_CODE === 'CNY' ? (
+												<CurrencyYenOutlinedIcon className='text-base'/>	
+											) : VITE_JET_CURRENCY_CODE === 'USD' ? (
+												<AttachMoneyOutlinedIcon className='text-base'/>	
+											) : (
+												<CurrencyPoundRounded className='text-base'/>
+											)
+										}
+						              </InputAdornment>
+						            },
+						          }}
+			                  />
+		              </FormControl>
+	              	)}
+			     </div>
+	        </div>     
+			<div className={oneColumnStyle}>
+	            <label htmlFor="tb_piclbkqk_colUpgpqe" className={labelStyle}>
+	                合计
+	            </label>
+	            <div className="mt-2">
+	            	{isViewReadOnly ? (
+	            		<Typography variant="body2" gutterBottom>{formData.colUpgpqe || ''}</Typography>
+	            	) : (
+		              <FormControl fullWidth ref={(el) => {
+														if (el) fieldRefs.current['colUpgpqe'] = el;
+													}}>
+			              <TextField
+			                    type="number"
+			                    id="tb_piclbkqk_colUpgpqe"
+			                    name="colUpgpqe"
+			                    value={formData.colUpgpqe || ''}
+			                    onChange={handleInputChange}
+			                    size="small"
+			                    variant="outlined"
+			                    error={errors.colUpgpqe ? true : false}
+			                    helperText={errors.colUpgpqe}
 			                    slotProps={{
 						            input: {
 						                 

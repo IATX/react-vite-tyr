@@ -46,6 +46,26 @@ const mapRowToProject = (row: ProjectRow): Project => ({
 
 const PAGE_SIZE = 6;
 
+// 列表页状态持久化：点击卡片跳转到「用电量统计」详情页、再返回时恢复之前的页面状态
+// （搜索关键字、当前页）。详情页返回时会重新挂载本组件，故用 sessionStorage
+// 在挂载时读取、状态变化时写入。
+const LIST_STATE_KEY = 'eom:list-state';
+
+interface PersistedListState {
+  keyword: string;
+  searchTerm: string;
+  page: number;
+}
+
+const loadListState = (): Partial<PersistedListState> => {
+  try {
+    const raw = sessionStorage.getItem(LIST_STATE_KEY);
+    return raw ? (JSON.parse(raw) as Partial<PersistedListState>) : {};
+  } catch {
+    return {};
+  }
+};
+
 const Electricityoperamanagement: React.FC = () => {
   const { showAlert } = useAlert();
   const { token } = useSession();
@@ -53,15 +73,18 @@ const Electricityoperamanagement: React.FC = () => {
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
 
-  const [keyword, setKeyword] = useState('');     // 输入框实时值
-  const [searchTerm, setSearchTerm] = useState(''); // 已提交的查询值（失焦时提交）
+  // 挂载时一次性读取上次的列表状态（从详情页返回时恢复）
+  const persisted = useState(loadListState)[0];
+
+  const [keyword, setKeyword] = useState(persisted.keyword ?? '');     // 输入框实时值
+  const [searchTerm, setSearchTerm] = useState(persisted.searchTerm ?? ''); // 已提交的查询值（失焦时提交）
 
   // 项目列表
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 分页（服务端分页，page 从 1 开始）
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(persisted.page ?? 1);
   const [totalPages, setTotalPages] = useState(1);
 
   // 拉取项目列表（参考 电费账单管理 Electricitybillmanagement.tsx 的 fetchData）
@@ -71,6 +94,7 @@ const Electricityoperamanagement: React.FC = () => {
     const params = {
       page,
       limit: PAGE_SIZE,
+      gwsnkwpp: searchTerm, // 按项目名称查询
       mrvqpphi: searchTerm, // 按商户名称查询
       bwblkhay: searchTerm, // 按发电户号查询
       queryMode: 'or'
@@ -115,6 +139,16 @@ const Electricityoperamanagement: React.FC = () => {
     setBreadcrumbs([{ name: '运维管理', url: '/main/trays' }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 状态变化时写入 sessionStorage，供从详情页返回时恢复
+  useEffect(() => {
+    const state: PersistedListState = { keyword, searchTerm, page };
+    try {
+      sessionStorage.setItem(LIST_STATE_KEY, JSON.stringify(state));
+    } catch {
+      /* 忽略持久化失败（如隐私模式） */
+    }
+  }, [keyword, searchTerm, page]);
 
   // 失焦时提交查询：更新 searchTerm 并回到第一页，fetchData 会随之自动重新拉取
   const commitSearch = () => {
@@ -196,17 +230,26 @@ const Electricityoperamanagement: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {projects.map((project) => (
+          {projects.map((project) => {
+            const accountInvalid = !project.generationAccount;
+            return (
             <Paper
               key={project.id}
               elevation={0}
-              onClick={() => openConsumptionStat(project)}
-              className="group relative flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all cursor-pointer hover:border-blue-500 hover:shadow-md"
+              onClick={() => { if (!accountInvalid) openConsumptionStat(project); }}
+              className={
+                'group relative flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm transition-all ' +
+                (accountInvalid
+                  ? 'border-dashed border-red-300 cursor-not-allowed opacity-60'
+                  : 'border-slate-200 cursor-pointer hover:border-blue-500 hover:shadow-md')
+              }
             >
               {/* 右上角跳转箭头 */}
-              <span className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600 opacity-0 transition-opacity group-hover:opacity-100">
-                <ChevronRight fontSize="small" />
-              </span>
+              {!accountInvalid && (
+                <span className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600 opacity-0 transition-opacity group-hover:opacity-100">
+                  <ChevronRight fontSize="small" />
+                </span>
+              )}
 
               {/* 项目信息 */}
               <div className="p-5">
@@ -218,8 +261,11 @@ const Electricityoperamanagement: React.FC = () => {
                     <h2 className="truncate text-base font-bold leading-tight text-slate-800">
                       {project.projectName}
                     </h2>
-                    <p className="mt-0.5 truncate font-mono text-xs text-slate-600">
-                      发电户号：{project.generationAccount}
+                    <p className={
+                      'mt-0.5 truncate font-mono text-xs ' +
+                      (accountInvalid ? 'font-semibold text-red-500' : 'text-slate-600')
+                    }>
+                      发电户号：{project.generationAccount || '缺少户号'}
                     </p>
                   </div>
                 </div>
@@ -230,7 +276,8 @@ const Electricityoperamanagement: React.FC = () => {
                 </div>
               </div>
             </Paper>
-          ))}
+            );
+          })}
         </div>
       )}
 
