@@ -28,3 +28,6 @@ src/app/fjfimc/*
 # Build artifacts
 epbp.zip
 
+# Documents
+docs/
+
