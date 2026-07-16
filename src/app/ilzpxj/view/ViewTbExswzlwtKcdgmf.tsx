@@ -366,8 +366,17 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 
 		  return false;
 	};
-	
-	
+
+	// 电费/电价等金额字段显示时保留两位小数
+	const formatDecimal2 = (value: any): string => {
+		if (value === null || value === undefined || value === '') {
+			return '';
+		}
+		const num = Number(value);
+		return Number.isNaN(num) ? String(value) : num.toFixed(2);
+	};
+
+
 	const handleDateChange = (name: string, value: any) => {
 		const newTimestamp = value ? Date.UTC(value.year(), value.month(), value.date()) : null;
 
@@ -713,7 +722,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.fgtqnhyn || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.fgtqnhyn)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['fgtqnhyn'] = el;
@@ -757,7 +766,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.nwcjwyrf || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.nwcjwyrf)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['nwcjwyrf'] = el;
@@ -897,7 +906,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.qgwvxncr || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.qgwvxncr)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['qgwvxncr'] = el;
@@ -941,7 +950,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.jshfcttg || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.jshfcttg)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['jshfcttg'] = el;
@@ -1125,7 +1134,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.afnfufjj || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.afnfufjj)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['afnfufjj'] = el;
@@ -1169,7 +1178,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.szimebex || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.szimebex)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['szimebex'] = el;

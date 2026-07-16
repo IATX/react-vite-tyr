@@ -1352,16 +1352,17 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{new Date(formData.odjdvwac).toLocaleDateString() || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formData.odjdvwac ? dayjs(formData.odjdvwac).format('YYYY-MM') : ''}</Typography>
 	            	) : (
 	              <FormControl fullWidth ref={(el) => {
 													if (el) fieldRefs.current['odjdvwac'] = el;
 												}}>
 		               <DatePicker
                           name="odjdvwac"
-                          format="YYYY-MM-DD"
+                          format="YYYY-MM"
                           value={formData.odjdvwac ? dayjs(formData.odjdvwac) : null}
-                          views={['year', 'month', 'day']}
+                          views={['year', 'month']}
+                          openTo="month"
                           onChange={(newValue: Dayjs | null)=> handleDateChange('odjdvwac', newValue)}
                           sx={{
                             '.Mui-focused': {

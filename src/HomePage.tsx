@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import overview from './assets/images/epbp-overview.png';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from './authority/SessionContext';
-import epbpLogo from './assets/images/epbp-logo.png';
+import epbpLogo from './assets/epbp.png';
 
 const features = [
   {
@@ -132,8 +132,7 @@ export default function HomePage() {
       <footer className="bg-sky-50">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-6 py-8 sm:flex-row sm:justify-between lg:px-8">
           <div className="text-center text-sm font-medium leading-relaxed text-slate-600 sm:text-left">
-            华能新能源股份有限公司上海分公司<br />
-            华能（上海）清洁能源开发有限公司
+            &nbsp;
           </div>
           <p className="text-sm/7 text-slate-600">
             © {new Date().getFullYear()} 生产报表自动回填和电费计费平台

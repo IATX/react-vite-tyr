@@ -1,7 +1,7 @@
-import React, { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
-import { Button, Popover, Tree, type TreeProps } from 'antd';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import { Tree, Tooltip, type TreeProps } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SafetyOutlined } from '@ant-design/icons';
 
-import axiosRequester, { requesterConfig } from '../components/AxiosRequester';
 import { useSession } from '../authority/SessionContext';
 import { useAlert } from '../components/AlertContext';
 
@@ -20,6 +20,16 @@ interface TreeNodeWithParent extends DataNode {
   children?: TreeNodeWithParent[];
 }
 
+/** Payload handed to the action callbacks (add / edit / delete / authorize). */
+export interface ModuleNodePayload {
+  key: string;
+  title: string;
+  isLeaf: boolean;
+  parentId: string;
+  parentName: string;
+  moduleId: string;
+}
+
 const initTreeData: DataNode[] = [
   { title: 'Root', key: 'root' },
 ];
@@ -32,75 +42,37 @@ export interface ModuleTreeRef {
 }
 
 interface ModuleManagementTreeProps {
-  addMenu: (node: DataNode | null) => void;
-  editModuleMenu: (node: DataNode | null) => void;
-  deleteModuleMenu: (node: DataNode | null) => void;
-  setPermission: (node: DataNode | null) => void;
+  addMenu: (node: ModuleNodePayload) => void;
+  editModuleMenu: (node: ModuleNodePayload) => void;
+  deleteModuleMenu: (node: ModuleNodePayload) => void;
+  setPermission: (node: ModuleNodePayload) => void;
 }
 
 const ModuleManagementTree = forwardRef<ModuleTreeRef, ModuleManagementTreeProps>(({ addMenu, editModuleMenu, deleteModuleMenu, setPermission }, ref) => {
   const bpcApiUrl = import.meta.env.VITE_JET_ASP_BPC_API;
   const [treeData, setTreeData] = useState<TreeNodeWithParent[]>(initTreeData);
-
-  const [currentSelectedNode, setCurrentSelectedNode] = useState<{
-    key: string,
-    isLeaf: boolean,
-    title: string,
-    parentId?: string,
-    parentName?: string,
-    moduleId?: string
-  } | null>(null);
-
-  const [popoverVisible, setPopoverVisible] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>(['root']);
+  const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
 
   const { token } = useSession();
   const { showAlert } = useAlert();
 
   useImperativeHandle(ref, () => ({
     addNode: (parentKey: string, newNode: DataNode) => {
-      setTreeData(originData => {
-        const newTreeData = addTreeData(originData, parentKey, [newNode]);
-        return newTreeData;
-      });
+      setTreeData(originData => addTreeData(originData, parentKey, [newNode]));
+      // Auto-expand the parent so the freshly added node is visible right away.
+      setExpandedKeys(prev => (prev.includes(parentKey) ? prev : [...prev, parentKey]));
     },
     updateNode: (key: string, newNode: DataNode) => {
-      setTreeData(originData => {
-        const newTreeData = updateTreeData(originData, key, newNode);
-        return newTreeData;
-      });
+      setTreeData(originData => updateTreeData(originData, key, newNode));
     },
-    refreshNode: (key: string) => {
+    refreshNode: (_key: string) => {
 
     },
     deleteNode: (key: string) => {
-      setTreeData(originData => {
-        const newTreeData = removeNodeByKey(originData, key);
-
-        return newTreeData;
-      });
+      setTreeData(originData => removeNodeByKey(originData, key));
     },
   }));
-
-  // It's just a simple demo. You can use tree map to optimize update perf.
-  const loadTreeData = (list: DataNode[], key: React.Key, children: DataNode[]): DataNode[] =>
-    list.map((node) => {
-      if (node.key === key) {
-        return {
-          ...node,
-          children: node.children ? node.children.concat(children) : []
-        };
-      }
-      // If the current node has child nodes, recursively process
-      if (node.children) {
-        return {
-          ...node,
-          children: addTreeData(node.children, key, children),
-        };
-      }
-      // If no matching node is found and there are no child nodes, return directly
-      return node;
-    });
 
   // It's just a simple demo. You can use tree map to optimize update perf.
   const addTreeData = (list: DataNode[], key: React.Key, children: DataNode[]): DataNode[] =>
@@ -112,14 +84,12 @@ const ModuleManagementTree = forwardRef<ModuleTreeRef, ModuleManagementTreeProps
           children: node.children ? node.children.concat(children) : children
         };
       }
-      // If the current node has child nodes, recursively process
       if (node.children) {
         return {
           ...node,
           children: addTreeData(node.children, key, children),
         };
       }
-      // If no matching node is found and there are no child nodes, return directly
       return node;
     });
 
@@ -127,10 +97,9 @@ const ModuleManagementTree = forwardRef<ModuleTreeRef, ModuleManagementTreeProps
   const updateTreeData = (list: DataNode[], key: React.Key, newNode: DataNode): DataNode[] =>
     list.map((node) => {
       if (node.key === key) {
-        node.title = newNode.title;
-
         return {
           ...node,
+          title: newNode.title,
           children: node.children ? node.children : []
         };
       }
@@ -144,176 +113,180 @@ const ModuleManagementTree = forwardRef<ModuleTreeRef, ModuleManagementTreeProps
     });
 
   /**
- * Recursively removes a node from a tree data array by its key.
- * This function returns a new array, leaving the original array unchanged.
- *
- * @param tree The tree data array (e.g., DataNode[]).
- * @param key The key of the node to be removed.
- * @returns A new DataNode[] with the specified node removed.
- */
+   * Recursively removes a node from a tree data array by its key.
+   * This function returns a new array, leaving the original array unchanged.
+   */
   const removeNodeByKey = (tree: DataNode[], key: React.Key): DataNode[] => {
-    // Use filter to create a new array without the target node.
-    // This handles the top-level removal directly.
     return tree.filter(node => node.key !== key).map(node => {
-      // Recursively process the children if they exist.
       if (node.children) {
         const newChildren = removeNodeByKey(node.children, key);
 
-        // Return a new object with the updated children.
         return { ...node, isLeaf: newChildren.length == 0, children: newChildren };
       }
-      // If no children, or if the node is not a parent of the target, return it as is.
       return node;
     });
   };
 
-  /**
-   * Recursively traverse the tree, adding a parent reference to each node
-   * @param {DataNode[]} data Tree data
-   * @param {DataNode | null} parent Parent Node
-   * @returns {DataNode[]} New tree data with parent reference
-   */
-  const addParentRef = (
-    data: DataNode[],
-    parent: TreeNodeWithParent | null = null
-  ): TreeNodeWithParent[] => {
-    return data.map(node => {
-      // Cast to a new type with parent
-      const newNode: TreeNodeWithParent = { ...node, parent };
-
-      // If there are child nodes, process them recursively
-      if (newNode.children) {
-        newNode.children = addParentRef(newNode.children, newNode);
-      }
-
-      return newNode;
-    });
-  };
-
   const onLoadData = async (node: DataNode) => {
-      // 检查是否已经加载过，防止重复请求
-      if (node.children) {
-        return;
-      }
-  
-      try {
-        const response = await fetch(bpcApiUrl + '/module/lazytree/' + node.key, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'grooveToken': token
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-  
-        if (!data.success) {
-          showAlert('Failed to load tree data.', 'error');
-        } else {
-          // 创建一个更新树的新函数
-          const updateTreeData = (list: DataNode[], key: React.Key, children: DataNode[]): DataNode[] => {
-            return list.map(item => {
-              if (item.key === key) {
-                return { ...item, children };
-              }
-              if (item.children) {
-                return { ...item, children: updateTreeData(item.children, key, children) };
-              }
-              return item;
-            });
-          };
-  
-          // 更新状态，触发重新渲染
-          setTreeData(prevData => updateTreeData(prevData, node.key, data.data));
-        }
-      } catch (error) {
-        showAlert('Load tree data exception', 'error');
-  
-        console.error("Failed to load tree data:", error);
-      }
-    };
-
-  const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
-    if (info !== null) {
-      const clickedNode = info.node as TreeNodeWithParent;
-
-      const title = clickedNode?.title?.toString() || '';
-      const key = clickedNode?.key?.toString() || '';
-      const isLeaf = clickedNode?.isLeaf ?? true;
-      const moduleId = clickedNode?.moduleId?.toString() || '';
-
-
-      setCurrentSelectedNode({
-        'title': title,
-        'key': key,
-        'isLeaf': isLeaf,
-        'parentId': clickedNode.parent?.key || '',
-        'parentName': clickedNode.parent?.title || '',
-        'moduleId': moduleId
-      });
-
-      const { clientX, clientY } = info.nativeEvent;
-
-      setMenuPosition({ top: clientY, left: clientX });
-
-      setPopoverVisible(true);
-    } else {
-      setPopoverVisible(false);
-
-      setCurrentSelectedNode(null);
+    // Check if it has been loaded to prevent repeated requests
+    if (node.children) {
+      return;
     }
 
-    // onSelectNode(info.node as DataNode);
+    try {
+      const response = await fetch(bpcApiUrl + '/module/lazytree/' + node.key, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'grooveToken': token
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+
+      if (!data.success) {
+        showAlert('Failed to load tree data.', 'error');
+      } else {
+        const updateChildren = (list: DataNode[], key: React.Key, children: DataNode[]): DataNode[] => {
+          return list.map(item => {
+            if (item.key === key) {
+              return { ...item, children };
+            }
+            if (item.children) {
+              return { ...item, children: updateChildren(item.children, key, children) };
+            }
+            return item;
+          });
+        };
+
+        setTreeData(prevData => updateChildren(prevData, node.key, data.data));
+      }
+    } catch (error) {
+      showAlert('Load tree data exception', 'error');
+
+      console.error("Failed to load tree data:", error);
+    }
   };
 
-  const menuContent = (
-    <div style={{ display: 'flex', gap: 8 }}>
-      <Button type="text" className="text-sm" onClick={() => {
-        addMenu(currentSelectedNode);
-      }}>
-        Add
-      </Button>
-      <Button type="text" className="text-sm" onClick={() => {
-        editModuleMenu(currentSelectedNode);
-      }}>
-        Edit
-      </Button>
-      {currentSelectedNode && currentSelectedNode.isLeaf && (
-        <Button type="text" className="text-sm" onClick={() => {
-          deleteModuleMenu(currentSelectedNode);
-        }}>
-          Delete
-        </Button>
-      )}
-      <Button type="text" className="text-sm" onClick={() => {
-        setPermission(currentSelectedNode);
-      }}>
-        Authorize
-      </Button>
-    </div>
-  );
+  /**
+   * Find the parent node of the given key using depth-first traversal.
+   * Returns an empty key/title when the target is a root node.
+   */
+  const getParentNode = (key: string, tree: DataNode[]) => {
+    let parentNode = { key: '', title: '' };
 
-  return <>
-    <Tree loadData={onLoadData} treeData={treeData} onSelect={onSelect}
+    const traverse = (data: DataNode[]): boolean => {
+      for (const node of data) {
+        if (node.children) {
+          if (node.children.some((item) => item.key === key)) {
+            parentNode = { key: node.key, title: node.title };
+            return true;
+          }
+          if (traverse(node.children)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+
+    traverse(tree);
+    return parentNode;
+  };
+
+  /** Build the callback payload for a node, resolving its parent on demand. */
+  const buildPayload = (node: DataNode): ModuleNodePayload => {
+    const parentNode = getParentNode(node.key, treeData);
+
+    return {
+      key: node.key,
+      title: node.title,
+      isLeaf: node.isLeaf ?? false,
+      parentId: parentNode.key,
+      parentName: parentNode.title,
+      moduleId: node.moduleId ?? '',
+    };
+  };
+
+  /**
+   * Render a tree node with its title plus hover-revealed action icons.
+   * The actions stop propagation so clicking them never toggles selection/expansion.
+   */
+  const titleRender: TreeProps<DataNode>['titleRender'] = (node) => {
+    const isRoot = node.key === 'root';
+    const canDelete = !isRoot && !!node.isLeaf;
+
+    const runAction = (
+      e: React.MouseEvent,
+      action: (payload: ModuleNodePayload) => void,
+    ) => {
+      e.stopPropagation();
+      action(buildPayload(node));
+    };
+
+    return (
+      <span className="tyr-tree-node">
+        <span className="tyr-tree-title">{node.title}</span>
+        <span className="tyr-tree-actions" onClick={(e) => e.stopPropagation()}>
+          <Tooltip title={isRoot ? 'Add module' : 'Add menu'}>
+            <span
+              className="tyr-tree-action"
+              onClick={(e) => runAction(e, addMenu)}
+            >
+              <PlusOutlined />
+            </span>
+          </Tooltip>
+          {!isRoot && (
+            <Tooltip title="Edit">
+              <span
+                className="tyr-tree-action"
+                onClick={(e) => runAction(e, editModuleMenu)}
+              >
+                <EditOutlined />
+              </span>
+            </Tooltip>
+          )}
+          {canDelete && (
+            <Tooltip title="Delete">
+              <span
+                className="tyr-tree-action tyr-tree-action-danger"
+                onClick={(e) => runAction(e, deleteModuleMenu)}
+              >
+                <DeleteOutlined />
+              </span>
+            </Tooltip>
+          )}
+          {!isRoot && (
+            <Tooltip title="Authorize">
+              <span
+                className="tyr-tree-action"
+                onClick={(e) => runAction(e, setPermission)}
+              >
+                <SafetyOutlined />
+              </span>
+            </Tooltip>
+          )}
+        </span>
+      </span>
+    );
+  };
+
+  return (
+    <Tree
+      blockNode
+      loadData={onLoadData}
+      treeData={treeData}
+      titleRender={titleRender}
+      expandedKeys={expandedKeys}
+      onExpand={(keys) => setExpandedKeys(keys)}
+      selectedKeys={selectedKeys}
+      onSelect={(_keys, info) => setSelectedKeys([info.node.key])}
       className="tyr-group-tree"
     />
-    {currentSelectedNode && currentSelectedNode.key !== 'root' && (
-      <div style={{ position: 'absolute', top: menuPosition.top, left: menuPosition.left, zIndex: 1000 }}>
-        <Popover
-          open={popoverVisible}
-          onOpenChange={setPopoverVisible}
-          content={menuContent}
-          placement="bottomLeft"
-        >
-          {/* Hidden anchor used to trigger Popover */}
-          <div style={{ width: 0, height: 0 }} />
-        </Popover>
-      </div>
-    )}
-  </>;
+  );
 });
 
 export default ModuleManagementTree;

@@ -3,11 +3,75 @@
 }
 
 .tyr-group-tree .ant-tree-switcher .ant-tree-switcher-icon {
-    font-size: 0.875rem;
+  font-size: 0.875rem;
+}
+
+/* Give each row room and let the title area stretch full width. */
+.tyr-group-tree .ant-tree-node-content-wrapper {
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}
+
+/* Make the selected node clearly highlighted so it tracks the current selection. */
+.tyr-group-tree .ant-tree-node-content-wrapper.ant-tree-node-selected {
+  background-color: #e6f0ff;
+  color: #2563eb;
+}
+
+/* Node = title on the left, actions pushed to the right edge. */
+.tyr-tree-node {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.tyr-tree-title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Actions stay hidden until the row is hovered, keeping the tree clean. */
+.tyr-tree-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.tyr-group-tree .ant-tree-treenode:hover .tyr-tree-actions {
+  opacity: 1;
+}
+
+.tyr-tree-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  color: #64748b;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.tyr-tree-action:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.tyr-tree-action-danger:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
 }
 
 .ant-popover-inner {
-  border-radius: 6px!important; /* 增加圆角 */
-  padding: 5px!important; /* 调整内边距 */
-  border-color: #ccc!important;
+  border-radius: 6px !important;
+  padding: 5px !important;
+  border-color: #ccc !important;
 }

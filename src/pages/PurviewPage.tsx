@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Alert, Box, Checkbox, CircularProgress, FormControl, FormControlLabel, FormLabel, Grid, IconButton, List, ListItem, ListItemText, Paper, Radio, RadioGroup, styled, Switch, Typography } from '@mui/material';
+import { Alert, Box, Checkbox, CircularProgress, FormControl, FormControlLabel, FormLabel, Grid, IconButton, List, ListItem, ListItemText, Paper, Radio, RadioGroup, styled, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import axiosRequester, { requesterConfig } from '../components/AxiosRequester';
@@ -42,7 +42,8 @@ export default function ModuleMenuPurviewList({ objectId, objectName, objectType
         'purviewInherit': 1
     });
 
-    const [checkedSwitch, setCheckedSwitch] = useState<{ [key: string]: boolean }>({});
+    // Per-role selected radio value: 'accessible' | 'inaccessible' | '' (not yet authorized).
+    const [purviewState, setPurviewState] = useState<{ [key: string]: string }>({});
 
     useEffect(() => {
         const fetchData = () => {
@@ -64,13 +65,19 @@ export default function ModuleMenuPurviewList({ objectId, objectName, objectType
                         setData(res.data.data);
 
                         if (res.data.data.length > 0) {
-                            let ch: { [key: string]: boolean } = {};
+                            let ch: { [key: string]: string } = {};
 
                             res.data.data.map((role: any) => {
-                                ch[role.roleId] = (role.purview === 0 ? true : false);
+                                // Only select a radio for an explicit grant (0) or deny (-1);
+                                // roles with no purview record stay unselected.
+                                ch[role.roleId] = role.purview === 0
+                                    ? 'accessible'
+                                    : role.purview === -1
+                                        ? 'inaccessible'
+                                        : '';
                             })
 
-                            setCheckedSwitch(ch);
+                            setPurviewState(ch);
                         }
 
                         setIsEmpty(res.data.data.length === 0);
@@ -129,28 +136,17 @@ export default function ModuleMenuPurviewList({ objectId, objectName, objectType
         );
     }
 
-    const handleToggle = (event: React.ChangeEvent<HTMLInputElement>, roleId: string, roleName: string) => {
-        const isChecked = event.target.checked;
+    const handlePurviewChange = (roleId: string, roleName: string, accessible: boolean) => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            ['roleId']: roleId,
+            ['roleName']: roleName,
+            ['purview']: accessible ? 0 : -1
+        }));
 
-        if (isChecked) {
-            setFormData(prevFormData => ({
-                ...prevFormData,
-                ['roleId']: roleId,
-                ['roleName']: roleName,
-                ['purview']: 0
-            }));
-        } else {
-            setFormData(prevFormData => ({
-                ...prevFormData,
-                ['roleId']: roleId,
-                ['roleName']: roleName,
-                ['purview']: -1
-            }));
-        }
-
-        setCheckedSwitch(prevState => ({
+        setPurviewState(prevState => ({
             ...prevState,
-            [roleId]: !prevState[roleId],
+            [roleId]: accessible ? 'accessible' : 'inaccessible',
         }));
     };
 
@@ -167,16 +163,22 @@ export default function ModuleMenuPurviewList({ objectId, objectName, objectType
                     {data.map((item) => (
                         <ListItem
                             secondaryAction={
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            edge="start"
-                                            onChange={(event) => handleToggle(event, item.roleId, item.roleName)}
-                                            checked={checkedSwitch[item.roleId] || false}
-                                        />
-                                    }
-                                    label={<Typography variant="body1" className="text-sm">Granted</Typography>}
-                                />
+                                <RadioGroup
+                                    row
+                                    value={purviewState[item.roleId] || ''}
+                                    onChange={(event) => handlePurviewChange(item.roleId, item.roleName, event.target.value === 'accessible')}
+                                >
+                                    <FormControlLabel
+                                        value="accessible"
+                                        control={<Radio size="small" />}
+                                        label={<Typography variant="body1" className="text-sm">可访问</Typography>}
+                                    />
+                                    <FormControlLabel
+                                        value="inaccessible"
+                                        control={<Radio size="small" />}
+                                        label={<Typography variant="body1" className="text-sm">不可访问</Typography>}
+                                    />
+                                </RadioGroup>
                             }
                             className='border-b border-b-gray-100'
                             key={'role' + item.roleId}

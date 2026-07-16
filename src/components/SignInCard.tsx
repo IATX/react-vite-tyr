@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import CodeInput from './CodeInput';
 
 import theme from '../theme/tyr';
-import epbpLogo from '../assets/images/epbp-logo.png';
+import epbpLogo from '../assets/epbp.png';
 
 
 interface SignInCardProps {

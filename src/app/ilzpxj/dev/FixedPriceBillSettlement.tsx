@@ -116,6 +116,7 @@ const deriveMerchantFinance = (m: Merchant) => {
   );
 
   const needSurplus = m.isBothSettlement === true;
+  const needConsumption = m.isBothSettlement === true;
   const hasSelf = selfAmt > 0;
   const hasSurplus = surplusAmt > 0;
 
@@ -124,7 +125,7 @@ const deriveMerchantFinance = (m: Merchant) => {
   else if (needSurplus && !(hasSelf && hasSurplus)) status = 'partial';
   else status = 'settled';
 
-  return { latest, selfAmt, surplusAmt, annual, total, status, needSurplus };
+  return { latest, selfAmt, surplusAmt, annual, total, status, needSurplus, needConsumption };
 };
 
 // --- 1. 动画组件 (MUI 逻辑) ---
@@ -1430,8 +1431,8 @@ const TimelineList: React.FC = () => {
     }).then(response => {
       if (response.data && response.data.success === false) {
         showAlert(response.data.message, 'error');
-      } else if(response.data) {
-         fetchMerchants();
+      } else if (response.data) {
+        fetchMerchants();
 
         handleRefreshSurplusToGrid();
       } else {
@@ -1689,8 +1690,9 @@ const TimelineList: React.FC = () => {
           confirmDeleteSurplusToGrid === surplusToGridId ? (
             <div className="flex items-center gap-0.5">
               <span className="text-xs text-slate-600 mr-1">确认删除?</span>
-              <IconButton size="small" onClick={() => { 
-                handleDeleteSurplusToGrid(surplusToGridId!); handleRefreshSurplusToGrid(); setConfirmDeleteSurplusToGrid(null); }}>
+              <IconButton size="small" onClick={() => {
+                handleDeleteSurplusToGrid(surplusToGridId!); handleRefreshSurplusToGrid(); setConfirmDeleteSurplusToGrid(null);
+              }}>
                 <CheckCircleOutline fontSize="inherit" className="text-pink-600" />
               </IconButton>
               <IconButton size="small" onClick={() => setConfirmDeleteSurplusToGrid(null)}>
@@ -1727,15 +1729,15 @@ const TimelineList: React.FC = () => {
               {confirmDeleteSurplusToGridItem !== null && confirmDeleteSurplusToGridItem === sc.id && (
                 <div className="absolute inset-0 z-30 bg-white/95 flex items-center justify-end pr-4 gap-2 animate-in fade-in duration-200">
                   <span className="text-sm text-slate-600 font-medium mr-2">确定删除此结算单吗？</span>
-                  <IconButton size="small" onClick={() => { 
-                      if(merchant.type === 'P0004') {
-                        handleDeleteSurplusToGridConsumptionItem(sc.id); 
-                        setConfirmDeleteSurplusToGridItem(null);
-                      } else {
-                        handleDeleteSurplusToGridItem(sc.id); 
-                        setConfirmDeleteSurplusToGridItem(null);
-                      }
-                    }}>
+                  <IconButton size="small" onClick={() => {
+                    if (merchant.type === 'P0004') {
+                      handleDeleteSurplusToGridConsumptionItem(sc.id);
+                      setConfirmDeleteSurplusToGridItem(null);
+                    } else {
+                      handleDeleteSurplusToGridItem(sc.id);
+                      setConfirmDeleteSurplusToGridItem(null);
+                    }
+                  }}>
                     <CheckCircleOutline fontSize="small" className="text-pink-600" />
                   </IconButton>
                   <IconButton size="small" onClick={() => setConfirmDeleteSurplusToGridItem(null)}>
@@ -1752,7 +1754,7 @@ const TimelineList: React.FC = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (sc.id) {
-                        if(merchant.type === 'P0004') { 
+                        if (merchant.type === 'P0004') {
                           handleViewSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant);
                         } else {
                           handleViewSurplusToGridItem(sc.id, sc.settlementDate, merchant);
@@ -1792,33 +1794,36 @@ const TimelineList: React.FC = () => {
                   <>
                     <Tooltip title={"查阅"} placement="bottom" arrow>
                       <IconButton sx={{ padding: '6px', '& .MuiSvgIcon-root': { fontSize: '12px' } }}
-                        onClick={(e) => { e.stopPropagation(); 
-                        if(merchant.type === 'P0004') {
-                          handleViewSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant); 
-                        } else {
-                          handleViewSurplusToGridItem(sc.id, sc.settlementDate, merchant);
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (merchant.type === 'P0004') {
+                            handleViewSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant);
+                          } else {
+                            handleViewSurplusToGridItem(sc.id, sc.settlementDate, merchant);
+                          }
                         }}>
                         <Pageview fontSize="inherit" className="hover:text-emerald-600" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={"修改"} placement="bottom" arrow>
                       <IconButton sx={{ padding: '6px', '& .MuiSvgIcon-root': { fontSize: '12px' } }}
-                        onClick={(e) => { e.stopPropagation(); 
-                        if(merchant.type === 'P0004') {
-                          handleEditSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant); 
-                        } else {
-                          handleEditSurplusToGridItem(sc.id, sc.settlementDate, merchant); 
-                        }  
-                        
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (merchant.type === 'P0004') {
+                            handleEditSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant);
+                          } else {
+                            handleEditSurplusToGridItem(sc.id, sc.settlementDate, merchant);
+                          }
+
                         }}>
                         <Edit fontSize="inherit" className="hover:text-emerald-600" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={"删除"} placement="bottom" arrow>
                       <IconButton sx={{ padding: '6px', '& .MuiSvgIcon-root': { fontSize: '12px' } }}
-                        onClick={(e) => { e.stopPropagation(); 
-                          setConfirmDeleteSurplusToGridItem(sc.id); 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDeleteSurplusToGridItem(sc.id);
                         }}>
                         <Delete fontSize="inherit" className="hover:text-red-500" />
                       </IconButton>
@@ -1924,8 +1929,8 @@ const TimelineList: React.FC = () => {
                 </span>
               </div>
               <span className="inline-flex items-center text-xs font-mono font-semibold text-slate-800 leading-tight">
-                  <CurrencyYen sx={{ fontSize: 12 }} className="text-slate-400" />{item.surplusToGridSumResult}
-                </span>
+                <CurrencyYen sx={{ fontSize: 12 }} className="text-slate-400" />{item.surplusToGridSumResult}
+              </span>
 
               {/* 展开时：下方中间出现向下箭头 */}
               {surplusShow && (
@@ -2094,10 +2099,12 @@ const TimelineList: React.FC = () => {
                             </span>
                             <div className="flex items-center text-2xl font-bold text-slate-900 font-mono tracking-tight"><CurrencyYen sx={{ fontSize: 22 }} />{formatMoney(curAnnual)}</div>
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-[11px] text-slate-400">自发自用</span>
-                            <span className="inline-flex items-center text-sm font-mono text-slate-700">{curSelf > 0 ? <><CurrencyYen sx={{ fontSize: 13 }} />{formatMoney(curSelf)}</> : '—'}</span>
-                          </div>
+                          {accFin.needConsumption && (
+                            <div className="flex flex-col">
+                              <span className="text-[11px] text-slate-400">自发自用</span>
+                              <span className="inline-flex items-center text-sm font-mono text-slate-700">{curSelf > 0 ? <><CurrencyYen sx={{ fontSize: 13 }} />{formatMoney(curSelf)}</> : '—'}</span>
+                            </div>
+                          )}
                           {accFin.needSurplus && (
                             <div className="flex flex-col">
                               <span className="text-[11px] text-slate-400">余电上网</span>
@@ -2271,7 +2278,7 @@ const TimelineList: React.FC = () => {
         onClose={() => {
           setSurplusToGridItemOpen(false);
         }}
-        children={WrapSoloFormNode(Parameterization("ViewTbExswzlwtKcdgmf", {
+        children={WrapSoloFormNode(Parameterization(surplusToGridItemReadOnly ? "ViewTbExswzlwtKcdgmf" : "ViewTbExswzlwtLqufqi", {
           readOnly: surplusToGridItemReadOnly,
           initialData: selectedSurplusToGridItemId != null && selectedSurplusToGridItemId > 0 ? {
             'pkExswzlwt': selectedSurplusToGridItemId

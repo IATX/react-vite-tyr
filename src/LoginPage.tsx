@@ -1,6 +1,6 @@
 import AppTheme from './theme/AppTheme';
 import SignInCard from './components/SignInCard';
-import epbpLogo from './assets/images/epbp-logo.png';
+import epbpLogo from './assets/epbp.png';
 
 export default function SignIn(props: { disableCustomTheme?: boolean }) {
   return (
@@ -19,7 +19,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         <img
           src={epbpLogo}
           alt="EPBP"
-          className="absolute left-6 top-7 z-20 h-[4.5rem] w-auto drop-shadow-md lg:left-10 lg:top-9"
+          className="absolute left-6 top-7 z-20 h-14 w-auto drop-shadow-md lg:left-10 lg:top-9"
         />
 
         {/* 登录卡片：透明融入背景，系统名称居中于卡片顶部 */}

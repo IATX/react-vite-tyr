@@ -123,9 +123,9 @@ const Electricitybillmanagement: React.FC = () => {
     const params = {
       page,
       limit: PAGE_SIZE,
-      gwsnkwpp: searchTerm, // 按项目名称查询
       mrvqpphi: searchTerm, // 按商户名称查询
       bwblkhay: searchTerm, // 按发电户号查询
+      gwsnkwpp: searchTerm, // 按项目名称查询
       queryMode: 'or'
     };
 
@@ -315,7 +315,7 @@ const Electricitybillmanagement: React.FC = () => {
         <TextField
           fullWidth
           size="small"
-          placeholder="搜索项目名称 / 发电户号"
+          placeholder="搜索项目名称 / 商户名称 / 发电户号"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           onBlur={commitSearch}

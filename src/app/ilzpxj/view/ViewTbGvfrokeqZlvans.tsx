@@ -696,7 +696,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	        </div>
 			<div className={oneColumnStyle}>
 	            <label htmlFor="tb_gvfrokeq_ybfzkzts" className={labelStyle}>
-	                华能抄表人
+	                抄表人
 	            </label>
 	            <div className="mt-2">
 	            {isViewReadOnly ? (

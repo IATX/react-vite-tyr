@@ -54,6 +54,7 @@ const Item = styled(Paper)(({ theme }) => ({
 
 const SelectableCard = styled(Card)(({ theme }) => ({
   height: '100%',
+  borderRadius: '12px', // 与工作空间的卡片保持一致的圆角
   transition: 'all 0.3s ease-in-out', // 添加过渡效果
 
   // 选中时的样式 (通过 data-active)
@@ -301,12 +302,7 @@ const SettingsPage = () => {
   }
 
   const addChlidGroup = (values: any) => {
-    if (values.key == 'root') {
-      // showAlert('Cannot edit root node', 'warning');
-
-      return;
-    }
-
+    // The root node is a valid parent: adding under it creates a first-level group.
     const formElem = Parameterization('PrefabDepartmentAdd', {
       'key': 'child_' + values.key + '_group',
       initialData: { 'pid': values.key, 'PARENTNAME': values.title },
@@ -496,8 +492,9 @@ const SettingsPage = () => {
   }
 
   const addChlidMenu = (values: any) => {
+    // Adding under the root node means creating a top-level module.
     if (values.key == 'root') {
-      // showAlert('Cannot edit root node', 'warning');
+      handleNewModule(values);
 
       return;
     }
@@ -709,7 +706,9 @@ const SettingsPage = () => {
       'icon': <PermIdentityOutlinedIcon className='text-4xl text-blue-500 bg-blue-50 rounded-2xl p-2' />,
       'title': 'Add a new system group',
       'subheader': 'Please fill in the group information.',
-      'elem': <ModuleMenuPurviewList objectId={pkVal} objectName={values.title} objectType={type} tableName={tableName} />
+      // key forces a fresh mount per node so the panel's internal formData
+      // re-initializes from the current node (otherwise it keeps the first node's id/name).
+      'elem': <ModuleMenuPurviewList key={values.key} objectId={pkVal} objectName={values.title} objectType={type} tableName={tableName} />
     });
   }
 
@@ -1137,7 +1136,7 @@ const SettingsPage = () => {
               <Grid size={5} sx={{ marginTop: '15px;' }}>
                 <Stack spacing={2}>
                   <Item>
-                    <Card variant="outlined">
+                    <Card variant="outlined" sx={{ borderRadius: '12px' }}>
                       <CardHeader
                         avatar={
                           activeContent.icon
@@ -1173,7 +1172,7 @@ const SettingsPage = () => {
               <Grid size={12} sx={{ marginTop: '15px;' }}>
                 <Stack spacing={2}>
                   <Item>
-                    <Card variant="outlined">
+                    <Card variant="outlined" sx={{ borderRadius: '12px' }}>
                       <CardContent sx={{ height: '100%' }}>
                         <Typography variant="h6" gutterBottom>
                           {activeContent.title}
