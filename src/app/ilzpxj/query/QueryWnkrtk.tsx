@@ -158,7 +158,7 @@ const DataTable: React.ForwardRefRenderFunction<DataTableRef, {page?: number, pa
 		            }
 		            				},	
     			{
-		            id: 'ybfzkzts', label: '华能抄表人', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
+		            id: 'ybfzkzts', label: '抄表人', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
 		            				},	
     			{
 		            id: 'dxxvlgqz', label: '上传时间', minWidth: 150, align: 'center', type: 'string', truncate: true, display: true 
