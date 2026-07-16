@@ -810,7 +810,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.mrseixpo || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.mrseixpo)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['mrseixpo'] = el;
@@ -854,7 +854,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{formData.kdzxnwil || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formatDecimal2(formData.kdzxnwil)}</Typography>
 	            	) : (
 		              <FormControl fullWidth ref={(el) => {
 														if (el) fieldRefs.current['kdzxnwil'] = el;
