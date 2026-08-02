@@ -4,6 +4,7 @@ import {
   ChevronRight, Business, LocationOn,
   Edit, Delete,
   Pageview,
+  RequestQuote,
   CheckCircleOutline,
   CancelOutlined,
   Search,
@@ -29,14 +30,12 @@ import { WrapSoloFormNode } from '../../../components/WrapNode.tsx';
 import SelfConsumptionDialog from '../../../components/FormDialogSoloPage.tsx';
 import SurplusToGridDialog from '../../../components/FormDialogSoloPage.tsx';
 
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-
 interface Settlement {
   year: number;
-  selfConsumptionSumResult: string;
+  selfConsumptionSumResult: number | null;
   surplusToGridId: number;
-  surplusToGridSumResult: string;
+  surplusToGridSumResult: number | null;
+  annualSettlement: number | null;
   isLatest: boolean;
 }
 
@@ -50,8 +49,7 @@ interface Merchant {
   priceBasis: string;
   number: string;
   address: string;
-  totalSettlement: string;
-  annualSettlement: string;
+  totalSettlement: number | null;
   isBothSettlement: boolean;
   settlementList: Settlement[];
 }
@@ -63,6 +61,8 @@ interface SelfConsumptionItem {
   selfUsedFee: string;
   settlementDate: string;
   relatedBillId: number | null;
+  // 电费是否已收回：true → 指示点绿色「已收回电费」，否则黄色「未收回电费」
+  isChargeRecovered: boolean;
 }
 
 interface SurplusToGridItem {
@@ -72,6 +72,8 @@ interface SurplusToGridItem {
   surplusToGridFee: string;
   settlementDate: string;
   relatedBillId: number | null;
+  // 电费是否已收回：true → 指示点绿色「已收回电费」，否则黄色「未收回电费」
+  isChargeRecovered: boolean;
 }
 
 // --- 财务视角辅助：金额解析 / 格式化 / 结算状态推导 ---
@@ -90,13 +92,22 @@ const parseMoney = (v?: string | number | null): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-// 千分位 + 两位小数（不含币种符号）；兼容后端返回的字符串/数字，非数字返回 '-'
+// 千分位 + 两位小数；只用于电量、消纳比例、折扣等非金额数字，金额一律走 formatAmount
 const formatMoney = (value: unknown): string => {
   if (value === null || value === undefined || value === '') return '-';
   const num = Number(value);
   return Number.isNaN(num)
-    ? '-'
-    : num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    ? '-' : num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+// 金额专用（电价、电费、收入、税额、补贴金额）：千分位 + 两到六位小数。
+// 后端金额统一按六位小数存，但多数金额其实只到分位，铺开六位会让整张台账全是 .000000；
+// 这里保留财务报表的两位下限，超出两位的末尾 0 由 toLocaleString 自动去掉。
+const formatAmount = (value: unknown): string => {
+  if (value === null || value === undefined || value === '') return '-';
+  const num = Number(value);
+  return Number.isNaN(num)
+    ? '-' : num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
 };
 
 // 单个商户的财务摘要（全部来自真实 settlementList 数据）
@@ -107,18 +118,15 @@ const deriveMerchantFinance = (m: Merchant) => {
     [...list].sort((a, b) => b.year - a.year)[0] ??
     null;
 
-  const selfAmt = parseMoney(latest?.selfConsumptionSumResult);
-  const surplusAmt = parseMoney(latest?.surplusToGridSumResult);
-  const annual = selfAmt + surplusAmt;
-  const total = list.reduce(
-    (sum, s) => sum + parseMoney(s.selfConsumptionSumResult) + parseMoney(s.surplusToGridSumResult),
-    0,
-  );
+  const selfAmt = latest?.selfConsumptionSumResult;
+  const surplusAmt = latest?.surplusToGridSumResult;
+  const annual = latest?.annualSettlement;
+  const total = m.totalSettlement;
 
   const needSurplus = m.isBothSettlement === true;
   const needConsumption = m.isBothSettlement === true;
-  const hasSelf = selfAmt > 0;
-  const hasSurplus = surplusAmt > 0;
+  const hasSelf = selfAmt ? selfAmt > 0 : false;
+  const hasSurplus = surplusAmt ? surplusAmt > 0 : false;
 
   let status: SettleStatus;
   if (!hasSelf && !hasSurplus) status = 'pending';
@@ -155,7 +163,7 @@ const BillReportHeader: React.FC<{ title: string; unit: string; period: string; 
         <p className="text-[11px] font-bold tracking-[0.3em] text-slate-500 uppercase mb-1">电费结算财务报表</p>
         <h2 className="text-lg font-black text-slate-900 tracking-tight">{title}</h2>
         <p className="text-slate-600 text-sm mt-1">编制单位：<span className="font-medium text-slate-800">{unit}</span></p>
-        <p className="text-slate-600 text-xs mt-1">单位：<span className="">元/千千瓦时</span></p>
+        <p className="text-slate-600 text-xs mt-1">单位：<span className="">元/千瓦时</span></p>
       </div>
       <div className="flex gap-2">
         <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full">{state}</span>
@@ -194,10 +202,8 @@ const AgentPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
         }
       }).then(response => {
         if (response.data && response.data.success) {
-          // response.data.data
-          console.log('Fetched bill detail:', response.data.data);
-
-          const date = new Date(response.data.data.omtwplej);
+          // 该视图的字段与其它结算单不同：编制单位 fpbrgkgd、结算年月 tgkyimda、子表 ListSnnbal
+          const date = new Date(response.data.data.tgkyimda);
 
           const formattedDate = date.toLocaleString('zh-CN', {
             year: 'numeric',
@@ -207,10 +213,10 @@ const AgentPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
           setBillData({
             id: id,
             month: formattedDate,
-            unit: response.data.data.mbnwpthn,
-            account: response.data.data.muswisjh,
+            unit: response.data.data.fpbrgkgd,
+            account: '', // 代购电价结算单没有商户号字段
             state: '审核中',
-            details: response.data.data.listYfvuhw, // 这里需要根据实际数据结构进行解析和赋值
+            details: response.data.data.listSnnbal,
           });
         } else {
           setError('Server returned invalid data.');
@@ -267,7 +273,7 @@ const AgentPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
       {/* 表格区域：纯 Tailwind 样式 */}
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-center border-collapse text-[12px]">
+          <table className="w-max min-w-full text-center border-collapse text-[12px]">
             <thead>
               {/* 第一层：大分类 */}
               <tr className="bg-slate-50/80 text-slate-800 font-bold border-b border-slate-200">
@@ -304,27 +310,31 @@ const AgentPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
               {billData.details && billData.details.length > 0 ? (
                 billData.details.map((item, index) => (
                   <tr className="even:bg-slate-50/40 hover:bg-blue-50/40 transition-colors" key={index}>
-                    <td className="p-3 border-r border-slate-100 font-bold">{item}</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">37,000.00</td>
-                    <td className="p-3 border-r border-slate-100 font-mono italic text-slate-400">-</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">0.690292</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">0.610878</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">25,540.79</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">22,602.47</td>
-                    <td className="p-3 border-r border-slate-200 font-mono">2,938.32</td>
-                    {/* 累计数据示例 */}
-                    <td className="p-3 border-r border-slate-100 font-mono">160,300.00</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">0.713469</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">0.631389</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">114,369.15</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">101,211.64</td>
-                    <td className="p-3 border-r border-slate-100 font-mono">13,157.51</td>
-                    <td className="p-3">-</td>
+                    <td className="p-3 border-r border-slate-100 font-bold">{item.xqkxcacq}</td>
+
+                    {/* 当月数据 */}
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatMoney(item.lxkcwxml)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.jhcdeoty)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.xkbfgqvx)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.ccpygqez)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.bcdyqzkl)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.thjibvms)}</td>
+                    <td className="p-3 border-r border-slate-200 font-mono">{formatAmount(item.hyjglqeb)}</td>
+
+                    {/* 累计数据 */}
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatMoney(item.eyglaasj)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.tyohfoxa)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.gfeismfp)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.wlcvefiq)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.hhzludyc)}</td>
+                    <td className="p-3 border-r border-slate-100 font-mono">{formatAmount(item.dfugindo)}</td>
+
+                    <td className="p-3">{item.weggorvo ? item.weggorvo : '-'}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={16} className="p-3 text-center text-slate-500">
+                  <td colSpan={15} className="p-3 text-center text-slate-500">
                     暂无数据
                   </td>
                 </tr>
@@ -422,7 +432,7 @@ const MerchantBillContent: React.FC<{ id: number }> = ({ id }) => {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-full text-slate-800" id="report-elem">
+    <div className="p-4 md:p-8 min-h-full text-slate-800">
       <BillReportHeader
         title={`${billData?.month}电费结算单`}
         unit={billData?.unit ?? ''}
@@ -433,7 +443,7 @@ const MerchantBillContent: React.FC<{ id: number }> = ({ id }) => {
       {/* 表格区域：纯 Tailwind 样式 */}
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-center border-collapse text-[12px]">
+          <table className="w-max min-w-full text-center border-collapse text-[12px]">
             <thead>
               {/* 第一层：大分类 */}
               <tr className="bg-slate-50/80 text-slate-800 font-bold border-b border-slate-200">
@@ -471,26 +481,26 @@ const MerchantBillContent: React.FC<{ id: number }> = ({ id }) => {
                 billData.details.map((item, index) => (
                   <tr className="even:bg-slate-50/40 hover:bg-blue-50/40 transition-colors" key={index}>
                     <td className="p-3 border-r border-slate-100 font-mono">{item.lthpoiid}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.jkvkqasy ? 'italic text-slate-400' : '')}>{item.jkvkqasy ? item.jkvkqasy : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.bojynqlr ? 'italic text-slate-400' : '')}>{item.bojynqlr ? Number(item.bojynqlr).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.dldpvrrr ? 'italic text-slate-400' : '')}>{item.dldpvrrr ? Number(item.dldpvrrr).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.xatbfkda ? 'italic text-slate-400' : '')}>{item.xatbfkda ? Number(item.xatbfkda).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.jvpxjaqg ? 'italic text-slate-400' : '')}>{item.jvpxjaqg ? Number(item.jvpxjaqg).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.ksdmwveh ? 'italic text-slate-400' : '')}>{item.ksdmwveh ? Number(item.ksdmwveh).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.fzzwewsa ? 'italic text-slate-400' : '')}>{item.fzzwewsa ? Number(item.fzzwewsa).toFixed(2) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.jkvkqasy ? 'italic text-slate-400' : '')}>{item.jkvkqasy ? formatMoney(item.jkvkqasy) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.bojynqlr ? 'italic text-slate-400' : '')}>{item.bojynqlr ? formatAmount(item.bojynqlr) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.dldpvrrr ? 'italic text-slate-400' : '')}>{item.dldpvrrr ? formatAmount(item.dldpvrrr) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.xatbfkda ? 'italic text-slate-400' : '')}>{item.xatbfkda ? formatAmount(item.xatbfkda) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.jvpxjaqg ? 'italic text-slate-400' : '')}>{item.jvpxjaqg ? formatAmount(item.jvpxjaqg) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.ksdmwveh ? 'italic text-slate-400' : '')}>{item.ksdmwveh ? formatAmount(item.ksdmwveh) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.fzzwewsa ? 'italic text-slate-400' : '')}>{item.fzzwewsa ? formatAmount(item.fzzwewsa) : '-'}</td>
                     {/* 累计数据示例 */}
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.vbbrigih ? 'italic text-slate-400' : '')}>{item.vbbrigih ? item.vbbrigih : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.zgcbnfjo ? 'italic text-slate-400' : '')}>{item.zgcbnfjo ? Number(item.zgcbnfjo).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.ddvacirx ? 'italic text-slate-400' : '')}>{item.ddvacirx ? Number(item.ddvacirx).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.yvbkpsbb ? 'italic text-slate-400' : '')}>{item.yvbkpsbb ? Number(item.yvbkpsbb).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.okjbddep ? 'italic text-slate-400' : '')}>{item.okjbddep ? Number(item.okjbddep).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.hbzfvhlz ? 'italic text-slate-400' : '')}>{item.hbzfvhlz ? Number(item.hbzfvhlz).toFixed(2) : '-'}</td>
-                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.ahdikvey ? 'italic text-slate-400' : '')}>{item.ahdikvey ? Number(item.ahdikvey).toFixed(2) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.vbbrigih ? 'italic text-slate-400' : '')}>{item.vbbrigih ? formatMoney(item.vbbrigih) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.zgcbnfjo ? 'italic text-slate-400' : '')}>{item.zgcbnfjo ? formatAmount(item.zgcbnfjo) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.ddvacirx ? 'italic text-slate-400' : '')}>{item.ddvacirx ? formatAmount(item.ddvacirx) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.yvbkpsbb ? 'italic text-slate-400' : '')}>{item.yvbkpsbb ? formatAmount(item.yvbkpsbb) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.okjbddep ? 'italic text-slate-400' : '')}>{item.okjbddep ? formatAmount(item.okjbddep) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.hbzfvhlz ? 'italic text-slate-400' : '')}>{item.hbzfvhlz ? formatAmount(item.hbzfvhlz) : '-'}</td>
+                    <td className={`p-3 border-r border-slate-100 font-mono ` + (!item.ahdikvey ? 'italic text-slate-400' : '')}>{item.ahdikvey ? item.ahdikvey : '-'}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={17} className="p-3 text-center text-slate-500">
+                  <td colSpan={15} className="p-3 text-center text-slate-500">
                     暂无数据
                   </td>
                 </tr>
@@ -585,7 +595,7 @@ const FixedPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-full text-slate-800" id='report-elem'>
+    <div className="p-4 md:p-8 min-h-full text-slate-800">
       <BillReportHeader
         title={`${billData?.month}电费结算单`}
         unit={billData?.unit ?? ''}
@@ -596,7 +606,7 @@ const FixedPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
       {/* 表格区域：纯 Tailwind 样式 */}
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-center border-collapse text-xs">
+          <table className="w-max min-w-full text-center border-collapse text-xs">
             <thead>
               {/* 第一层：核心分类 */}
               <tr className="bg-slate-50/80 text-slate-800 font-bold border-b border-slate-200">
@@ -606,7 +616,7 @@ const FixedPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
                 <th rowSpan={3} className="p-2 border-r border-slate-200">客户用电量</th>
                 <th rowSpan={3} className="p-2 border-r border-slate-200">补贴电量</th>
                 <th colSpan={4} className="p-2 border-r border-slate-200">合计</th>
-                <th colSpan={5} className="p-2 border-r border-slate-200">余电上网部分</th>
+                <th colSpan={7} className="p-2 border-r border-slate-200">余电上网部分</th>
                 <th colSpan={4} className="p-2 border-r border-slate-200">自发自用部分</th>
               </tr>
 
@@ -624,6 +634,8 @@ const FixedPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
                 <th rowSpan={2} className="p-2 border-r border-slate-200 font-medium">结算收入</th>
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">销项税额</th>
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">补贴金额</th>
+                <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">补贴金额<br />（不含税）</th>
+                <th rowSpan={2} className="p-2 border-r border-slate-200 font-medium">补贴税</th>
 
                 {/* 自发自用子表头 */}
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">结算电价<br />(含税)</th>
@@ -653,29 +665,31 @@ const FixedPriceBillContent: React.FC<{ id: number }> = ({ id }) => {
                       <td className="p-3 border-r border-slate-100">{formatMoney(item.colYwkcgr)}</td>
 
                       {/* 合计数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.fgtqnhyn)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.nwcjwyrf)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.mrseixpo)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.kdzxnwil)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.fgtqnhyn)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.nwcjwyrf)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.mrseixpo)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.kdzxnwil)}</td>
 
                       {/* 余电上网数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.qgwvxncr)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.jshfcttg)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.tpjmbqpf)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.rxnrcarc)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.colTgqbxp)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.qgwvxncr)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.jshfcttg)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.tpjmbqpf)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.rxnrcarc)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colTgqbxp)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colGkhlpo)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colRsojpj)}</td>
 
                       {/* 自发自用数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.afnfufjj)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.szimebex)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.nughvqbr)}</td>
-                      <td className="p-3">{formatMoney(item.huscgxas)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.afnfufjj)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.szimebex)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.nughvqbr)}</td>
+                      <td className="p-3">{formatAmount(item.huscgxas)}</td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={16} className="p-3 text-center text-slate-500">
+                  <td colSpan={20} className="p-3 text-center text-slate-500">
                     暂无数据
                   </td>
                 </tr>
@@ -767,7 +781,7 @@ const FullGridBillContent: React.FC<{ id: number }> = ({ id }) => {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-full text-slate-800" id='report-elem'>
+    <div className="p-4 md:p-8 min-h-full text-slate-800">
       <BillReportHeader
         title={`${billData?.month}电费结算单`}
         unit={billData?.unit ?? ''}
@@ -778,7 +792,7 @@ const FullGridBillContent: React.FC<{ id: number }> = ({ id }) => {
       {/* 表格区域：纯 Tailwind 样式（全额上网：无自发自用部分） */}
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-center border-collapse text-xs">
+          <table className="w-max min-w-full text-center border-collapse text-xs">
             <thead>
               {/* 第一层：核心分类 */}
               <tr className="bg-slate-50/80 text-slate-800 font-bold border-b border-slate-200">
@@ -787,7 +801,7 @@ const FullGridBillContent: React.FC<{ id: number }> = ({ id }) => {
                 <th rowSpan={3} className="p-2 border-r border-slate-200">余电上网电量</th>
                 <th rowSpan={3} className="p-2 border-r border-slate-200">补贴电量</th>
                 <th colSpan={4} className="p-2 border-r border-slate-200">合计</th>
-                <th colSpan={5} className="p-2 border-r border-slate-200">余电上网部分</th>
+                <th colSpan={7} className="p-2 border-r border-slate-200">余电上网部分</th>
               </tr>
 
               {/* 第二层 & 第三层：细分指标 */}
@@ -804,6 +818,8 @@ const FullGridBillContent: React.FC<{ id: number }> = ({ id }) => {
                 <th rowSpan={2} className="p-2 border-r border-slate-200 font-medium">结算收入</th>
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">销项税额</th>
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">补贴金额</th>
+                <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">补贴金额<br />（不含税）</th>
+                <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">补贴税</th>
               </tr>
               {/* 第三层级逻辑已并入第二层 rowSpan */}
             </thead>
@@ -821,27 +837,30 @@ const FullGridBillContent: React.FC<{ id: number }> = ({ id }) => {
                   return (
                     <tr className="even:bg-slate-50/40 hover:bg-blue-50/40 transition-colors" key={index}>
                       <td className="p-3 border-r border-slate-100">{formattedDate}</td>
-                      <td className="p-3 border-r border-slate-100">{item.umakupcb}</td>
-                      <td className="p-3 border-r border-slate-100">{item.ovehnwzi}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.umakupcb)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.ovehnwzi)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.colYwkcgr)}</td>
 
                       {/* 合计数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.fgtqnhyn)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.nwcjwyrf)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.colTgqbxp)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.mrseixpo)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.kdzxnwil)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.fgtqnhyn)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.nwcjwyrf)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.mrseixpo)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.kdzxnwil)}</td>
 
                       {/* 余电上网数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.qgwvxncr)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.jshfcttg)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.tpjmbqpf)}</td>
-                      <td className="p-3">{formatMoney(item.rxnrcarc)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.qgwvxncr)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.jshfcttg)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.tpjmbqpf)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.rxnrcarc)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colTgqbxp)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colGkhlpo)}</td>
+                      <td className="p-3">{formatAmount(item.colRsojpj)}</td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={12} className="p-3 text-center text-slate-500">
+                  <td colSpan={15} className="p-3 text-center text-slate-500">
                     暂无数据
                   </td>
                 </tr>
@@ -936,7 +955,7 @@ const ConsumptionRatioBillContent: React.FC<{ id: number }> = ({ id }) => {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-full text-slate-800" id='report-elem'>
+    <div className="p-4 md:p-8 min-h-full text-slate-800">
       <BillReportHeader
         title={`${billData?.month}电费结算单`}
         unit={billData?.unit ?? ''}
@@ -947,7 +966,7 @@ const ConsumptionRatioBillContent: React.FC<{ id: number }> = ({ id }) => {
       {/* 表格区域：纯 Tailwind 样式 */}
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-center border-collapse text-xs">
+          <table className="w-max min-w-full text-center border-collapse text-xs">
             <thead>
               {/* 第一层：核心分类 */}
               <tr className="bg-slate-50/80 text-slate-800 font-bold border-b border-slate-200">
@@ -960,7 +979,7 @@ const ConsumptionRatioBillContent: React.FC<{ id: number }> = ({ id }) => {
                 <th rowSpan={3} className="p-2 border-r border-slate-200">折扣</th>
                 <th rowSpan={3} className="p-2 border-r border-slate-200">非分时电度电价</th>
                 <th colSpan={4} className="p-2 border-r border-slate-200">合计</th>
-                <th colSpan={5} className="p-2 border-r border-slate-200">余电上网部分</th>
+                <th colSpan={7} className="p-2 border-r border-slate-200">余电上网部分</th>
                 <th colSpan={4} className="p-2 border-r border-slate-200">自发自用部分</th>
               </tr>
 
@@ -978,6 +997,8 @@ const ConsumptionRatioBillContent: React.FC<{ id: number }> = ({ id }) => {
                 <th rowSpan={2} className="p-2 border-r border-slate-200 font-medium">结算收入</th>
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">销项税额</th>
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">补贴金额</th>
+                <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">补贴金额<br />（不含税）</th>
+                <th rowSpan={2} className="p-2 border-r border-slate-200 font-medium">补贴税</th>
 
                 {/* 自发自用子表头 */}
                 <th rowSpan={2} className="p-2 border-r border-slate-100 font-medium">结算电价<br />(含税)</th>
@@ -1001,36 +1022,40 @@ const ConsumptionRatioBillContent: React.FC<{ id: number }> = ({ id }) => {
                   return (
                     <tr className="even:bg-slate-50/40 hover:bg-blue-50/40 transition-colors" key={index}>
                       <td className="p-3 border-r border-slate-100">{formattedDate}</td>
-                      <td className="p-3 border-r border-slate-100">{item.umakupcb}</td>
-                      <td className="p-3 border-r border-slate-100">{item.ovehnwzi}</td>
-                      <td className="p-3 border-r border-slate-100">{item.kdaiahlw}</td>
-                      <td className="p-3 border-r border-slate-100">{item.colGudugq}</td>
-                      <td className="p-3 border-r border-slate-100">{item.colZyszui}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.colJbhosi)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.umakupcb)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.ovehnwzi)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.kdaiahlw)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.colYwkcgr)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.colGudugq)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatMoney(item.colZyszui)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colJbhosi)}</td>
 
                       {/* 合计数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.fgtqnhyn)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.nwcjwyrf)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.mrseixpo)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.kdzxnwil)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.fgtqnhyn)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.nwcjwyrf)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.mrseixpo)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.kdzxnwil)}</td>
 
                       {/* 余电上网数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.qgwvxncr)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.jshfcttg)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.tpjmbqpf)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.rxnrcarc)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.qgwvxncr)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.jshfcttg)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.tpjmbqpf)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.rxnrcarc)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colTgqbxp)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colGkhlpo)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.colRsojpj)}</td>
 
                       {/* 自发自用数据列 */}
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.afnfufjj)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.szimebex)}</td>
-                      <td className="p-3 border-r border-slate-100">{formatMoney(item.nughvqbr)}</td>
-                      <td className="p-3">{formatMoney(item.huscgxas)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.afnfufjj)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.szimebex)}</td>
+                      <td className="p-3 border-r border-slate-100">{formatAmount(item.nughvqbr)}</td>
+                      <td className="p-3">{formatAmount(item.huscgxas)}</td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={19} className="p-3 text-center text-slate-500">
+                  <td colSpan={23} className="p-3 text-center text-slate-500">
                     暂无数据
                   </td>
                 </tr>
@@ -1062,6 +1087,8 @@ const TimelineList: React.FC = () => {
   const [selectedBillType, setSelectedBillType] = useState<string | null>(null);
   const [selectedBillId, setSelectedBillId] = useState<number | null>(null);
   const [accountNumber, setAccountNumber] = useState<string | null>(null);
+  // 结算单 Excel 导出中：按钮置灰，避免重复点击
+  const [downloading, setDownloading] = useState<boolean>(false);
 
   const [settlementYear, setSettlementYear] = useState<number | null>(null);
   const [selfConsumptionList, setSelfConsumptionList] = useState<[SelfConsumptionItem] | null>(null);
@@ -1233,6 +1260,30 @@ const TimelineList: React.FC = () => {
     setSelectedBillType('P0002');
   }
 
+  // 收回电费 / 未收回电费：接口调用成功后再切换该月状态（右上角指示点绿↔黄）
+  const handleToggleSelfConsumptionRecovered = (id: number, recovered: boolean) => {
+    axios.post(import.meta.env.VITE_JET_ASP_BPC_API + `/billsettlement/selfconsumption/bill/${recovered ? 'unrecovered' : 'recovered'}/${id}`, {
+
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'grooveToken': token
+      }
+    }).then(response => {
+      if (response.data.success === false) {
+        showAlert(response.data.message, 'error');
+      } else {
+        setSelfConsumptionList(prev => (prev
+          ? prev.map(item => (item.id === id ? { ...item, isChargeRecovered: !recovered } : item)) as [SelfConsumptionItem]
+          : prev));
+      }
+    }).catch(err => {
+      showAlert('Handle self-consumption bill recovered status exception: ' + err.message, 'error');
+    }).finally(() => {
+      setLoading(false);
+    });
+  }
+
   const handleEditSelfConsumption = (id: number) => {
     setSelfConsumptionDialogTitle('自用电费结算单');
     setSelfConsumptionDialogOpen(true);
@@ -1338,6 +1389,30 @@ const TimelineList: React.FC = () => {
     setSurplusToGridItemTitle(`${(settlementDate ?? '').slice(0, 7)}上网结算单`);
     setSurplusToGridItemSubtitle(merchant ? `${merchant.projectName} - ${merchant.number}` : '');
     setSurplusToGridItemOpen(true);
+  }
+
+  // 收回电费 / 未收回电费：接口调用成功后再切换该月状态（右上角指示点绿↔黄）
+  const handleToggleSurplusToGridRecovered = (id: number, recovered: boolean) => {
+    axios.post(import.meta.env.VITE_JET_ASP_BPC_API + `/billsettlement/surplustogrid/bill/${recovered ? 'unrecovered' : 'recovered'}/${id}`, {
+
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'grooveToken': token
+      }
+    }).then(response => {
+      if (response.data.success === false) {
+        showAlert(response.data.message, 'error');
+      } else {
+        setSurplusToGridList(prev => (prev
+          ? prev.map(item => (item.id === id ? { ...item, isChargeRecovered: !recovered } : item)) as [SurplusToGridItem]
+          : prev));
+      }
+    }).catch(err => {
+      showAlert('Handle surplus-to-grid bill recovered status exception: ' + err.message, 'error');
+    }).finally(() => {
+      setLoading(false);
+    });
   }
 
   const handleEditSurplusToGridItem = (id: number, settlementDate?: string, merchant?: Merchant) => {
@@ -1446,39 +1521,54 @@ const TimelineList: React.FC = () => {
     // }
   };
 
-  const handleDownloadPDF = async () => {
-    // 1. 获取要导出的 DOM 节点
-    // 建议给你的 Table 外层 div 加一个 id="report-elem"
-    const element = document.getElementById('report-elem');
-    if (!element) return;
+  // 下载当前结算单的 Excel：由后端按结算单类型生成 .xlsx 并回传文件流
+  const handleDownloadExcel = async () => {
+    if (!selectedBillId || !selectedBillType) return;
+
+    setDownloading(true);
 
     try {
-      // 2. 将 DOM 转为 Canvas
-      // scale: 2 可以大幅提升 PDF 的清晰度（两倍倍率）
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true, // 如果有图片链接，开启跨域
-        backgroundColor: '#ffffff' // 确保背景是白色
-      });
+      const response = await axios.post(
+        import.meta.env.VITE_JET_ASP_BPC_API + `/billsettlement/bill/export/${selectedBillType}/${selectedBillId}`,
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'grooveToken': token
+          },
+          responseType: 'blob'
+        });
 
-      const imgData = canvas.toDataURL('image/png');
+      // 后端异常时返回的是 JSON，此处按文本解析出错误信息提示
+      if (response.data.type && response.data.type.indexOf('application/json') > -1) {
+        const message = JSON.parse(await response.data.text());
 
-      // 3. 创建 PDF 对象
-      // 'l' 表示 landscape（横向），'mm' 表示毫米，'a4' 是纸张尺寸
-      const pdf = new jsPDF('l', 'mm', 'a4');
+        showAlert(message.message || '导出结算单失败', 'error');
 
-      // 计算图片在 PDF 中的比例
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgProps = pdf.getImageProperties(imgData);
-      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        return;
+      }
 
-      // 4. 将图片添加到 PDF 并保存
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
-      pdf.save(`电费结算单_${new Date().getTime()}.pdf`);
+      // 文件名优先取后端 Content-Disposition（已 URL 编码）
+      const disposition = response.headers['content-disposition'] as string | undefined;
+      const matched = disposition ? /filename=([^;]+)/.exec(disposition) : null;
+      const fileName = matched ? decodeURIComponent(matched[1].trim().replace(/^"|"$/g, ''))
+        : `电费结算单_${new Date().getTime()}.xlsx`;
 
-    } catch (error) {
-      console.error('PDF 导出失败:', error);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      showAlert('Export bill excel exception: ' + (err instanceof Error ? err.message : err), 'error');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -1583,20 +1673,30 @@ const TimelineList: React.FC = () => {
 
               {/* 左侧：月份与电量 */}
               <div className="flex flex-col">
-                <Tooltip title={sc.id ? "点击查阅" : sc.relatedBillId ? "点击生成" : "缺少电费账单，无法生成"} placement="bottom" arrow>
-                  <div
-                    className={`inline-flex items-center text-sm ${sc.id ? 'font-semibold text-slate-700 group-hover/item:text-indigo-600' : 'text-slate-400 group-hover/item:text-indigo-400'} transition-colors`}
-                    onClick={(e) => { e.stopPropagation(); if (sc.id) handleViewSelfConsumption(sc.id); else if (sc.relatedBillId) handleCreateSelfConsumption(sc.settlementDate); }}
-                  >
-                    {sc.name}月份结算单
-                    {sc.id && (
-                      <span className="relative ml-0.5 inline-flex h-2 w-2 -translate-y-1.5">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+                <div className="inline-flex items-center">
+                  <Tooltip title={sc.id ? "点击查阅" : sc.relatedBillId ? "点击生成" : "缺少电费账单，无法生成"} placement="bottom" arrow>
+                    <div
+                      className={`inline-flex items-center text-sm ${sc.id ? 'font-semibold text-slate-700 group-hover/item:text-indigo-600' : 'text-slate-400 group-hover/item:text-indigo-400'} transition-colors`}
+                      onClick={(e) => { e.stopPropagation(); if (sc.id) handleViewSelfConsumption(sc.id); else if (sc.relatedBillId) handleCreateSelfConsumption(sc.settlementDate); }}
+                    >
+                      {sc.name}月份结算单
+                    </div>
+                  </Tooltip>
+                  {sc.id && (
+                    <Tooltip title={sc.isChargeRecovered ? "已收回电费" : "未收回电费"} placement="top" arrow>
+                      <span className="relative ml-0.5 inline-flex h-2 w-2 -translate-y-1.5 cursor-default">
+                        {sc.isChargeRecovered ? (
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                        ) : (
+                          <>
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+                          </>
+                        )}
                       </span>
-                    )}
-                  </div>
-                </Tooltip>
+                    </Tooltip>
+                  )}
+                </div>
                 <span className={`text-[12px] ${sc.id ? 'text-slate-600' : 'text-slate-400'} mt-0.5`}>
                   自用电量: <span className="font-mono">{sc.selfUsedTotal}</span> kWh
                 </span>
@@ -1631,10 +1731,10 @@ const TimelineList: React.FC = () => {
                 )}
                 {sc.id && (
                   <>
-                    <Tooltip title={"查阅"} placement="bottom" arrow>
+                    <Tooltip title={"收回电费"} placement="bottom" arrow>
                       <IconButton sx={{ padding: '6px', '& .MuiSvgIcon-root': { fontSize: '12px' } }}
-                        onClick={(e) => { e.stopPropagation(); handleViewSelfConsumption(sc.id); }}>
-                        <Pageview fontSize="inherit" className="hover:text-indigo-600" />
+                        onClick={(e) => { e.stopPropagation(); handleToggleSelfConsumptionRecovered(sc.id, sc.isChargeRecovered); }}>
+                        <RequestQuote fontSize="inherit" className="hover:text-indigo-600" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={"修改"} placement="bottom" arrow>
@@ -1748,24 +1848,40 @@ const TimelineList: React.FC = () => {
 
               {/* 左侧：月份与电量 */}
               <div className="flex flex-col">
-                <Tooltip title={sc.id ? "点击查阅" : sc.relatedBillId ? "点击生成" : "缺少电费账单，无法生成"} placement="bottom" arrow>
-                  <div
-                    className={`text-sm ${sc.id ? 'font-semibold text-slate-700 group-hover/item:text-emerald-600' : 'text-slate-400 group-hover/item:text-emerald-400'} transition-colors`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (sc.id) {
-                        if (merchant.type === 'P0004') {
-                          handleViewSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant);
-                        } else {
-                          handleViewSurplusToGridItem(sc.id, sc.settlementDate, merchant);
+                <div className="inline-flex items-center">
+                  <Tooltip title={sc.id ? "点击查阅" : sc.relatedBillId ? "点击生成" : "缺少电费账单，无法生成"} placement="bottom" arrow>
+                    <div
+                      className={`text-sm ${sc.id ? 'font-semibold text-slate-700 group-hover/item:text-emerald-600' : 'text-slate-400 group-hover/item:text-emerald-400'} transition-colors`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (sc.id) {
+                          if (merchant.type === 'P0004') {
+                            handleViewSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant);
+                          } else {
+                            handleViewSurplusToGridItem(sc.id, sc.settlementDate, merchant);
+                          }
                         }
-                      }
-                      else if (sc.relatedBillId) handleCreateSurplusToGrid(merchant.number, sc.settlementDate);
-                    }}
-                  >
-                    {sc.name}月份结算单
-                  </div>
-                </Tooltip>
+                        else if (sc.relatedBillId) handleCreateSurplusToGrid(merchant.number, sc.settlementDate);
+                      }}
+                    >
+                      {sc.name}月份结算单
+                    </div>
+                  </Tooltip>
+                  {sc.id && (
+                    <Tooltip title={sc.isChargeRecovered ? "已收回电费" : "未收回电费"} placement="top" arrow>
+                      <span className="relative ml-0.5 inline-flex h-2 w-2 -translate-y-1.5 cursor-default">
+                        {sc.isChargeRecovered ? (
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                        ) : (
+                          <>
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+                          </>
+                        )}
+                      </span>
+                    </Tooltip>
+                  )}
+                </div>
                 <span className={`text-[12px] ${sc.id ? 'text-slate-600' : 'text-slate-400'} mt-1`}>
                   上网电量: <span className="font-mono">{sc.surplusToGridTotal}</span> kWh
                 </span>
@@ -1792,17 +1908,10 @@ const TimelineList: React.FC = () => {
               <div className="absolute right-4 flex items-center gap-1 opacity-0 scale-95 transition-all duration-300 group-hover/item:opacity-100 group-hover/item:scale-100 pointer-events-none group-hover/item:pointer-events-auto">
                 {sc.id ? (
                   <>
-                    <Tooltip title={"查阅"} placement="bottom" arrow>
+                    <Tooltip title={"收回电费"} placement="bottom" arrow>
                       <IconButton sx={{ padding: '6px', '& .MuiSvgIcon-root': { fontSize: '12px' } }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (merchant.type === 'P0004') {
-                            handleViewSurplusToGridConsumptionItem(sc.id, sc.settlementDate, merchant);
-                          } else {
-                            handleViewSurplusToGridItem(sc.id, sc.settlementDate, merchant);
-                          }
-                        }}>
-                        <Pageview fontSize="inherit" className="hover:text-emerald-600" />
+                        onClick={(e) => { e.stopPropagation(); handleToggleSurplusToGridRecovered(sc.id, sc.isChargeRecovered); }}>
+                        <RequestQuote fontSize="inherit" className="hover:text-emerald-600" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={"修改"} placement="bottom" arrow>
@@ -1906,7 +2015,7 @@ const TimelineList: React.FC = () => {
                   </span>
                 </div>
                 <span className="inline-flex items-center text-xs font-mono font-semibold text-slate-800 leading-tight">
-                  {item.selfConsumptionSumResult === '-' || !item.selfConsumptionSumResult
+                  {!item.selfConsumptionSumResult
                     ? <span className="text-slate-300">—</span>
                     : <><CurrencyYen sx={{ fontSize: 12 }} className="text-slate-400" />{item.selfConsumptionSumResult}</>}
                 </span>
@@ -2020,7 +2129,7 @@ const TimelineList: React.FC = () => {
                       </p>
                       <div className="mt-2 flex items-baseline justify-between gap-2">
                         <span className="text-[11px] text-slate-600 truncate">{merchant.settlementType || '—'}</span>
-                        <span className={`inline-flex items-center text-sm font-mono font-semibold flex-shrink-0 ${active ? 'text-slate-800' : 'text-slate-600'}`}><CurrencyYen sx={{ fontSize: 13 }} />{formatMoney(fin.annual)}</span>
+                        <span className={`inline-flex items-center text-sm font-mono font-semibold flex-shrink-0 ${active ? 'text-slate-800' : 'text-slate-600'}`}><CurrencyYen sx={{ fontSize: 13 }} />{formatAmount(fin.annual)}</span>
                       </div>
                     </button>
                   );
@@ -2071,9 +2180,9 @@ const TimelineList: React.FC = () => {
                   const meta = STATUS_META[accFin.status];
                   const list = [...(selectedMerchant.settlementList ?? [])].sort((a, b) => b.year - a.year);
                   const current = list[0] ?? null; // 顶部金额条展示最新年度
-                  const curSelf = parseMoney(current?.selfConsumptionSumResult);
-                  const curSurplus = parseMoney(current?.surplusToGridSumResult);
-                  const curAnnual = curSelf + curSurplus;
+                  const curSelf = current?.selfConsumptionSumResult == null ? 0 : current?.selfConsumptionSumResult;
+                  const curSurplus = current?.surplusToGridSumResult == null ? 0 : current?.surplusToGridSumResult;
+                  const curAnnual = current?.annualSettlement;
                   return (
                     <Paper elevation={0} className="relative bg-white overflow-hidden rounded-none border-0 shadow-none">
                       {/* 财务账户头部 */}
@@ -2097,23 +2206,23 @@ const TimelineList: React.FC = () => {
                             <span className="text-[12px] uppercase tracking-wider text-slate-500 font-bold">
                               {current ? `${current.year}年结算金额` : '本年结算金额'}
                             </span>
-                            <div className="flex items-center text-2xl font-bold text-slate-900 font-mono tracking-tight"><CurrencyYen sx={{ fontSize: 22 }} />{formatMoney(curAnnual)}</div>
+                            <div className="flex items-center text-2xl font-bold text-slate-900 font-mono tracking-tight"><CurrencyYen sx={{ fontSize: 22 }} />{formatAmount(curAnnual)}</div>
                           </div>
                           {accFin.needConsumption && (
                             <div className="flex flex-col">
                               <span className="text-[11px] text-slate-400">自发自用</span>
-                              <span className="inline-flex items-center text-sm font-mono text-slate-700">{curSelf > 0 ? <><CurrencyYen sx={{ fontSize: 13 }} />{formatMoney(curSelf)}</> : '—'}</span>
+                              <span className="inline-flex items-center text-sm font-mono text-slate-700">{curSelf > 0 ? <><CurrencyYen sx={{ fontSize: 13 }} />{formatAmount(curSelf)}</> : '—'}</span>
                             </div>
                           )}
                           {accFin.needSurplus && (
                             <div className="flex flex-col">
                               <span className="text-[11px] text-slate-400">余电上网</span>
-                              <span className="inline-flex items-center text-sm font-mono text-slate-700">{curSurplus > 0 ? <><CurrencyYen sx={{ fontSize: 13 }} />{formatMoney(curSurplus)}</> : '—'}</span>
+                              <span className="inline-flex items-center text-sm font-mono text-slate-700">{curSurplus > 0 ? <><CurrencyYen sx={{ fontSize: 13 }} />{formatAmount(curSurplus)}</> : '—'}</span>
                             </div>
                           )}
                           <div className="flex flex-col">
                             <span className="text-[11px] text-slate-400">累计结算</span>
-                            <span className="inline-flex items-center text-sm font-mono text-slate-700"><CurrencyYen sx={{ fontSize: 13 }} />{formatMoney(accFin.total)}</span>
+                            <span className="inline-flex items-center text-sm font-mono text-slate-700"><CurrencyYen sx={{ fontSize: 13 }} />{formatAmount(accFin.total)}</span>
                           </div>
                         </div>
 
@@ -2219,13 +2328,14 @@ const TimelineList: React.FC = () => {
 
           {/* 下载按钮：精致高对比度风格 */}
           <button
-            onClick={handleDownloadPDF} // 示例逻辑：触发打印或下载
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl shadow-lg shadow-slate-200 hover:bg-blue-600 hover:shadow-blue-100 transform hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
+            onClick={handleDownloadExcel} // 导出当前结算单的 Excel
+            disabled={downloading}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl shadow-lg shadow-slate-200 hover:bg-blue-600 hover:shadow-blue-100 transform hover:-translate-y-0.5 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            下载
+            {downloading ? '导出中...' : '下载'}
           </button>
 
         </div>

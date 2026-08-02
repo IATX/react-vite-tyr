@@ -423,6 +423,11 @@ const componentMap: IComponentMap = {
     type: 'hub',
     path: 'app/ilzpxj/hub/Electricityoperamanagement',
   },
+  'Projectsettlementstat': {
+    elem: React.lazy(() => import('../app/ilzpxj/dev/Projectsettlementstat')),
+    type: 'other',
+    path: 'app/ilzpxj/dev/Projectsettlementstat',
+  },
 };
 
 export default componentMap;

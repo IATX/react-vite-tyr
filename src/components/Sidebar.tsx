@@ -210,17 +210,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                     minHeight: 75,
                                     borderRadius: '8px',
                                     mb: 1,
-                                    backgroundColor: isSelected ? 'rgba(5, 150, 105, 0.08)' : (open ? 'rgba(0, 0, 0, 0.02)' : 'transparent'),
-                                    border: (open || isSelected) ? '1px solid' : '1px solid transparent',
-                                    borderColor: isSelected ? '#10b981' : (open ? '#eceff1' : 'transparent'),
+                                    // 收缩态不着色（含选中项），选中与否只靠图标颜色区分
+                                    backgroundColor: open ? (isSelected ? 'rgba(5, 150, 105, 0.08)' : 'rgba(0, 0, 0, 0.02)') : 'transparent',
+                                    border: '1px solid',
+                                    borderColor: open ? (isSelected ? '#10b981' : '#eceff1') : 'transparent',
                                     transition: 'all 0.3s ease',
                                     '&:hover': {
-                                        backgroundColor: isSelected ? 'rgba(5, 150, 105, 0.12)' : 'rgba(0, 0, 0, 0.02)',
-                                        borderColor: isSelected ? '#10b981' : '#cfd8dc',
+                                        // 收缩态底色为 transparent，悬浮时同样给出可见的背景色
+                                        backgroundColor: (open && isSelected) ? 'rgba(5, 150, 105, 0.12)' : 'rgba(0, 0, 0, 0.04)',
+                                        borderColor: (open && isSelected) ? '#10b981' : '#cfd8dc',
                                         '& .MuiAvatar-root': {
                                             transform: !open ? 'scale(1.1)' : 'scale(1.05)',
                                             color: '#059669',
-                                            borderColor: '#10b981',
+                                            borderColor: open ? '#10b981' : 'transparent',
                                         }
                                     },
                                 }}
@@ -260,8 +262,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             gap: open ? 1.5 : 0,
+                                            // 背景色统一由外层 ListItem 的 hover 提供，按钮本身不再叠加
                                             '&:hover': {
-                                                backgroundColor: !open ? 'transparent' : 'initial',
+                                                backgroundColor: 'transparent',
                                             }
                                         }}
                                     >
@@ -279,10 +282,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItemId, onItemClick, open, onEx
                                                 sx={{
                                                     width: open ? 34 : 30,
                                                     height: open ? 34 : 30,
-                                                    bgcolor: '#ecfdf5',
-                                                    color: '#059669',
+                                                    // 收缩态去掉绿色圆底与描边，只留图标；选中项图标保持绿色，未选中转灰
+                                                    bgcolor: open ? '#ecfdf5' : 'transparent',
+                                                    color: (open || isSelected) ? '#059669' : '#64748b',
                                                     border: '1.5px solid',
-                                                    borderColor: '#a7f3d0',
+                                                    borderColor: open ? '#a7f3d0' : 'transparent',
                                                     transition: 'all 0.3s ease',
                                                     '& .MuiSvgIcon-root': {
                                                         fontSize: open ? 18 : 22,

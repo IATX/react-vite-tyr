@@ -503,7 +503,8 @@ const SettingsPage = () => {
 
     if (values.key.indexOf('module_') > -1) {
       initParams['mid'] = values.moduleId;
-      initParams['mnpid'] = '';
+      // 直接挂在模块下的菜单没有父菜单，父级 id 用 0 表示顶层
+      initParams['mnpid'] = '0';
     } else if (values.key.indexOf('menu_') > -1) {
       initParams['mid'] = values.moduleId;
       initParams['mnpid'] = values.key.replace('menu_', '')

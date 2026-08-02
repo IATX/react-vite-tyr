@@ -44,7 +44,7 @@ interface Project {
   merchant: string;          // 商户
   pwayuydj: string;          // 发电类型
   pricingBasis: string;      // 电价计算依据
-  columnBirp: string; // 电价设置状态
+  pricingSettingId: number;  // 电价设置ID，>0 表示已设置（与商户电价设置页判定一致）
   zxfodonb: string;
 }
 
@@ -56,7 +56,7 @@ interface ProjectRow {
   mrvqpphi: string;  // 商户
   pwayuydj: string;  // 发电类型
   xjegvvik: string;  // 电价计算依据
-  columnBirp: string; // 电价设置状态
+  pkWzghpmog: number; // 电价设置ID
   zxfodonb: string; // 业务类型：00 全额上网；01 自发自用余电上网
 }
 
@@ -68,7 +68,7 @@ const mapRowToProject = (row: ProjectRow): Project => ({
   merchant: row.mrvqpphi ?? '',
   pwayuydj: row.pwayuydj ?? '',
   pricingBasis: row.xjegvvik ?? '',
-  columnBirp: row.columnBirp,
+  pricingSettingId: row.pkWzghpmog ?? 0,
   zxfodonb: row.zxfodonb ?? '',
 });
 
@@ -375,12 +375,12 @@ const Electricitybillmanagement: React.FC = () => {
               <span
                 className={
                   'absolute right-3 top-3 z-10 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ' +
-                  (project.columnBirp === 'Yes'
+                  (project.pricingSettingId > 0
                     ? 'bg-emerald-50 text-emerald-600'
                     : 'bg-red-50 text-red-600')
                 }
               >
-                {project.columnBirp === 'Yes' ? '已设置' : '未设置'}
+                {project.pricingSettingId > 0 ? '已设置' : '未设置'}
               </span>
 
               {/* 项目信息 */}

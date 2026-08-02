@@ -686,6 +686,8 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	      					    				<th className={tableThStyle}>结算电价（含税）（余电上网部分）</th>
 	      					    				<th className={tableThStyle}>结算电费（余电上网部分）</th>
 	      					    				<th className={tableThStyle}>补贴金额</th>
+												<th className={tableThStyle}>补贴金额（不含税）</th>
+	      					    				<th className={tableThStyle}>补贴税</th>
 	      					    				<th className={tableThStyle}>结算收入（余电上网部分）</th>
 	      					    				<th className={tableThStyle}>销项税额（余电上网部分）</th>
 	      					    				<th className={tableThStyle}>结算电价（含税）（自发自用部分）</th>
@@ -1144,6 +1146,78 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 															/>
 														) : (
 															<>{item.colTgqbxp}</>
+														)}
+														
+														
+			      					    				</td>
+														<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'colGkhlpo',
+																	'header': '补贴金额（不含税）',
+																	'type': 'money'
+																}}
+																value={item.colGkhlpo}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
+
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['colGkhlpo']: newValue,
+																			};
+																		}
+																		return row;
+																	});
+
+																	setFormData((prevData: any) => {
+																		return {
+																			...prevData,
+																			listYfvuhw: updatedList,
+																		};
+																	});
+																}}
+															/>
+														) : (
+															<>{item.colGkhlpo}</>
+														)}
+														
+														
+			      					    				</td>
+			      					    				<td className={tableTdStyle }>
+			      					    				{isEditing ? (
+															<RowInputRenderer
+																column={{
+																	'key': 'colRsojpj',
+																	'header': '补贴税',
+																	'type': 'money'
+																}}
+																value={item.colRsojpj}
+																onChange={(newValue) => {
+																	const updatedList = formData.listYfvuhw.map((row: any, idx: number) => {
+																		const rindex = 'row_' + idx;
+
+																		if (rindex === rowIndex) {
+																			return {
+																				...row,
+																				['colRsojpj']: newValue,
+																			};
+																		}
+																		return row;
+																	});
+
+																	setFormData((prevData: any) => {
+																		return {
+																			...prevData,
+																			listYfvuhw: updatedList,
+																		};
+																	});
+																}}
+															/>
+														) : (
+															<>{item.colRsojpj}</>
 														)}
 														
 														

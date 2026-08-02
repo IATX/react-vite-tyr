@@ -520,7 +520,7 @@ export default function ViewPage<T extends object = { [key: string]: any }>({ re
 	            </label>
 	            <div className="mt-2">
 	            	{isViewReadOnly ? (
-	            		<Typography variant="body2" gutterBottom>{new Date(formData.qrfxwkpy).toLocaleDateString() || ''}</Typography>
+	            		<Typography variant="body2" gutterBottom>{formData.qrfxwkpy ? dayjs(formData.qrfxwkpy).format('YYYY-MM') : ''}</Typography>
 	            	) : (
 	              <FormControl fullWidth ref={(el) => {
 													if (el) fieldRefs.current['qrfxwkpy'] = el;
