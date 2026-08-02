@@ -258,7 +258,7 @@ const Projectsettlementstat: React.FC = () => {
           <button
             onClick={handleSearch}
             disabled={searching}
-            className="flex items-center gap-1.5 h-8 px-3.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg shadow-sm shadow-slate-200 hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 h-8 px-3.5 bg-blue-600 text-white text-[13px] font-semibold rounded-lg shadow-sm shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Search sx={{ fontSize: 15 }} />
             {searching ? '查询中...' : '查询'}
@@ -290,7 +290,7 @@ const Projectsettlementstat: React.FC = () => {
 
         {searching ? (
           <div className="flex flex-col items-center justify-center min-h-[240px] gap-4">
-            <CircularProgress size={24} sx={{ color: '#0f172a' }} />
+            <CircularProgress size={24} sx={{ color: '#2563eb' }} />
             <p className="text-xs text-slate-600 tracking-widest uppercase">正在查询...</p>
           </div>
         ) : merchants.length === 0 ? (
@@ -309,7 +309,7 @@ const Projectsettlementstat: React.FC = () => {
                       type="checkbox"
                       checked={allSelected}
                       onChange={toggleAll}
-                      className="w-4 h-4 accent-slate-900 cursor-pointer"
+                      className="w-4 h-4 accent-blue-600 cursor-pointer"
                     />
                   </th>
                   <th className="p-3 font-bold whitespace-nowrap">项目名称</th>
@@ -336,7 +336,7 @@ const Projectsettlementstat: React.FC = () => {
                         disabled={!m.accountNumber}
                         onChange={() => toggleOne(m.accountNumber)}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 accent-slate-900 cursor-pointer disabled:cursor-not-allowed"
+                        className="w-4 h-4 accent-blue-600 cursor-pointer disabled:cursor-not-allowed"
                       />
                     </td>
                     <td className="p-3 whitespace-nowrap">{m.projectName || '-'}</td>
@@ -365,7 +365,7 @@ const Projectsettlementstat: React.FC = () => {
         <button
           onClick={handleExport}
           disabled={selectedAccounts.size === 0 || exporting}
-          className="flex items-center gap-1.5 h-8 px-3.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg shadow-sm shadow-slate-200 hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="flex items-center gap-1.5 h-8 px-3.5 bg-blue-600 text-white text-[13px] font-semibold rounded-lg shadow-sm shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all duration-200 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:hover:bg-slate-200 disabled:cursor-not-allowed disabled:active:scale-100 disabled:transform-none"
         >
           <Description sx={{ fontSize: 15 }} />
           {exporting ? '导出中...' : `导出 Excel${selectedAccounts.size > 0 ? `（${selectedAccounts.size}）` : ''}`}
